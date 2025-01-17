@@ -8,7 +8,9 @@ import uuid
 
 @api_view(['GET', 'POST'])
 def advertisements_list(request):
-    # list all advertisements or create a new one
+    """
+    list all advertisements or create a new one
+    """
     if request.method == 'GET':
         advertisements = Advertisements.objects.all()
         serializer = AdvertisementsSerializer(advertisements, many=True)
@@ -43,6 +45,26 @@ def advertisements_detail(request, uuid):
     elif request.method == 'DELETE':
         advertisement.delete()
         return Response(status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET'])
+def advertisements_search(request):
+    """
+    search for advertisements based on query parameters (title)
+    """
+    title = request.query_params.get('title', None)
+    # start with all advertisements
+    advertisements = Advertisements.objects.all()
+    if title:
+        advertisements = Advertisements.objects.filter(title__icontains=title)
+
+    if not advertisements.exists():  # Check if the queryset is empty
+        return Response({"message": "No advertisements found matching the query."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Serialize the filtered advertisements
+    serializer = AdvertisementsSerializer(advertisements, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def advertisements_active(request):
