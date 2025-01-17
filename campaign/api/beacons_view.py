@@ -12,7 +12,9 @@ class AllBeacons(ListAPIView):
 
 @api_view(['GET', 'POST'])
 def beacons_list(request):
-    # list all beacons or create a new one
+    """
+    list all beacons or create a new one
+    """
     if request.method == 'GET':
         beacons = Beacons.objects.all()
         serializer = BeaconsSerializer(beacons, many=True)
@@ -59,6 +61,12 @@ def beacons_search(request):
     beacons = Beacons.objects.all()
     if location_name:
         beacons = Beacons.objects.filter(location_name__icontains=location_name)
+
+    if not beacons.exists():
+        return Response(
+            {"message": "No beacons found matching the query."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     # Serialize the filtered beacons
     serializer = BeaconsSerializer(beacons, many=True)
