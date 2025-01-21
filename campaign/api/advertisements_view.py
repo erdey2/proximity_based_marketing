@@ -66,6 +66,7 @@ def advertisements_search(request):
     serializer = AdvertisementsSerializer(advertisements, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 @api_view(['GET'])
 def advertisements_active(request):
     """
