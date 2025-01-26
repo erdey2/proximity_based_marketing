@@ -1,11 +1,17 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework import status
 from rest_framework.response import Response
 from campaign.models import Advertisements
 from campaign.serializers import AdvertisementsSerializer
 from django.utils.timezone import now
 import uuid
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
+
+class AdvertisementRateThrottle(UserRateThrottle):
+    rate = '10/minute'  # Custom throttle rate for this view
+
+@throttle_classes([AdvertisementRateThrottle, AnonRateThrottle])
 @api_view(['GET', 'POST'])
 def advertisements_list(request):
     """
