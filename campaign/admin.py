@@ -4,8 +4,8 @@ from .models import Beacons, Advertisements
 # Register your models here.
 @admin.register(Beacons)
 class BeaconAdmin(admin.ModelAdmin):
-    list_display=('uuid', 'location_name', 'signal_strength', 'start_date', 'status')
+    list_display=('beacon_id', 'location_name', 'signal_strength', 'battery_status', 'start_date', 'status')
 
 @admin.register(Advertisements)
 class AdvertisementAdmin(admin.ModelAdmin):
-    list_display=('uuid', 'beacon_id', 'content', 'start_date', 'end_date', 'created_at', 'type')
+    list_display=('advertisement_id', 'beacon_id', 'content', 'start_date', 'end_date', 'created_at', 'type')
