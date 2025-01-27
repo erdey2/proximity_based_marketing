@@ -38,8 +38,35 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_spectacular',
     'campaign',
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',    # Throttle per user
+        'rest_framework.throttling.AnonRateThrottle',   # Throttle for anonymous users
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/minute',     # Allow 100 requests per user per day
+        'anon': '10/minute',     # Allow 10 requests per anonymous user per hour
+    },
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
+}
+SPECTACULAR_SETTINGS = {
+"TITLE": "Beacon based Marketing API",
+"DESCRIPTION": "An API for managing beacons, advertisements, and advertisement logs.",
+"VERSION": "1.0.0",
+"SERVE_INCLUDE_SCHEMA": False,
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
