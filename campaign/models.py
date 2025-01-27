@@ -3,7 +3,7 @@ import uuid
 
 # Create your models here.
 class Beacons(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    beacon_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
     location_name = models.CharField(max_length=100)
     signal_strength = models.FloatField()
     battery_status = models.FloatField(default=100)
@@ -23,7 +23,7 @@ class Beacons(models.Model):
 
 
 class Advertisements(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    advertisement_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
     beacon_id = models.ForeignKey(Beacons, on_delete=models.CASCADE, to_field='uuid', db_column='beacon_id')
     title = models.CharField(max_length=255, null=False, default='ybs soap')
     content = models.TextField(null=False)
@@ -48,7 +48,7 @@ class Advertisements(models.Model):
         return f"Advertisement {self.title} ({self.type})"
 
 class AdvertisementsLog(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    log_id = models.BigAutoField(primary_key=True)
     beacon = models.ForeignKey(Beacons, on_delete=models.CASCADE, to_field='uuid')
     advertisement = models.ForeignKey(Advertisements, on_delete=models.CASCADE, to_field='uuid')
     timestamp = models.DateTimeField(auto_now_add=True)
