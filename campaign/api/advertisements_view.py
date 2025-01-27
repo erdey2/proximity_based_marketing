@@ -30,12 +30,12 @@ def advertisements_list(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def advertisements_detail(request, uuid):
+def advertisements_detail(request, advertisement_id):
     """
     Retrieve, update, or delete an advertisement item
     """
     try:
-        advertisement = Advertisements.objects.get(uuid=uuid)
+        advertisement = Advertisements.objects.get(advertisement_id)
     except Advertisements.DoesNotExist:
         return Response({"error": "Advertisement not found."}, status=status.HTTP_404_NOT_FOUND)
 

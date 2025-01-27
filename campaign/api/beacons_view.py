@@ -31,12 +31,12 @@ def beacons_list(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def beacons_detail(request, uuid):
+def beacons_detail(request, beacon_id):
     """
     Retrieve, update, or delete beacon item
     """
     try:
-        beacon = Beacons.objects.get(uuid=uuid)
+        beacon = Beacons.objects.get(beacon_id=beacon_id)
     except Beacons.DoesNotExist:
         return Response(status.HTTP_404_NOT_FOUND)
 
@@ -108,7 +108,7 @@ def beacons_info(request):
     Receives data from mobile app
     """
     try:
-        uuid = request.data.get('uuid')  # Unique ID of the beacon
+        beacon_id = request.data.get('beacon_id')  # Unique ID of the beacon
         battery_status = request.data.get('battery_status')  # Battery percentage
         rssi = request.data.get('rssi')  # Signal strength
 
@@ -118,7 +118,7 @@ def beacons_info(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         # Save data to the database
-        beacon_data = Beacons.objects.create(ssid=uuid, battery_status=battery_status, rssi=rssi)
+        beacon_data = Beacons.objects.create(beacon_id=beacon_id, battery_status=battery_status, rssi=rssi)
 
         # Serialize the data for response
         serializer = BeaconsSerializer(beacon_data)
