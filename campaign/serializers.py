@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Advertisements, Beacons
+from .models import Advertisements, Beacons, AdvertisementsLog
 
 class BeaconsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,14 +22,11 @@ class AdvertisementsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"dates": "Both start_date and end_date must be provided." })
         if start_date >= end_date:
             raise serializers.ValidationError({"end_date": "End date must be greater than start date." })
-        return data
+        return
 
-class AdvertisementCountSerializer(serializers.Serializer):
-    total_advertisements = serializers.IntegerField()
 
-class TotalBeaconSerializer(serializers.Serializer):
-    total_beacons = serializers.IntegerField()
-
-class ActiveBeaconsSerializers(serializers.Serializer):
-    active_beacons = serializers.IntegerField()
+class AdvertisementsLogsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementsLog
+        fields = '__all__'
 
