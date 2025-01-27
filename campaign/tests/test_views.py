@@ -1,13 +1,14 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
-from campaign.models import Advertisements, Beacons
+from campaign.models import Advertisements, Beacons, AdvertisementsLog
 from datetime import datetime, timedelta
 import uuid
 
 class TestAdvertisement(APITestCase):
     def setUp(self):
         # Create a test beacon
-        self.beacon = Beacons.objects.create(uuid=uuid.uuid4(), location_name="Bole", signal_strength=10)
+        self.beacon = Beacons.objects.create(uuid=uuid.uuid4(), location_name="Bole", signal_strength=10, battery_status=78)
+        self.advertisement = Advertisements.objects.create(beacon_id='', content='', start_date='', end_date='')
 
         # Create test advertisements
         self.advertisement1 = Advertisements.objects.create(
@@ -23,6 +24,7 @@ class TestAdvertisement(APITestCase):
             is_active=True,
             type="image"
         )
+
 
     def test_advertisements_list(self):
         # Use the APIClient to send a GET request to the advertisements endpoint
