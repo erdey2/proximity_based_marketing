@@ -66,10 +66,7 @@ def beacons_search(request):
         beacons = Beacons.objects.filter(location_name__icontains=location_name)
 
     if not beacons.exists():
-        return Response(
-            {"message": "No beacons found matching the query."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        return Response({"message": "No beacons found matching the query."}, status=status.HTTP_404_NOT_FOUND)
 
     # Serialize the filtered beacons
     serializer = BeaconsSerializer(beacons, many=True)
@@ -112,11 +109,8 @@ def beacons_info(request):
         battery_status = request.data.get('battery_status')  # Battery percentage
         rssi = request.data.get('rssi')  # Signal strength
 
-        if not uuid or battery_status is None or rssi is None:
-            return Response(
-                {"error": "Missing required fields (ssid, battery_status, rssi)"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if not beacon_id or battery_status is None or rssi is None:
+            return Response({"error": "Missing required fields (ssid, battery_status, rssi)"}, status=status.HTTP_400_BAD_REQUEST )
         # Save data to the database
         beacon_data = Beacons.objects.create(beacon_id=beacon_id, battery_status=battery_status, rssi=rssi)
 
