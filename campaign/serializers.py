@@ -22,7 +22,7 @@ class AdvertisementsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"dates": "Both start_date and end_date must be provided." })
         if start_date >= end_date:
             raise serializers.ValidationError({"end_date": "End date must be greater than start date." })
-        return
+        return data
 
 
 class AdvertisementsLogsSerializer(serializers.ModelSerializer):
