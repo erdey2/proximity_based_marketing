@@ -3,7 +3,7 @@ import uuid
 
 # Create your models here.
 class Beacons(models.Model):
-    beacon_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    beacon_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False, db_column='beacon_id')
     location_name = models.CharField(max_length=100)
     signal_strength = models.FloatField()
     battery_status = models.FloatField(default=100)
@@ -23,8 +23,8 @@ class Beacons(models.Model):
 
 
 class Advertisements(models.Model):
-    advertisement_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
-    beacon_id = models.ForeignKey(Beacons, on_delete=models.CASCADE, to_field='uuid', db_column='beacon_id')
+    advertisement_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False, db_column='advertisement_id')
+    beacon_id = models.ForeignKey(Beacons, on_delete=models.CASCADE, to_field='beacon_id', db_column='beacon_id')
     title = models.CharField(max_length=255, null=False, default='ybs soap')
     content = models.TextField(null=False)
     start_date = models.DateTimeField()
@@ -49,8 +49,8 @@ class Advertisements(models.Model):
 
 class AdvertisementsLog(models.Model):
     log_id = models.BigAutoField(primary_key=True)
-    beacon = models.ForeignKey(Beacons, on_delete=models.CASCADE, to_field='uuid')
-    advertisement = models.ForeignKey(Advertisements, on_delete=models.CASCADE, to_field='uuid')
+    beacon = models.ForeignKey(Beacons, on_delete=models.CASCADE, to_field='beacon_id')
+    advertisement = models.ForeignKey(Advertisements, on_delete=models.CASCADE, to_field='advertisement_id')
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
