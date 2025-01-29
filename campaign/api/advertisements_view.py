@@ -6,6 +6,7 @@ from campaign.serializers import AdvertisementsSerializer
 from django.utils.timezone import now
 import uuid
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 
 class AdvertisementRateThrottle(UserRateThrottle):
@@ -72,7 +73,10 @@ def advertisements_search(request):
     serializer = AdvertisementsSerializer(advertisements, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+@extend_schema(
+    summary="retrieve all active advertisements",
+    description="Returns a list of active advertisements available in the system"
+)
 @api_view(['GET'])
 def advertisements_active(request):
     """
