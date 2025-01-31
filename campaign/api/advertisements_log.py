@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from campaign.models import AdvertisementsLog
 from campaign.serializers import AdvertisementsLogsSerializer
 from django.utils.timezone import now, timedelta
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema
 
 
 class LogList(APIView):
