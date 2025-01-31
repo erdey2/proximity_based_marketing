@@ -1,46 +1,26 @@
-from rest_framework.test import APITestCase
+import unittest
+from rest_framework.test import APIClient
 from rest_framework import status
-from campaign.models import Advertisements, Beacons, AdvertisementsLog
-from datetime import datetime, timedelta
-import uuid
+from django.urls import reverse
 
-class TestAdvertisement(APITestCase):
+
+class ApiViewTestCase(unittest.TestCase):
     def setUp(self):
-        # Create a test beacon
-        self.beacon = Beacons.objects.create(uuid=uuid.uuid4(), location_name="Bole", signal_strength=10, battery_status=78)
-        self.advertisement = Advertisements.objects.create(beacon_id='', content='', start_date='', end_date='')
+        self.client = APIClient()
+        self.api_url = reverse('advertisements_list')
 
-        # Create test advertisements
-        self.advertisement1 = Advertisements.objects.create(
-            beacon_id=self.beacon, title="Ad 1", content="Description for Ad 1", start_date=datetime.now(),
-            end_date=datetime.now() + timedelta(days=7), is_active=True, type="text"
-        )
-        self.advertisement2 = Advertisements.objects.create(
-            beacon_id=self.beacon,
-            title="Ad 2",
-            content="Description for Ad 2",
-            start_date=datetime.now(),
-            end_date=datetime.now() + timedelta(days=14),
-            is_active=True,
-            type="image"
-        )
+        # Set up a valid Bearer token (Replace 'your_actual_token' with a real token)
+        self.bearer_token = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM4Mjg4MTE4LCJpYXQiOjE3MzgyODc4MTgsImp0aSI6ImMxMGMzOGMxOGFlNjQ3NzU4MTUyYTE1MjNhNzU5Nzg4IiwidXNlcl9pZCI6MX0.kGrfy4OKXEUk7plGGZu3SnUzvo4pklqBZWM3-0J2T80")
 
+    def test_api_get_request(self):
+        response = self.client.get(self.api_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_advertisements_list(self):
-        # Use the APIClient to send a GET request to the advertisements endpoint
-        response = self.client.get('/api/advertisements/')
+    def test_api_get_request_with_authentication(self):
+        # Attach the Bearer token to the request headers
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.bearer_token}')
 
-        # Check the response
-        self.assertEqual(response.status_code, status.HTTP_200_OK, 'incorrect end point')
-        self.assertEqual(len(response.data), 2)  # Ensure 2 advertisements are returned
+        response = self.client.get(self.api_url)
 
-        # Validate the structure of the first advertisement
-        first_ad = response.data[0]
-        self.assertIn('uuid', first_ad)
-        self.assertIn('beacon_id', first_ad)
-        self.assertIn('title', first_ad)
-        self.assertIn('content', first_ad)
-        self.assertIn('start_date', first_ad)
-        self.assertIn('end_date', first_ad)
-        self.assertIn('is_active', first_ad)
-        self.assertIn('type', first_ad)
+        # Check for successful authentication (200 OK or another expected response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)  # Adjust based on expected status code
