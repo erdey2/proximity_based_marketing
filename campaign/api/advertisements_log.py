@@ -1,4 +1,3 @@
-from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -27,51 +26,35 @@ class LogList(APIView):
     - `400 Bad Request`: Data validation errors for POST requests.
     """
     @extend_schema(
-        summary="List all advertisement logs or create a new one",
-        description="""
-            This endpoint provides two functionalities:
-            1. **GET**: Retrieve a list of all advertisement logs.
-            2. **POST**: Create a new advertisement log.
-
-            **GET**:
-            - Returns a list of all advertisement logs stored in the system.
-
-            **POST**:
-            - Receives advertisement log data and saves it in the database.
-
-            **Request Body for POST**:
-            - Logs include details such as `advertisement_id`, `user_id`
-
-            **Responses**:
-            - `200 OK`: Successfully retrieved advertisement logs.
-            - `201 Created`: Successfully created a new advertisement log.
-            - `400 Bad Request`: Data validation failed.
-        """,
-        request={
-            "advertisement_id": "integer",
-            "user_id": "integer",
-            "timestamp": "datetime",
-            # Add other fields specific to the AdvertisementLog model
-        },
-        responses={
-            200: {
-                "message": "List of advertisement logs",
-                "data": "AdvertisementsLogsSerializer"
-            },
-            201: {
-                "message": "Advertisement log created successfully",
-                "data": "AdvertisementsLogsSerializer"
-            },
-            400: {
-                "error": "Bad request: Validation failed"
-            }
-        },
+        summary="Retrieve Advertisement Logs",
+        description="Fetches a list of all advertisement logs stored in the system.",
+        responses={200: AdvertisementsLogsSerializer(many=True)}
     )
     def get(self, request):
         logs = AdvertisementsLog.objects.all()
         serializers = AdvertisementsLogsSerializer(logs, many=True)
         return Response(serializers.data)
 
+    @extend_schema(
+        summary="Create a New Advertisement Log",
+        description="""
+            Creates a new advertisement log entry.
+
+            **Required Fields**:
+            - `advertisement_id` (integer): The ID of the advertisement being logged.
+            - `user_id` (integer): The ID of the user who interacted with the advertisement.
+            - `timestamp` (datetime): The time of interaction.
+
+            **Responses**:
+            - `201 Created`: Log entry created successfully.
+            - `400 Bad Request`: Validation errors.
+            """,
+        request=AdvertisementsLogsSerializer,
+        responses={
+            201: AdvertisementsLogsSerializer,
+            400: {"message": "Invalid input data."},
+        }
+    )
     def post(self, request):
         serializer = AdvertisementsLogsSerializer(data=request.data)
         if serializer.is_valid():
