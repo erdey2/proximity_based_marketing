@@ -3,10 +3,11 @@ import uuid
 
 # Create your models here.
 class Beacons(models.Model):
-    beacon_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False, db_column='beacon_id')
+    beacon_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_column='beacon_id')
+    name = models.CharField(max_length=100)
     location_name = models.CharField(max_length=100)
-    signal_strength = models.FloatField()
-    battery_status = models.FloatField(default=100)
+    signal_strength = models.FloatField(null=True, blank=True) # updated by mobile app
+    battery_status = models.FloatField(null=True, blank=True) # updated by mobile app
     start_date = models.DateTimeField(auto_now_add=True)
     class Status(models.TextChoices):
         ACTIVE = 'Active', 'Active'
