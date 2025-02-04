@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-
 from campaign.models import Beacons
 from campaign.serializers import BeaconsSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -38,6 +37,7 @@ class BeaconsList(APIView):
 
             **Required Fields**:
             - `beacon_id` (string): Unique identifier for the beacon.
+            - 'name' (string): Unique name for beacon.
             - `location` (string): Description of the beacon's location.
             - `status` (string): Status of the beacon (e.g., active, inactive).
 
@@ -105,9 +105,9 @@ class BeaconsDetail(APIView):
             404: {"message": "Beacon not found."},
         },
     )
-    def put(self, request, beacon_id):
+    def put(self, request, pk):
         try:
-            beacon = Beacons.objects.get(beacon_id=beacon_id)
+            beacon = Beacons.objects.get(pk=pk)
             serializer = BeaconsSerializer(beacon, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -124,9 +124,9 @@ class BeaconsDetail(APIView):
             404: {"message": "Beacon not found."},
         },
     )
-    def delete(self, request, beacon_id):
+    def delete(self, request, pk):
         try:
-            beacon = Beacons.objects.get(beacon_id=beacon_id)
+            beacon = Beacons.objects.get(pk=pk)
             beacon.delete()
             return Response({"message": "Beacon deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         except Beacons.DoesNotExist:
@@ -291,8 +291,8 @@ class BeaconsInfo(APIView):
 
      **Request Body:**
      - `beacon_id`: string (Unique identifier of the beacon)
-     - `battery_status`: integer (Battery percentage)
-     - `rssi`: integer (Signal strength)
+     - `battery_status`: float (Battery percentage)
+     - `rssi`: float (Signal strength)
 
      **Responses:**
      - `201 Created`: Successfully saves the beacon data.
@@ -305,7 +305,7 @@ class BeaconsInfo(APIView):
         This endpoint receives data from a mobile app about a beacon's ID, battery status, and signal strength (RSSI).
 
         **Methods:**
-        - `POST`: Receives beacon data from a mobile application.
+        - `PUT`: Receives beacon data from a mobile application.
 
         **Example Use Case:**
         - A mobile app collects beacon data (e.g., battery status, signal strength) and sends it to the server.
@@ -313,8 +313,8 @@ class BeaconsInfo(APIView):
 
         **Request Body:**
         - `beacon_id`: string (unique identifier of the beacon)
-        - `battery_status`: integer (percentage battery remaining)
-        - `rssi`: integer (signal strength of the beacon)
+        - `battery_status`: float (percentage battery remaining)
+        - `signal_strength`: float (signal strength of the beacon)
 
         **Responses:**
         - `201 Created`: Successfully saved beacon data.
@@ -323,8 +323,8 @@ class BeaconsInfo(APIView):
         """,
         request={
             "beacon_id": "string",
-            "battery_status": "integer",
-            "rssi": "integer"
+            "battery_status": "float",
+            "signal_strength": "float"
         },
         responses={
             201: {
@@ -332,29 +332,31 @@ class BeaconsInfo(APIView):
                 "data": "BeaconsSerializer"
             },
             400: {
-                "error": "Missing required fields (beacon_id, battery_status, rssi)"
+                "error": "Missing required fields (beacon_id, battery_status, signal_strength)"
             },
             500: {
                 "error": "Internal server error message"
             }
         },
     )
-    def post(self, request):
+    def put(self, request):
         try:
             beacon_id = request.data.get('beacon_id')  # Unique ID of the beacon
             battery_status = request.data.get('battery_status')  # Battery percentage
-            rssi = request.data.get('rssi')  # Signal strength
+            signal_strength = request.data.get('signal_strength')  # Signal strength
 
-            if not beacon_id or battery_status is None or rssi is None:
-                return Response({"error": "Missing required fields (ssid, battery_status, rssi)"},
+            if not beacon_id or battery_status is None or signal_strength is None:
+                return Response({"error": "Missing required fields (beacon_id, battery_status, signal_strength)"},
                                 status=status.HTTP_400_BAD_REQUEST)
-            # Save data to the database
-            beacon_data = Beacons.objects.create(beacon_id=beacon_id, battery_status=battery_status, rssi=rssi)
 
-            # Serialize the data for response
-            serializer = BeaconsSerializer(beacon_data)
+            try:
+                beacon = Beacons.objects.get(beacon_id=beacon_id)
+                beacon.battery_status = battery_status
+                beacon.signal_strength = signal_strength
+                beacon.save()
+                return Response({"message": "Beacon data updated successfully"}, status=status.HTTP_200_OK)
+            except Beacons.DoesNotExist:
+                return Response({"error": "Beacon not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            return Response({"message": "Beacon data received successfully", "data": serializer.data},
-                            status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
