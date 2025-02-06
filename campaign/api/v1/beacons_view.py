@@ -204,8 +204,8 @@ class BeaconsActive(APIView):
     - `404 Not Found`: No active beacons available.
     - `401 Unauthorized`: User is not authenticated.
     """
-
-    @permission_classes([IsAuthenticated])
+    
+    #@permission_classes([IsAuthenticated])
     @extend_schema(
         summary="Retrieve Active Beacons Count",
         description="""
@@ -281,6 +281,43 @@ class BeaconsCount(APIView):
         if not total_beacons:
             return Response({'message': 'No beacon found'}, status=404)
         return Response({"count": total_beacons, "message": f"Found {total_beacons} beacons."}, status=200)
+
+class BeaconsLocationsCount(APIView):
+    """
+    API endpoint to count the total number of unique beacon locations.
+
+    Returns:
+        - 200 OK: A JSON object containing the total count of unique locations.
+        - 500 Internal Server Error: If a database error occurs.
+    """
+    @extend_schema(
+        summary="Get Total Unique Beacon Locations",
+        description="Returns the total number of unique beacon locations.",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "Total Locations": {
+                        "type": "integer",
+                        "example": 8
+                    }
+                }
+            },
+            500: {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "example": "Internal Server Error"
+                    }
+                }
+            }
+        }
+    )
+    def get(self, request):
+        total_locations = Beacons.objects.values('location_name').distinct().count()
+        return Response({'Total Locations': total_locations})
+
 
 class BeaconsInfo(APIView):
     """
