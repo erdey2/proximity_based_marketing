@@ -8,7 +8,7 @@ from django.utils.timezone import now
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.shortcuts import get_object_or_404
-from celery import shared_task
+
 
 class AdvertisementRateThrottle(UserRateThrottle):
     rate = '10/minute'  # Custom throttle rate for this view
@@ -186,11 +186,3 @@ class AdvertisementsActive(APIView):
 
         serializer = AdvertisementsSerializer(advertisements, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@shared_task
-def deactivate_expired_ads():
-    """Set advertisements as inactive if their end_date has passed."""
-    expired_ads = Advertisements.objects.filter(end_date__lt=now(), is_active=True)
-    expired_ads.update(is_active=False)
-    return f"Updated {expired_ads.count()} expired advertisements."
