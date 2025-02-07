@@ -46,7 +46,7 @@ class Advertisements(models.Model):
     )
 
     def __str__(self):
-        return f"Advertisement {self.title} ({self.type})"
+        return f"{self.title} Advertisement ({self.end_date})"
 
 class AdvertisementsLog(models.Model):
     log_id = models.BigAutoField(primary_key=True)

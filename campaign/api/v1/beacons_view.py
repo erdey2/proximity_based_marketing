@@ -87,9 +87,9 @@ class BeaconsDetail(APIView):
         ]
 
     )
-    def get(self, request, beacon_id):
+    def get(self, request, pk):
         try:
-            beacon = Beacons.objects.get(beacon_id=beacon_id)
+            beacon = Beacons.objects.get(pk=pk)
             serializer = BeaconsSerializer(beacon)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Beacons.DoesNotExist:

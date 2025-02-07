@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Beacons, Advertisements
+from .models import Beacons, Advertisements, AdvertisementsLog
 
 # Register your models here.
 @admin.register(Beacons)
@@ -9,3 +9,7 @@ class BeaconAdmin(admin.ModelAdmin):
 @admin.register(Advertisements)
 class AdvertisementAdmin(admin.ModelAdmin):
     list_display=('advertisement_id', 'beacon_id', 'content', 'start_date', 'end_date', 'created_at', 'type')
+
+@admin.register(AdvertisementsLog)
+class AdvertisementLogAdmin(admin.ModelAdmin):
+    list_display = ('log_id', 'beacon', 'advertisement', 'timestamp')

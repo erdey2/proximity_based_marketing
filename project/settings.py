@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_spectacular',
     'celery',
+    'django_celery_beat',
     'campaign',
 ]
 REST_FRAMEWORK = {
