@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from campaign.models import Beacons
 from campaign.serializers import BeaconsSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from django.shortcuts import get_object_or_404
+
 
 class BeaconsList(APIView):
     """
@@ -319,7 +321,7 @@ class BeaconsLocationsCount(APIView):
         return Response({'Total Locations': total_locations})
 
 
-class BeaconsInfo(APIView):
+class BeaconsInfoUpdate(APIView):
     """
      Receive beacon data from the mobile app.
 
@@ -376,24 +378,46 @@ class BeaconsInfo(APIView):
             }
         },
     )
-    def put(self, request):
-        try:
-            beacon_id = request.data.get('beacon_id')  # Unique ID of the beacon
-            battery_status = request.data.get('battery_status')  # Battery percentage
-            signal_strength = request.data.get('signal_strength')  # Signal strength
+    def put(self, request, pk):
+        """ Update specific details of a beacon """
+        beacon = get_object_or_404(Beacons, pk=pk)
+        # Use BeaconsSerializer to validate and update beacon data
+        serializer = BeaconsSerializer(beacon, data=request.data, partial=True)
 
-            if not beacon_id or battery_status is None or signal_strength is None:
-                return Response({"error": "Missing required fields (beacon_id, battery_status, signal_strength)"},
-                                status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            serializer.save()  # Save the updated data to the database
+            return Response({"message": "Beacon updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            try:
-                beacon = Beacons.objects.get(beacon_id=beacon_id)
-                beacon.battery_status = battery_status
-                beacon.signal_strength = signal_strength
-                beacon.save()
-                return Response({"message": "Beacon data updated successfully"}, status=status.HTTP_200_OK)
-            except Beacons.DoesNotExist:
-                return Response({"error": "Beacon not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class BeaconsStatus(APIView):
+    """ API to get and update beacon status"""
+
+    def get(self, request, pk):
+        """ Get the current status of the beacon """
+        beacon = get_object_or_404(Beacons, pk=pk)
+        return Response({"beacon_id": str(beacon.beacon_id), "is_active": beacon.is_active() } )
+
+    def put(self, request, pk):
+        """ Change the status of a beacon (Active/Inactive) """
+        beacon = get_object_or_404(Beacons, pk=pk)
+        new_status = request.data.get("status")  # Extract the new status from request
+
+        if new_status not in [Beacons.Status.ACTIVE, Beacons.Status.INACTIVE]:
+            return Response({"error": "Invalid status. Use 'Active' or 'Inactive'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Call the model's change_status method
+        beacon.change_status(new_status)
+
+        return Response(
+            {
+                "message": f"Beacon status updated to {new_status}",
+                "beacon_id": str(beacon.beacon_id),
+                "is_active": beacon.is_active()
+            },
+            status=status.HTTP_200_OK)
+
+
+
+
+
