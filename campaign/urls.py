@@ -10,7 +10,8 @@ urlpatterns = [
     path('api/v1/beacons/active', beacons_view.BeaconsActive.as_view(), name='active_beacons'),
     path('api/v1/beacons/count', beacons_view.BeaconsCount.as_view(), name='count_beacons'),
     path('api/v1/beacons/locations_count', beacons_view.BeaconsLocationsCount.as_view(), name='total_locations'),
-    path('api/v1/beacons/info', beacons_view.BeaconsInfo.as_view(), name='beacons_info'),
+    path('api/v1/beacons/beacons_info_update', beacons_view.BeaconsInfoUpdate.as_view(), name='beacons_info'),
+    path('api/v1/beacons/status/<uuid:pk>', beacons_view.BeaconsStatus.as_view(), name='check_beacon_status'),
 
     path('api/v1/advertisements/', advertisements_view.AdvertisementsList.as_view(), name='advertisements_list'),
     path('api/v1/advertisements/<uuid:pk>', advertisements_view.AdvertisementDetail.as_view(), name='advertisement_detail'),
@@ -31,5 +32,4 @@ urlpatterns = [
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-
 ]
