@@ -12,15 +12,18 @@ class Beacons(models.Model):
     class Status(models.TextChoices):
         ACTIVE = 'Active', 'Active'
         INACTIVE = 'Inactive', 'Inactive'
-
-    status = models.CharField(
-        max_length=10,
-        choices=Status.choices,
-        default=Status.INACTIVE
-    )
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.INACTIVE)
 
     def __str__(self):
         return f"{self.location_name} ({self.status})"
+
+    def is_active(self):
+        return self.status == self.Status.ACTIVE
+
+    def change_status(self, new_state):
+        if new_state in [self.Status.ACTIVE, self.Status.INACTIVE]:
+            self.status = new_state
+            self.save()
 
 
 class Advertisements(models.Model):
