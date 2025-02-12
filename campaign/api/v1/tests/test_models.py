@@ -1,4 +1,4 @@
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APITestCase
 from campaign.models import Beacons, Advertisements, AdvertisementsLog
 from datetime import timedelta
 from django.utils.timezone import now
