@@ -4,6 +4,7 @@ from campaign.serializers import BeaconsSerializer, AdvertisementsSerializer, Ad
 from campaign.models import Beacons, Advertisements, AdvertisementsLog
 from django.utils.timezone import now
 from datetime import timedelta
+from uuid import uuid4
 
 
 class SerializerTest(APITestCase):
@@ -18,6 +19,11 @@ class SerializerTest(APITestCase):
             created_at=now(),
             is_active=True,
             type=Advertisements.Type.TEXT,
+        )
+        self.ad_log = AdvertisementsLog.objects.create(
+            beacon = self.beacon1,
+            advertisement=self.advertisement,
+            timestamp=now(),
         )
 
     def test_serialize_existing_beacon(self):
@@ -61,7 +67,7 @@ class SerializerTest(APITestCase):
         self.assertFalse(serializer.is_valid())  # Should fail validation
         self.assertIn("location_name", serializer.errors)  # Check for specific error
 
-    def test_serialize_existing_ad(self):
+    def test_serialize_existing_advertisement(self):
         """Test serialization of an existing advertisement instance"""
         serializer = AdvertisementsSerializer(instance=self.advertisement)
 
@@ -70,8 +76,6 @@ class SerializerTest(APITestCase):
 
         # Convert beacon_id to a string
         serialized_data["beacon_id"] = str(serialized_data["beacon_id"])
-
-
         expected_data = {
             "advertisement_id": str(self.advertisement.advertisement_id),  # Convert to string
             "beacon_id": str(self.advertisement.beacon_id.beacon_id),  # Convert UUID to string
@@ -85,5 +89,49 @@ class SerializerTest(APITestCase):
             "type": self.advertisement.get_type_display(),  # Ensure 'type' is properly formatted
         }
         self.assertEqual(serialized_data, expected_data)
+
+    def test_valid_advertisement_serializer(self):
+        """Test serializer with valid data"""
+        valid_data = {
+            "beacon_id": str(self.beacon1.beacon_id),
+            "title": "New Ad",
+            "content": "This is a new advertisement.",
+            "start_date": now().isoformat(),
+            "end_date": (now() + timedelta(days=5)).isoformat(),
+        }
+        serializer = AdvertisementsSerializer(data=valid_data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_invalid_advertisement_serializer(self):
+        """Test serializer with missing required fields"""
+        invalid_data = {
+            "title": "Missing beacon and content",
+            "start_date": now().isoformat(),
+            "end_date": (now() + timedelta(days=5)).isoformat(),
+        }
+        serializer = AdvertisementsSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("beacon_id", serializer.errors)  # Expecting beacon_id to be required
+        self.assertIn("content", serializer.errors)  # Expecting content to be required
+
+    def test_serialize_existing_advertisement_log(self):
+        """Test serialization of an existing advertisement log instance"""
+        serializer = AdvertisementsLogsSerializer(instance=self.ad_log)
+
+        # Convert serialized UUID fields to strings
+        serialized_data = dict(serializer.data)
+        serialized_data["beacon"] = str(serialized_data["beacon"])
+        serialized_data["advertisement"] = str(serialized_data["advertisement"])
+
+        expected_data = {
+            "log_id": self.ad_log.log_id,
+            "beacon": str(self.ad_log.beacon.beacon_id),  # Convert to string
+            "advertisement": str(self.ad_log.advertisement.advertisement_id),  # Convert to string
+            "timestamp": self.ad_log.timestamp.isoformat().replace("+00:00", "Z"),  # Ensure correct format
+        }
+        self.assertEqual(serialized_data, expected_data)
+
+
+
 
 
