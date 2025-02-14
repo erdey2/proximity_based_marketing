@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view, throttle_classes
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from campaign.models import Advertisements
-from campaign.serializers import AdvertisementsSerializer
+from campaign.models import Advertisement
+from campaign.serializers import AdvertisementSerializer
 from django.utils.timezone import now
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -31,25 +31,25 @@ class AdvertisementsList(APIView):
     @extend_schema(
         summary="List All Advertisements",
         description="Fetches all advertisements available in the system.",
-        responses={200: AdvertisementsSerializer(many=True)}
+        responses={200: AdvertisementSerializer(many=True)}
     )
     def get(self, request):
-        advertisements = Advertisements.objects.all()
-        serializer = AdvertisementsSerializer(advertisements, many=True)
+        advertisements = Advertisement.objects.all()
+        serializer = AdvertisementSerializer(advertisements, many=True)
         return Response(serializer.data)
 
     @extend_schema(
         summary="Create a New Advertisement",
         description="Creates a new advertisement in the system with provided details.",
-        request=AdvertisementsSerializer,
+        request=AdvertisementSerializer,
         responses={
-            201: AdvertisementsSerializer,
+            201: AdvertisementSerializer,
             400: {"message": "Invalid input data."},
         }
     )
 
     def post(self, request):
-        serializer = AdvertisementsSerializer(data=request.data)
+        serializer = AdvertisementSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -78,22 +78,22 @@ class AdvertisementDetail(APIView):
     @extend_schema(
         summary="Retrieve advertisement details",
         description="Fetches details of an advertisement by its primary key (ID).",
-        responses={200: AdvertisementsSerializer}
+        responses={200: AdvertisementSerializer}
     )
     def get(self, request, pk):
-        advertisement = get_object_or_404(Advertisements, pk=pk)
-        serializer = AdvertisementsSerializer(advertisement)
+        advertisement = get_object_or_404(Advertisement, pk=pk)
+        serializer = AdvertisementSerializer(advertisement)
         return Response(serializer.data)
 
     @extend_schema(
         summary="Update an advertisement",
         description="Updates fields of an advertisement. Partial updates are allowed.",
-        request=AdvertisementsSerializer,
-        responses={200: AdvertisementsSerializer, 400: {"error": "Invalid input"}}
+        request=AdvertisementSerializer,
+        responses={200: AdvertisementSerializer, 400: {"error": "Invalid input"}}
     )
     def put(self, request, pk):
-        advertisement = get_object_or_404(Advertisements, pk=pk)
-        serializer = AdvertisementsSerializer(advertisement, data=request.data, partial=True)
+        advertisement = get_object_or_404(Advertisement, pk=pk)
+        serializer = AdvertisementSerializer(advertisement, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -105,7 +105,7 @@ class AdvertisementDetail(APIView):
         responses={204: None, 404: {"error": "Advertisement not found"}}
     )
     def delete(self, request, pk):
-        advertisement = get_object_or_404(Advertisements, pk=pk)
+        advertisement = get_object_or_404(Advertisement, pk=pk)
         advertisement.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -138,11 +138,11 @@ class AdvertisementsSearch(APIView):
                 description="Filter advertisements by title (case-insensitive match)."
             )
         ],
-        responses={200: AdvertisementsSerializer(many=True), 404: {"message": "No advertisements found matching the query."}}
+        responses={200: AdvertisementSerializer(many=True), 404: {"message": "No advertisements found matching the query."}}
     )
     def get(self, request):
         title = request.query_params.get('title', None)
-        advertisements = Advertisements.objects.all()
+        advertisements = Advertisement.objects.all()
 
         if title:
             advertisements = advertisements.filter(title__icontains=title)
@@ -151,7 +151,7 @@ class AdvertisementsSearch(APIView):
             return Response({"message": "No advertisements found matching the query."}, status=status.HTTP_404_NOT_FOUND)
 
         # Serialize the filtered advertisements
-        serializer = AdvertisementsSerializer(advertisements, many=True)
+        serializer = AdvertisementSerializer(advertisements, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -175,14 +175,14 @@ class AdvertisementsActive(APIView):
     @extend_schema(
         summary="Get active advertisements",
         description="Fetch all advertisements that are currently active based on their start and end dates.",
-        responses={200: AdvertisementsSerializer(many=True), 404: {"message": "No active advertisements found."}}
+        responses={200: AdvertisementSerializer(many=True), 404: {"message": "No active advertisements found."}}
     )
     def get(self, request):
         current_time = now()  # Get the current datetime
-        advertisements = Advertisements.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
+        advertisements = Advertisement.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
 
         if not advertisements.exists():
             return Response({"message": "No active advertisements found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = AdvertisementsSerializer(advertisements, many=True)
+        serializer = AdvertisementSerializer(advertisements, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

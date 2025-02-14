@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from .models import Advertisements, Beacons, AdvertisementsLog
+from .models import Advertisement, Beacon, AdvertisementLog, BeaconMessage
 
-class BeaconsSerializer(serializers.ModelSerializer):
+class BeaconSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Beacons
+        model = Beacon
         fields = '__all__'
 
-class AdvertisementsSerializer(serializers.ModelSerializer):
+class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Advertisements
+        model = Advertisement
         fields = '__all__'
 
     def validate(self, data):
@@ -25,8 +25,14 @@ class AdvertisementsSerializer(serializers.ModelSerializer):
         return data
 
 
-class AdvertisementsLogsSerializer(serializers.ModelSerializer):
+class BeaconMessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AdvertisementsLog
+        model = BeaconMessage
+        fields = '__all__'
+
+
+class AdvertisementLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementLog
         fields = '__all__'
 

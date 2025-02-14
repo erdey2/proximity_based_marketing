@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
-from campaign.models import AdvertisementsLog
-from campaign.serializers import AdvertisementsLogsSerializer
+from campaign.models import AdvertisementLog
+from campaign.serializers import AdvertisementLogSerializer
 from django.utils.timezone import now, timedelta
 from drf_spectacular.utils import extend_schema
 
@@ -28,11 +28,11 @@ class LogList(APIView):
     @extend_schema(
         summary="Retrieve Advertisement Logs",
         description="Fetches a list of all advertisement logs stored in the system.",
-        responses={200: AdvertisementsLogsSerializer(many=True)}
+        responses={200: AdvertisementLogSerializer(many=True)}
     )
     def get(self, request):
-        logs = AdvertisementsLog.objects.all()
-        serializers = AdvertisementsLogsSerializer(logs, many=True)
+        logs = AdvertisementLog.objects.all()
+        serializers = AdvertisementLogSerializer(logs, many=True)
         return Response(serializers.data)
 
     @extend_schema(
@@ -49,14 +49,14 @@ class LogList(APIView):
             - `201 Created`: Log entry created successfully.
             - `400 Bad Request`: Validation errors.
             """,
-        request=AdvertisementsLogsSerializer,
+        request=AdvertisementLogSerializer,
         responses={
-            201: AdvertisementsLogsSerializer,
+            201: AdvertisementLogSerializer,
             400: {"message": "Invalid input data."},
         }
     )
     def post(self, request):
-        serializer = AdvertisementsLogsSerializer(data=request.data)
+        serializer = AdvertisementLogSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -96,7 +96,7 @@ class LogsCount(APIView):
     )
     def get(self, request):
         start_date = now() - timedelta(days=1)
-        recent_advertisements = AdvertisementsLog.objects.filter(timestamp__gte=start_date).count()
+        recent_advertisements = AdvertisementLog.objects.filter(timestamp__gte=start_date).count()
         if not recent_advertisements:
             return Response({'message': 'No ads found'}, status=404)
         return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} ads."}, status=200)

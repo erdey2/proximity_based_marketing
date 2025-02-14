@@ -3,8 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from campaign.models import Beacons
-from campaign.serializers import BeaconsSerializer
+from campaign.models import Beacon
+from campaign.serializers import BeaconSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.shortcuts import get_object_or_404
 
@@ -25,11 +25,11 @@ class BeaconsList(APIView):
     @extend_schema(
         summary="Retrieve All Beacons",
         description="Fetches a list of all registered beacons in the system.",
-        responses={200: BeaconsSerializer(many=True)}
+        responses={200: BeaconSerializer(many=True)}
     )
     def get(self, request):
-        beacons = Beacons.objects.all()
-        serializer = BeaconsSerializer(beacons, many=True)
+        beacons = Beacon.objects.all()
+        serializer = BeaconSerializer(beacons, many=True)
         return Response(serializer.data)
 
     @extend_schema(
@@ -47,14 +47,14 @@ class BeaconsList(APIView):
             - `201 Created`: Successfully created a new beacon.
             - `400 Bad Request`: Validation errors.
             """,
-        request=BeaconsSerializer,
+        request=BeaconSerializer,
         responses={
-            201: BeaconsSerializer,
+            201: BeaconSerializer,
             400: {"message": "Invalid input data."},
         }
     )
     def post(self, request):
-        serializer = BeaconsSerializer(data=request.data)
+        serializer = BeaconSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -81,7 +81,7 @@ class BeaconsDetail(APIView):
         summary="Retrieve a Beacon",
         description="Fetches the details of a specific beacon using its `beacon_id`.",
         responses={
-            200: BeaconsSerializer,
+            200: BeaconSerializer,
             404: {"message": "Beacon not found."},
         },
         parameters=[
@@ -91,31 +91,31 @@ class BeaconsDetail(APIView):
     )
     def get(self, request, pk):
         try:
-            beacon = Beacons.objects.get(pk=pk)
-            serializer = BeaconsSerializer(beacon)
+            beacon = Beacon.objects.get(pk=pk)
+            serializer = BeaconSerializer(beacon)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except Beacons.DoesNotExist:
+        except Beacon.DoesNotExist:
             return Response({"message": "Beacon not found."}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
         summary="Update a Beacon",
         description="Updates a beacon's details using `beacon_id`. Partial updates are allowed.",
-        request=BeaconsSerializer,
+        request=BeaconSerializer,
         responses={
-            200: BeaconsSerializer,
+            200: BeaconSerializer,
             400: {"message": "Invalid data provided."},
             404: {"message": "Beacon not found."},
         },
     )
     def put(self, request, pk):
         try:
-            beacon = Beacons.objects.get(pk=pk)
-            serializer = BeaconsSerializer(beacon, data=request.data, partial=True)
+            beacon = Beacon.objects.get(pk=pk)
+            serializer = BeaconSerializer(beacon, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Beacons.DoesNotExist:
+        except Beacon.DoesNotExist:
             return Response({"message": "Beacon not found."}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
@@ -128,10 +128,10 @@ class BeaconsDetail(APIView):
     )
     def delete(self, request, pk):
         try:
-            beacon = Beacons.objects.get(pk=pk)
+            beacon = Beacon.objects.get(pk=pk)
             beacon.delete()
             return Response({"message": "Beacon deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-        except Beacons.DoesNotExist:
+        except Beacon.DoesNotExist:
             return Response({"message": "Beacon not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -173,22 +173,22 @@ class BeaconsSearch(APIView):
             ),
         ],
         responses={
-            200: BeaconsSerializer(many=True),
+            200: BeaconSerializer(many=True),
             404: {"message": "No beacons found matching the query."},
         },
     )
     def get(self, request):
         location_name = request.query_params.get('location_name', None)
         # start with all beacons
-        beacons = Beacons.objects.all()
+        beacons = Beacon.objects.all()
         if location_name:
-            beacons = Beacons.objects.filter(location_name__icontains=location_name)
+            beacons = Beacon.objects.filter(location_name__icontains=location_name)
 
             if not beacons.exists():
                 return Response({"message": "No beacons found matching the query."}, status=status.HTTP_404_NOT_FOUND)
 
             # Serialize the filtered beacons
-            serializer = BeaconsSerializer(beacons, many=True)
+            serializer = BeaconSerializer(beacons, many=True)
             return Response(serializer.data)
 
 
@@ -235,7 +235,7 @@ class BeaconsActive(APIView):
 
     )
     def get(self, request):
-        beacons = Beacons.objects.filter(status='Active')
+        beacons = Beacon.objects.filter(status='Active')
         if not beacons.exists():
             return Response({"message", "No active beacons found"}, status=404)
 
@@ -279,7 +279,7 @@ class BeaconsCount(APIView):
         },
     )
     def get(self, request):
-        total_beacons = Beacons.objects.count()
+        total_beacons = Beacon.objects.count()
         if not total_beacons:
             return Response({'message': 'No beacon found'}, status=404)
         return Response({"count": total_beacons, "message": f"Found {total_beacons} beacons."}, status=200)
@@ -317,7 +317,7 @@ class BeaconsLocationsCount(APIView):
         }
     )
     def get(self, request):
-        total_locations = Beacons.objects.values('location_name').distinct().count()
+        total_locations = Beacon.objects.values('location_name').distinct().count()
         return Response({'Total Locations': total_locations})
 
 
@@ -380,9 +380,9 @@ class BeaconsInfoUpdate(APIView):
     )
     def put(self, request, pk):
         """ Update specific details of a beacon """
-        beacon = get_object_or_404(Beacons, pk=pk)
+        beacon = get_object_or_404(Beacon, pk=pk)
         # Use BeaconsSerializer to validate and update beacon data
-        serializer = BeaconsSerializer(beacon, data=request.data, partial=True)
+        serializer = BeaconSerializer(beacon, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()  # Save the updated data to the database
@@ -395,15 +395,15 @@ class BeaconsStatus(APIView):
 
     def get(self, request, pk):
         """ Get the current status of the beacon """
-        beacon = get_object_or_404(Beacons, pk=pk)
+        beacon = get_object_or_404(Beacon, pk=pk)
         return Response({"beacon_id": str(beacon.beacon_id), "is_active": beacon.is_active() } )
 
     def put(self, request, pk):
         """ Change the status of a beacon (Active/Inactive) """
-        beacon = get_object_or_404(Beacons, pk=pk)
+        beacon = get_object_or_404(Beacon, pk=pk)
         new_status = request.data.get("status")  # Extract the new status from request
 
-        if new_status not in [Beacons.Status.ACTIVE, Beacons.Status.INACTIVE]:
+        if new_status not in [Beacon.Status.ACTIVE, Beacon.Status.INACTIVE]:
             return Response({"error": "Invalid status. Use 'Active' or 'Inactive'."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Call the model's change_status method
