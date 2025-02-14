@@ -8,20 +8,8 @@ from campaign.serializers import BeaconSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.shortcuts import get_object_or_404
 
-
-class BeaconsList(APIView):
-    """
-        List all beacons or create a new one.
-
-        **Methods:**
-        - `GET`: Retrieves all registered beacons.
-        - `POST`: Registers a new beacon.
-
-        **Responses:**
-        - `200 OK`: Returns a list of all beacons.
-        - `201 Created`: Successfully created a new beacon.
-        - `400 Bad Request`: Invalid data was provided.
-    """
+class BeaconList(APIView):
+    """List all beacons or create a new one. """
     @extend_schema(
         summary="Retrieve All Beacons",
         description="Fetches a list of all registered beacons in the system.",
@@ -60,23 +48,8 @@ class BeaconsList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-
-class BeaconsDetail(APIView):
-    """
-        Retrieve, update, or delete a beacon item.
-
-        **Methods:**
-        - `GET`: Retrieves details of a specific beacon.
-        - `PUT`: Updates an existing beacon's information.
-        - `DELETE`: Deletes a beacon.
-
-        **Responses:**
-        - `200 OK`: Returns beacon details.
-        - `204 No Content`: Successfully deleted.
-        - `400 Bad Request`: Invalid data provided.
-        - `404 Not Found`: Beacon does not exist.
-    """
-
+class BeaconDetail(APIView):
+    """Retrieve, update, or delete a beacon item. """
     @extend_schema(
         summary="Retrieve a Beacon",
         description="Fetches the details of a specific beacon using its `beacon_id`.",
@@ -87,7 +60,6 @@ class BeaconsDetail(APIView):
         parameters=[
             OpenApiParameter(name="beacon_id", description="ID of the beacon", required=True, type=int),
         ]
-
     )
     def get(self, request, pk):
         try:
@@ -134,21 +106,8 @@ class BeaconsDetail(APIView):
         except Beacon.DoesNotExist:
             return Response({"message": "Beacon not found."}, status=status.HTTP_404_NOT_FOUND)
 
-
 class BeaconsSearch(APIView):
-    """
-    Search for beacons based on query parameters (`location_name`).
-
-    **Method:**
-    - `GET`: Returns a list of beacons that match the search query.
-
-    **Query Parameter:**
-    - `location_name` (optional): Case-insensitive search for beacons by location.
-
-    **Responses:**
-    - `200 OK`: Returns a list of matching beacons.
-    - `404 Not Found`: No beacons matched the search criteria.
-    """
+    """Search for beacons based on query parameters (`location_name`). """
     @extend_schema(
         summary="Search Beacons by Location Name",
         description="""
@@ -192,20 +151,8 @@ class BeaconsSearch(APIView):
             return Response(serializer.data)
 
 
-class BeaconsActive(APIView):
-    """
-    Retrieve a count of active beacons.
-
-    **Method:**
-    - `GET`: Returns the total number of active beacons.
-
-    **Authentication:**
-    - User must be authenticated.
-    **Responses:**
-    - `200 OK`: Returns a count of active beacons.
-    - `404 Not Found`: No active beacons available.
-    - `401 Unauthorized`: User is not authenticated.
-    """
+class BeaconActive(APIView):
+    """Retrieve a count of active beacons. """
     
     #@permission_classes([IsAuthenticated])
     @extend_schema(
@@ -243,17 +190,8 @@ class BeaconsActive(APIView):
         count = beacons.count()
         return Response({"count": count, "message": f"Found {count} active beacons."}, status=200)
 
-class BeaconsCount(APIView):
-    """
-    Retrieve the total count of beacons.
-
-    **Method:**
-    - `GET`: Returns the total count of all beacons.
-
-    **Responses:**
-    - `200 OK`: Returns a count of total beacons.
-    - `404 Not Found`: No beacons available.
-    """
+class BeaconCount(APIView):
+    """Retrieve the total count of beacons. """
     @extend_schema(
         summary="Retrieve Total Beacon Count",
         description="""
@@ -284,14 +222,8 @@ class BeaconsCount(APIView):
             return Response({'message': 'No beacon found'}, status=404)
         return Response({"count": total_beacons, "message": f"Found {total_beacons} beacons."}, status=200)
 
-class BeaconsLocationsCount(APIView):
-    """
-    API endpoint to count the total number of unique beacon locations.
-
-    Returns:
-        - 200 OK: A JSON object containing the total count of unique locations.
-        - 500 Internal Server Error: If a database error occurs.
-    """
+class BeaconLocationCount(APIView):
+    """API endpoint to count the total number of unique beacon locations. """
     @extend_schema(
         summary="Get Total Unique Beacon Locations",
         description="Returns the total number of unique beacon locations.",
@@ -321,45 +253,11 @@ class BeaconsLocationsCount(APIView):
         return Response({'Total Locations': total_locations})
 
 
-class BeaconsInfoUpdate(APIView):
-    """
-     Receive beacon data from the mobile app.
-
-     **Method:**
-     - `POST`: Receives the beacon's unique ID, battery status, and signal strength (RSSI) from a mobile application.
-
-     **Request Body:**
-     - `beacon_id`: string (Unique identifier of the beacon)
-     - `battery_status`: float (Battery percentage)
-     - `rssi`: float (Signal strength)
-
-     **Responses:**
-     - `201 Created`: Successfully saves the beacon data.
-     - `400 Bad Request`: Missing required fields.
-     - `500 Internal Server Error`: General error if something goes wrong.
-     """
+class BeaconInfoUpdate(APIView):
+    """Receive beacon data from the mobile app. """
     @extend_schema(
         summary="Receive Beacon Data",
-        description="""
-        This endpoint receives data from a mobile app about a beacon's ID, battery status, and signal strength (RSSI).
-
-        **Methods:**
-        - `PUT`: Receives beacon data from a mobile application.
-
-        **Example Use Case:**
-        - A mobile app collects beacon data (e.g., battery status, signal strength) and sends it to the server.
-        - This can be used for monitoring beacon health, performance, and real-time data.
-
-        **Request Body:**
-        - `beacon_id`: string (unique identifier of the beacon)
-        - `battery_status`: float (percentage battery remaining)
-        - `signal_strength`: float (signal strength of the beacon)
-
-        **Responses:**
-        - `201 Created`: Successfully saved beacon data.
-        - `400 Bad Request`: Missing required fields in the request.
-        - `500 Internal Server Error`: Server error during processing.
-        """,
+        description="""This endpoint receives data from a mobile app about a beacon's ID, battery status, and signal strength (RSSI).""",
         request={
             "beacon_id": "string",
             "battery_status": "float",
@@ -390,7 +288,7 @@ class BeaconsInfoUpdate(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BeaconsStatus(APIView):
+class BeaconStatus(APIView):
     """ API to get and update beacon status"""
 
     def get(self, request, pk):

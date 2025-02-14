@@ -13,20 +13,10 @@ from django.shortcuts import get_object_or_404
 class AdvertisementRateThrottle(UserRateThrottle):
     rate = '10/minute'  # Custom throttle rate for this view
 
-
 class AdvertisementsList(APIView):
     #@throttle_classes([AdvertisementRateThrottle, AnonRateThrottle])
     """
         List all advertisements or create a new one.
-
-        **Methods:**
-        - `GET`: Returns a list of all advertisements.
-        - `POST`: Creates a new advertisement.
-
-        **Responses:**
-        - `200 OK`: Returns a list of advertisements.
-        - `201 Created`: Successfully created a new advertisement.
-        - `400 Bad Request`: Invalid input data.
     """
     @extend_schema(
         summary="List All Advertisements",
@@ -59,20 +49,6 @@ class AdvertisementsList(APIView):
 class AdvertisementDetail(APIView):
     """
     Retrieve, update, or delete an advertisement item.
-
-    **Methods:**
-    - `GET`: Fetch details of an advertisement by ID.
-    - `PUT`: Update advertisement fields (partial updates allowed).
-    - `DELETE`: Remove the advertisement.
-
-    **Parameters:**
-    - `pk` (int): The primary key of the advertisement.
-
-    **Responses:**
-    - `200 OK`: Returns the advertisement details.
-    - `400 Bad Request`: Invalid input data.
-    - `404 Not Found`: If the advertisement does not exist.
-    - `204 No Content`: Advertisement deleted successfully.
     """
 
     @extend_schema(
@@ -114,16 +90,6 @@ class AdvertisementDetail(APIView):
 class AdvertisementsSearch(APIView):
     """
     Search for advertisements based on query parameters (title).
-
-    **Method:**
-    - `GET`: Search advertisements based on a title query parameter.
-
-    **Query Parameters:**
-    - `title` (optional): Case-insensitive partial match on advertisement titles.
-
-    **Responses:**
-    - `200 OK`: Returns a list of advertisements matching the query.
-    - `404 Not Found`: No advertisements found matching the query.
     """
 
     @extend_schema(
@@ -159,17 +125,6 @@ class AdvertisementsSearch(APIView):
 class AdvertisementsActive(APIView):
     """
     List all active advertisements.
-
-    **Method:**
-    - `GET`: Fetches all advertisements that are currently active.
-
-    **Logic:**
-    - An advertisement is active if `start_date` is before or equal to the current time
-      and `end_date` is after or equal to the current time.
-
-    **Responses:**
-    - `200 OK`: Returns a list of active advertisements.
-    - `404 Not Found`: No active advertisements exist at the moment.
     """
 
     @extend_schema(

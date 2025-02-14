@@ -7,14 +7,14 @@ from .api.v1.beacon_messages import MessageCreate, MessageDetail
 
 urlpatterns = [
     # beacon related views
-    path('api/v1/beacons/', beacon_view.BeaconsList.as_view(), name='beacons_list'),
-    path('api/v1/beacons/<uuid:pk>', beacon_view.BeaconsDetail.as_view(), name='beacons_detail'),
+    path('api/v1/beacons/', beacon_view.BeaconList.as_view(), name='beacons_list'),
+    path('api/v1/beacons/<uuid:pk>', beacon_view.BeaconDetail.as_view(), name='beacons_detail'),
     path('api/v1/beacons/search', beacon_view.BeaconsSearch.as_view(), name='beacons_search'),
-    path('api/v1/beacons/active', beacon_view.BeaconsActive.as_view(), name='active_beacons'),
-    path('api/v1/beacons/count', beacon_view.BeaconsCount.as_view(), name='count_beacons'),
-    path('api/v1/beacons/locations_count', beacon_view.BeaconsLocationsCount.as_view(), name='total_locations'),
-    path('api/v1/beacons/beacons_info_update', beacon_view.BeaconsInfoUpdate.as_view(), name='beacons_info'),
-    path('api/v1/beacons/status/<uuid:pk>', beacon_view.BeaconsStatus.as_view(), name='check_beacon_status'),
+    path('api/v1/beacons/active', beacon_view.BeaconActive.as_view(), name='active_beacons'),
+    path('api/v1/beacons/count', beacon_view.BeaconCount.as_view(), name='count_beacons'),
+    path('api/v1/beacons/locations_count', beacon_view.BeaconLocationCount.as_view(), name='total_locations'),
+    path('api/v1/beacons/beacons_info_update', beacon_view.BeaconInfoUpdate.as_view(), name='beacons_info'),
+    path('api/v1/beacons/status/<uuid:pk>', beacon_view.BeaconStatus.as_view(), name='check_beacon_status'),
 
     # advertisement related views
     path('api/v1/advertisements/', advertisement_view.AdvertisementsList.as_view(), name='advertisements_list'),

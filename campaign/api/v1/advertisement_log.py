@@ -10,20 +10,6 @@ from drf_spectacular.utils import extend_schema
 class LogList(APIView):
     """
     List all advertisement logs or create a new one.
-
-    **Method:**
-    - `GET`: Retrieves all advertisement logs.
-    - `POST`: Creates a new advertisement log.
-
-    **Request Body for POST**:
-    - `advertisement_id`: integer (ID of the advertisement)
-    - `user_id`: integer (ID of the user interacting with the advertisement)
-    - `timestamp`: datetime (time of interaction with the advertisement)
-
-    **Responses**:
-    - `200 OK`: Successfully retrieved the list of logs.
-    - `201 Created`: Successfully created a new log entry.
-    - `400 Bad Request`: Data validation errors for POST requests.
     """
     @extend_schema(
         summary="Retrieve Advertisement Logs",
@@ -66,13 +52,6 @@ class LogList(APIView):
 class LogsCount(APIView):
     """
         Count advertisement logs for the past 24 hours.
-
-        **Method:**
-        - `GET`: Retrieves the count of advertisement logs from the past 24 hours.
-
-        **Responses**:
-        - `200 OK`: Successfully retrieved the count of advertisement logs for the past 24 hours.
-        - `404 Not Found`: No advertisement logs found for the past 24 hours.
     """
     @extend_schema(
         summary="Count advertisement logs for the past 24 hours",
