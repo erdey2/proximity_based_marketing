@@ -8,6 +8,7 @@ from django.utils.timezone import now
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 
 
 class AdvertisementRateThrottle(UserRateThrottle):
@@ -119,7 +120,6 @@ class AdvertisementsSearch(APIView):
         # Serialize the filtered advertisements
         serializer = AdvertisementSerializer(advertisements, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 class AdvertisementsActive(APIView):

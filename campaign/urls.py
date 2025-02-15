@@ -2,7 +2,7 @@ from django.urls import path
 from .api.v1 import advertisement_view, beacon_view, advertisement_log
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from .api.v1.beacon_messages import MessageCreate, MessageDetail
+from .api.v1.message_view import MessageCreate, MessageDetail
 
 
 urlpatterns = [
@@ -26,9 +26,9 @@ urlpatterns = [
     path('api/v1/logs', advertisement_log.LogList.as_view(), name='logs_list'),
     path('api/v1/logs/count', advertisement_log.LogsCount.as_view(), name='ads_count'),
 
-    # beacon messages
-    path('api/v1/beacons/messages', MessageCreate.as_view(), name='message_create'),
-    path('api/v1/beacons/messages/<uuid:pk>', MessageDetail.as_view(), name='message_detail'),
+    # view for messages sent from beacons
+    path('api/v1/messages', MessageCreate.as_view(), name='message_create'),
+    path('api/v1/messages/<uuid:pk>', MessageDetail.as_view(), name='message_detail'),
 
     # documentation
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),

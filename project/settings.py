@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'campaign',
 ]
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -59,7 +61,8 @@ REST_FRAMEWORK = {
         'user': '100/minute',     # Allow 100 requests per user per day
         'anon': '10/minute',     # Allow 10 requests per anonymous user per hour
     },
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # Number of records per page
 
 }
 SPECTACULAR_SETTINGS = {
