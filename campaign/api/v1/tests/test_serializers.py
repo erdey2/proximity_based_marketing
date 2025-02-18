@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework.exceptions import ValidationError
-from campaign.serializers import BeaconsSerializer, AdvertisementsSerializer, AdvertisementsLogsSerializer
-from campaign.models import Beacons, Advertisements, AdvertisementsLog
+from campaign.serializers import BeaconSerializer, AdvertisementSerializer, AdvertisementLogSerializer
+from campaign.models import Beacon, Advertisement, AdvertisementLog
 from django.utils.timezone import now
 from datetime import timedelta
 from uuid import uuid4
@@ -9,8 +9,8 @@ from uuid import uuid4
 
 class SerializerTest(APITestCase):
     def setUp(self):
-        self.beacon1 = Beacons.objects.create(name="beacon 1", location_name='Jomo')
-        self.advertisement = Advertisements.objects.create(
+        self.beacon1 = Beacon.objects.create(name="beacon 1", location_name='Jomo')
+        self.advertisement = Advertisement.objects.create(
             beacon_id=self.beacon1,
             title="Test Ad",
             content="This is a test advertisement.",
@@ -18,9 +18,9 @@ class SerializerTest(APITestCase):
             end_date=now() + timedelta(days=10),
             created_at=now(),
             is_active=True,
-            type=Advertisements.Type.TEXT,
+            type=Advertisement.Type.TEXT,
         )
-        self.ad_log = AdvertisementsLog.objects.create(
+        self.ad_log = AdvertisementLog.objects.create(
             beacon = self.beacon1,
             advertisement=self.advertisement,
             timestamp=now(),
@@ -28,7 +28,7 @@ class SerializerTest(APITestCase):
 
     def test_serialize_existing_beacon(self):
         """Test serialization of an existing beacon instance"""
-        serializer = BeaconsSerializer(instance=self.beacon1)
+        serializer = BeaconSerializer(instance=self.beacon1)
 
         expected_data = {
             "beacon_id": str(self.beacon1.beacon_id),  # UUID needs to be string
@@ -54,7 +54,7 @@ class SerializerTest(APITestCase):
             "status": "Active",
         }
 
-        serializer = BeaconsSerializer(data=valid_beacon)
+        serializer = BeaconSerializer(data=valid_beacon)
         self.assertTrue(serializer.is_valid(), serializer.errors)  # Validation should pass
 
     def test_invalid_beacon_serializer(self):
@@ -63,13 +63,13 @@ class SerializerTest(APITestCase):
             "name": "Invalid Beacon",
             # "location_name" is missing, should trigger validation error
         }
-        serializer = BeaconsSerializer(data=invalid_beacon)
+        serializer = BeaconSerializer(data=invalid_beacon)
         self.assertFalse(serializer.is_valid())  # Should fail validation
         self.assertIn("location_name", serializer.errors)  # Check for specific error
 
     def test_serialize_existing_advertisement(self):
         """Test serialization of an existing advertisement instance"""
-        serializer = AdvertisementsSerializer(instance=self.advertisement)
+        serializer = AdvertisementSerializer(instance=self.advertisement)
 
         # Convert serializer output to a dict
         serialized_data = dict(serializer.data)
@@ -99,7 +99,7 @@ class SerializerTest(APITestCase):
             "start_date": now().isoformat(),
             "end_date": (now() + timedelta(days=5)).isoformat(),
         }
-        serializer = AdvertisementsSerializer(data=valid_data)
+        serializer = AdvertisementSerializer(data=valid_data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
     def test_invalid_advertisement_serializer(self):
@@ -109,14 +109,14 @@ class SerializerTest(APITestCase):
             "start_date": now().isoformat(),
             "end_date": (now() + timedelta(days=5)).isoformat(),
         }
-        serializer = AdvertisementsSerializer(data=invalid_data)
+        serializer = AdvertisementSerializer(data=invalid_data)
         self.assertFalse(serializer.is_valid())
         self.assertIn("beacon_id", serializer.errors)  # Expecting beacon_id to be required
         self.assertIn("content", serializer.errors)  # Expecting content to be required
 
     def test_serialize_existing_advertisement_log(self):
         """Test serialization of an existing advertisement log instance"""
-        serializer = AdvertisementsLogsSerializer(instance=self.ad_log)
+        serializer = AdvertisementLogSerializer(instance=self.ad_log)
 
         # Convert serialized UUID fields to strings
         serialized_data = dict(serializer.data)

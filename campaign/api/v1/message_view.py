@@ -14,8 +14,14 @@ class MessageCreate(generics.ListCreateAPIView):
     queryset = BeaconMessage.objects.all()
     serializer_class = BeaconMessageSerializer
     pagination_class = MessagePagination # apply pagination
-    filter_backends = [filters.SearchFilter, ]
-    search_fields = ('beacon', 'content', 'type', 'sent_at', )
+
+    def get_queryset(self):
+        qs = BeaconMessage.objects.all()
+        sent_at = self.request.GET.get('sent_at')
+        if sent_at:
+            qs = qs.filter(sent_at__contains=sent_at)
+            return qs
+
 
     @extend_schema(
         summary="List all messages sent by beacons",

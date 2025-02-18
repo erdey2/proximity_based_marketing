@@ -3,7 +3,7 @@ from rest_framework import status
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import AccessToken
-from campaign.models import Beacons, Advertisements
+from campaign.models import Beacon, Advertisement
 from datetime import date
 from uuid import uuid4
 
@@ -20,8 +20,8 @@ class BaseAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.bearer_token}')
 
         # create a sample beacon data for testing advertisements
-        self.beacon = Beacons.objects.create(name="Beacon 1", location_name="Bole")
-        self.advertisement = Advertisements.objects.create(
+        self.beacon = Beacon.objects.create(name="Beacon 1", location_name="Bole")
+        self.advertisement = Advertisement.objects.create(
             advertisement_id = uuid4(),
             beacon_id = self.beacon,
             title="Ybs Soap",

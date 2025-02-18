@@ -1,143 +1,139 @@
-from rest_framework.decorators import api_view, throttle_classes
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from campaign.models import Advertisement
 from campaign.serializers import AdvertisementSerializer
+from rest_framework import status, filters
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.response import Response
 from django.utils.timezone import now
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from django.shortcuts import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
 
 
 class AdvertisementRateThrottle(UserRateThrottle):
     rate = '10/minute'  # Custom throttle rate for this view
 
-class AdvertisementsList(APIView):
+class AdvertisementPagination(PageNumberPagination):
+    page_size = 2
+    page_query_param = 'page_size'
+    max_page_size = 50
+
+class AdvertisementsList(ListCreateAPIView):
     #@throttle_classes([AdvertisementRateThrottle, AnonRateThrottle])
-    """
-        List all advertisements or create a new one.
-    """
+    """ List all advertisements or create a new one. """
+    queryset = Advertisement.objects.all()
+    serializer_class = AdvertisementSerializer
+
+    # search advertisement by title, start_date etc
+    """ filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'type'] """
+
+    def get_queryset(self):
+        qs = Advertisement.objects.all()
+        title = self.request.GET.get('title')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        is_active = self.request.GET.get('is_active')
+        type = self.request.GET.get('type')
+
+        if title:
+            qs = qs.filter(title__icontains=title)
+            return qs
+        if start_date:
+            qs = qs.filter(start_date__contains=start_date)
+            return qs
+        if end_date:
+            qs = qs.filter(end_date__icontains=end_date)
+            return qs
+        if is_active:
+            qs = qs.filter(is_active__icontains=is_active)
+            return qs
+        if type:
+            qs = qs.filter(type__icontains=type)
+            return qs
+
     @extend_schema(
-        summary="List All Advertisements",
-        description="Fetches all advertisements available in the system.",
-        responses={200: AdvertisementSerializer(many=True)}
+        summary="Retrieve Advertisements",
+        description="Retrieve a paginated list of all advertisements.",
+        responses={200: AdvertisementSerializer(many=True)},
     )
-    def get(self, request):
-        advertisements = Advertisement.objects.all()
-        serializer = AdvertisementSerializer(advertisements, many=True)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     @extend_schema(
         summary="Create a New Advertisement",
-        description="Creates a new advertisement in the system with provided details.",
+        description="Create a new advertisement with the provided data.",
         request=AdvertisementSerializer,
         responses={
             201: AdvertisementSerializer,
             400: {"message": "Invalid input data."},
-        }
+        },
     )
-
-    def post(self, request):
-        serializer = AdvertisementSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
 
-class AdvertisementDetail(APIView):
-    """
-    Retrieve, update, or delete an advertisement item.
-    """
+class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
+    """Retrieve, update, or delete an advertisement item."""
+    queryset = Advertisement.objects.all()
+    serializer_class = AdvertisementSerializer
 
     @extend_schema(
-        summary="Retrieve advertisement details",
-        description="Fetches details of an advertisement by its primary key (ID).",
-        responses={200: AdvertisementSerializer}
+        summary="Retrieve an Advertisement",
+        description="Fetch details of a specific advertisement by its ID.",
+        responses={200: AdvertisementSerializer},
     )
-    def get(self, request, pk):
-        advertisement = get_object_or_404(Advertisement, pk=pk)
-        serializer = AdvertisementSerializer(advertisement)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Update an advertisement",
-        description="Updates fields of an advertisement. Partial updates are allowed.",
+        summary="Update an Advertisement",
+        description="Update an advertisement's details with the provided data.",
         request=AdvertisementSerializer,
-        responses={200: AdvertisementSerializer, 400: {"error": "Invalid input"}}
+        responses={
+            200: AdvertisementSerializer,
+            400: {"message": "Invalid input data."},
+        },
     )
-    def put(self, request, pk):
-        advertisement = get_object_or_404(Advertisement, pk=pk)
-        serializer = AdvertisementSerializer(advertisement, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Delete an advertisement",
-        description="Deletes an advertisement by its primary key (ID).",
-        responses={204: None, 404: {"error": "Advertisement not found"}}
+        summary="Partially Update an Advertisement",
+        description="Partially update an advertisement using only the provided fields.",
+        request=AdvertisementSerializer,
+        responses={
+            200: AdvertisementSerializer,
+            400: {"message": "Invalid input data."},
+        },
     )
-    def delete(self, request, pk):
-        advertisement = get_object_or_404(Advertisement, pk=pk)
-        advertisement.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-class AdvertisementsSearch(APIView):
-    """
-    Search for advertisements based on query parameters (title).
-    """
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Search advertisements",
-        description="Search for advertisements by title using case-insensitive partial matching.",
-        parameters=[
-            OpenApiParameter(
-                name="title",
-                type=str,
-                location=OpenApiParameter.QUERY,
-                required=False,
-                description="Filter advertisements by title (case-insensitive match)."
-            )
-        ],
-        responses={200: AdvertisementSerializer(many=True), 404: {"message": "No advertisements found matching the query."}}
+        summary="Delete an Advertisement",
+        description="Delete a specific advertisement by its ID.",
+        responses={204: None},
     )
-    def get(self, request):
-        title = request.query_params.get('title', None)
-        advertisements = Advertisement.objects.all()
-
-        if title:
-            advertisements = advertisements.filter(title__icontains=title)
-
-        if not advertisements.exists():  # Check if the queryset is empty
-            return Response({"message": "No advertisements found matching the query."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Serialize the filtered advertisements
-        serializer = AdvertisementSerializer(advertisements, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
 
 
-class AdvertisementsActive(APIView):
-    """
-    List all active advertisements.
-    """
+class AdvertisementsActive(ListAPIView):
+    """List all active advertisements."""
+    serializer_class = AdvertisementSerializer
+
+    def get_queryset(self):
+        """Return only active advertisements based on start and end dates."""
+        current_time = now()
+        return Advertisement.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
 
     @extend_schema(
         summary="Get active advertisements",
         description="Fetch all advertisements that are currently active based on their start and end dates.",
         responses={200: AdvertisementSerializer(many=True), 404: {"message": "No active advertisements found."}}
     )
-    def get(self, request):
-        current_time = now()  # Get the current datetime
-        advertisements = Advertisement.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
-
-        if not advertisements.exists():
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset.exists():
             return Response({"message": "No active advertisements found."}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = AdvertisementSerializer(advertisements, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return super().list(request, *args, **kwargs)

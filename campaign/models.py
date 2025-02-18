@@ -1,6 +1,7 @@
 from django.db import models
 from uuid import uuid4
 from django.core.exceptions import ValidationError
+from django.utils.timezone import now
 
 # Create your models here.
 def validate_signal_strength(value):
@@ -14,6 +15,8 @@ def validate_battery_status(value):
 class Beacon(models.Model):
     beacon_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=100)
+    minor = models.IntegerField(null=True)
+    major = models.IntegerField(null=True)
     location_name = models.CharField(max_length=100)
     signal_strength = models.FloatField(null=True, blank=True, validators=[validate_signal_strength]) # updated by mobile app
     battery_status = models.FloatField(null=True, blank=True, validators=[validate_battery_status]) # updated by mobile app
@@ -40,7 +43,7 @@ class Advertisement(models.Model):
     beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='advertisement')
     title = models.CharField(max_length=255, null=False, default='ybs soap')
     content = models.TextField(null=False)
-    start_date = models.DateTimeField(db_index=True)
+    start_date = models.DateTimeField(db_index=True, default=now)
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

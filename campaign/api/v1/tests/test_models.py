@@ -1,12 +1,12 @@
 from rest_framework.test import APITestCase
-from campaign.models import Beacons, Advertisements, AdvertisementsLog
+from campaign.models import Beacon, Advertisement, AdvertisementLog
 from datetime import timedelta
 from django.utils.timezone import now
 
 class BeaconsModelTest(APITestCase):
     def setUp(self):
         """Setup a test beacon before running tests"""
-        self.beacon1 = Beacons.objects.create(
+        self.beacon1 = Beacon.objects.create(
             name="beacon 1",
             location_name="Garment"
         )
@@ -34,8 +34,8 @@ class BeaconsModelTest(APITestCase):
 class AdvertisementsModelTest(APITestCase):
     def setUp(self):
         """Setup test data"""
-        self.beacon1 = Beacons.objects.create(name="beacon 1", location_name="Garment")
-        self.ad1 = Advertisements.objects.create(
+        self.beacon1 = Beacon.objects.create(name="beacon 1", location_name="Garment")
+        self.ad1 = Advertisement.objects.create(
             beacon_id=self.beacon1, title="Test Ad", content="This is a test advertisement.",
             start_date = now(), end_date = now() + timedelta(days=10)
         )
@@ -44,7 +44,7 @@ class AdvertisementsModelTest(APITestCase):
         """Test if Advertisement is created correctly"""
         self.assertEqual(self.ad1.title, "Test Ad")
         self.assertEqual(self.ad1.content, "This is a test advertisement.")
-        self.assertEqual(self.ad1.type, Advertisements.Type.TEXT)
+        self.assertEqual(self.ad1.type, Advertisement.Type.TEXT)
 
     def test_advertisement_str_representation(self):
         """Test the __str__ method"""
@@ -54,12 +54,12 @@ class AdvertisementsModelTest(APITestCase):
 class AdvertisementLogsModelTest(APITestCase):
     """Set up test data"""
     def setUp(self):
-        self.beacon1 = Beacons.objects.create(name="beacon 1", location_name="Garment")
-        self.ad1 = Advertisements.objects.create(
+        self.beacon1 = Beacon.objects.create(name="beacon 1", location_name="Garment")
+        self.ad1 = Advertisement.objects.create(
             beacon_id=self.beacon1, title="Test Ad", content="This is a test advertisement.",
             start_date=now(), end_date=now() + timedelta(days=10)
         )
-        self.log = AdvertisementsLog.objects.create(
+        self.log = AdvertisementLog.objects.create(
             beacon=self.beacon1, advertisement=self.ad1
         )
 
