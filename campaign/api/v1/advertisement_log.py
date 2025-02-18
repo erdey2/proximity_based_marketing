@@ -1,7 +1,7 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
-from rest_framework.response import Response
 from campaign.models import AdvertisementLog, Beacon
 from campaign.serializers import AdvertisementLogSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
+from rest_framework.response import Response
 from django.utils.timezone import now, timedelta
 from drf_spectacular.utils import extend_schema
 
