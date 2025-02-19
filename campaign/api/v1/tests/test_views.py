@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import AccessToken
 from campaign.models import Beacon, Advertisement
 from datetime import date
+from django.utils.timezone import now, timedelta
 from uuid import uuid4
 
 class BaseAPITestCase(APITestCase):
@@ -23,14 +24,14 @@ class BaseAPITestCase(APITestCase):
         self.beacon = Beacon.objects.create(name="Beacon 1", location_name="Bole")
         self.advertisement = Advertisement.objects.create(
             advertisement_id = uuid4(),
-            beacon_id = self.beacon,
+            beacon_id = self.beacon.pk,
             title="Ybs Soap",
             content="We are offering 30% discount",
             start_date = date(2025, 2, 4),
             end_date = date(2025, 2, 24)
         )
 
-class BeaconsView(BaseAPITestCase):
+class BeaconView(BaseAPITestCase):
     def setUp(self):
         super().setUp()
         self.beacons_url = reverse('beacons_list')
@@ -46,7 +47,7 @@ class BeaconsView(BaseAPITestCase):
             "name": "beacon 1",
             "location_name": "Saris",
             "battery_status": 95,
-            "signal_strength": -70
+            "signal_strength": 70
         }
         # Act: Send a POST request to create a beacon
         response = self.client.post(self.beacons_url, valid_data, format="json")
@@ -72,7 +73,7 @@ class BeaconsView(BaseAPITestCase):
         self.assertIn("name", response.data)  # Check that error is related to name
 
 
-class AdvertisementsView(BaseAPITestCase):
+class AdvertisementView(BaseAPITestCase):
     def setUp(self):
         super().setUp()
         self.advertisements_url = reverse('advertisements_list')
@@ -83,11 +84,11 @@ class AdvertisementsView(BaseAPITestCase):
 
     def test_create_advertisement(self):
         valid_data = {
-            "beacon_id": self.beacon.pk,
+            "beacon": self.beacon.pk,
             "title": "ybs asbeza",
             "content": "We are offering 30% offer visit us",
-            "start_date": "2025-02-04",
-            "end_date": "2025-03-05"
+            "start_date": (now() + timedelta(days=1)),
+            "end_date": now() + timedelta(days=10)
         }
         response = self.client.post(self.advertisements_url, valid_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
@@ -103,7 +104,7 @@ class AdvertisementsView(BaseAPITestCase):
         response = self.client.post(self.advertisements_url, invalid_date, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-class AdvertisementsLogs(BaseAPITestCase):
+class AdvertisementLog(BaseAPITestCase):
     def setUp(self):
         super().setUp()
         self.logs_url = reverse('logs_list')

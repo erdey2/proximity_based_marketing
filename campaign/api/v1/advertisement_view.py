@@ -1,6 +1,6 @@
 from campaign.models import Advertisement
 from campaign.serializers import AdvertisementSerializer
-from rest_framework import status, filters
+from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
@@ -16,16 +16,13 @@ class AdvertisementPagination(PageNumberPagination):
     page_size = 2
     page_query_param = 'page_size'
     max_page_size = 50
+    invalid_page_message = 'page not found'
+    display_page_controls = False
 
 class AdvertisementsList(ListCreateAPIView):
-    #@throttle_classes([AdvertisementRateThrottle, AnonRateThrottle])
     """ List all advertisements or create a new one. """
-    queryset = Advertisement.objects.all()
+    # queryset = Advertisement.objects.all()
     serializer_class = AdvertisementSerializer
-
-    # search advertisement by title, start_date etc
-    """ filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'type'] """
 
     def get_queryset(self):
         qs = Advertisement.objects.all()
@@ -33,23 +30,16 @@ class AdvertisementsList(ListCreateAPIView):
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
         is_active = self.request.GET.get('is_active')
-        type = self.request.GET.get('type')
 
         if title:
             qs = qs.filter(title__icontains=title)
-            return qs
         if start_date:
             qs = qs.filter(start_date__contains=start_date)
-            return qs
         if end_date:
             qs = qs.filter(end_date__icontains=end_date)
-            return qs
         if is_active:
             qs = qs.filter(is_active__icontains=is_active)
-            return qs
-        if type:
-            qs = qs.filter(type__icontains=type)
-            return qs
+        return qs
 
     @extend_schema(
         summary="Retrieve Advertisements",

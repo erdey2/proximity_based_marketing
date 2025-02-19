@@ -1,14 +1,23 @@
-from campaign.models import AdvertisementLog, Beacon
+from campaign.models import AdvertisementLog
 from campaign.serializers import AdvertisementLogSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.utils.timezone import now, timedelta
 from drf_spectacular.utils import extend_schema
 
 
+class LogPagination(PageNumberPagination):
+    page_size = 2
+    page_query_param = 'page_size'
+    max_page_size = 50
+    display_page_controls = False
+    invalid_page_message = 'invalid page'
+
 class LogList(ListCreateAPIView):
     """List all Advertisement Logs or create a new one."""
     serializer_class = AdvertisementLogSerializer
+    pagination_class = LogPagination
 
     def get_queryset(self):
         qs = AdvertisementLog.objects.all()
@@ -20,7 +29,7 @@ class LogList(ListCreateAPIView):
             return qs
         if created_at:
             qs = qs.filter(timestamp__icontains=created_at)
-            return qs
+        return qs
 
     @extend_schema(
         summary="Retrieve Advertisement Logs",
@@ -28,7 +37,7 @@ class LogList(ListCreateAPIView):
         responses={200: AdvertisementLogSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
 
     @extend_schema(
         summary="Create a New Advertisement Log",
@@ -40,7 +49,7 @@ class LogList(ListCreateAPIView):
         },
     )
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        return self.create(request, *args, **kwargs)
 
 
 class LogsCount(RetrieveAPIView):

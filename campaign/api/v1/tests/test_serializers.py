@@ -11,7 +11,7 @@ class SerializerTest(APITestCase):
     def setUp(self):
         self.beacon1 = Beacon.objects.create(name="beacon 1", location_name='Jomo')
         self.advertisement = Advertisement.objects.create(
-            beacon_id=self.beacon1,
+            beacon=self.beacon1,
             title="Test Ad",
             content="This is a test advertisement.",
             start_date=now(),
@@ -37,7 +37,9 @@ class SerializerTest(APITestCase):
             "signal_strength": self.beacon1.signal_strength,
             "battery_status": self.beacon1.battery_status,
             "start_date": self.beacon1.start_date.isoformat().replace("+00:00", "Z"),  # Ensure Zulu format
-            "status": self.beacon1.Status.INACTIVE.label
+            "status": self.beacon1.Status.INACTIVE.label,
+            "minor": None,
+            "major": None,
         }
 
         self.assertEqual(serializer.data, expected_data)
@@ -45,12 +47,11 @@ class SerializerTest(APITestCase):
     def test_valid_beacon_creation_serializer(self):
         """Test if a new beacon can be validated correctly"""
         valid_beacon = {
-            "beacon_id": str(self.beacon1.beacon_id),  # UUID
             "name": "New Beacon",
             "location_name": "Market",
-            "signal_strength": 80.5,
+            "signal_strength": 50.0,
             "battery_status": 90.2,
-            "start_date": self.beacon1.start_date.isoformat(),  # Convert DateTime to string
+            "start_date": (now() + timedelta(minutes=10)).isoformat(),
             "status": "Active",
         }
 
@@ -75,10 +76,10 @@ class SerializerTest(APITestCase):
         serialized_data = dict(serializer.data)
 
         # Convert beacon_id to a string
-        serialized_data["beacon_id"] = str(serialized_data["beacon_id"])
+        serialized_data["beacon"] = str(serialized_data["beacon"])
         expected_data = {
             "advertisement_id": str(self.advertisement.advertisement_id),  # Convert to string
-            "beacon_id": str(self.advertisement.beacon_id.beacon_id),  # Convert UUID to string
+            "beacon": str(self.advertisement.beacon_id),  # Convert UUID to string
             "title": self.advertisement.title,
             "content": self.advertisement.content,
             "start_date": self.advertisement.start_date.isoformat().replace("+00:00", "Z"),
@@ -93,10 +94,10 @@ class SerializerTest(APITestCase):
     def test_valid_advertisement_serializer(self):
         """Test serializer with valid data"""
         valid_data = {
-            "beacon_id": str(self.beacon1.beacon_id),
+            "beacon": str(self.beacon1.beacon_id),
             "title": "New Ad",
             "content": "This is a new advertisement.",
-            "start_date": now().isoformat(),
+            "start_date": (now() + timedelta(minutes=5)).isoformat(),
             "end_date": (now() + timedelta(days=5)).isoformat(),
         }
         serializer = AdvertisementSerializer(data=valid_data)
@@ -111,7 +112,7 @@ class SerializerTest(APITestCase):
         }
         serializer = AdvertisementSerializer(data=invalid_data)
         self.assertFalse(serializer.is_valid())
-        self.assertIn("beacon_id", serializer.errors)  # Expecting beacon_id to be required
+        self.assertIn("beacon", serializer.errors)  # Expecting beacon_id to be required
         self.assertIn("content", serializer.errors)  # Expecting content to be required
 
     def test_serialize_existing_advertisement_log(self):
