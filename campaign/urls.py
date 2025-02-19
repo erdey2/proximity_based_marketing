@@ -12,7 +12,7 @@ urlpatterns = [
     path('api/v1/beacons/active', beacon_view.BeaconActive.as_view(), name='active_beacons'),
     path('api/v1/beacons/count', beacon_view.BeaconCount.as_view(), name='count_beacons'),
     path('api/v1/beacons/locations_count', beacon_view.BeaconLocationCount.as_view(), name='total_locations'),
-    path('api/v1/beacons/beacons_info_update', beacon_view.BeaconInfoUpdate.as_view(), name='beacons_info'),
+    # path('api/v1/beacons/beacons_info_update', beacon_view.BeaconInfoUpdate.as_view(), name='beacons_info'),
     path('api/v1/beacons/status/<uuid:pk>', beacon_view.BeaconStatus.as_view(), name='check_beacon_status'),
 
     # advertisement related views

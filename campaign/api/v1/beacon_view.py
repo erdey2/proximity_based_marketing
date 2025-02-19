@@ -211,29 +211,6 @@ class BeaconLocationCount(APIView):
 
         return Response({'total_locations': total_locations}, status=status.HTTP_200_OK)
 
-
-class BeaconUpdate(UpdateAPIView):
-    """Receive and update beacon data from the mobile app."""
-    queryset = Beacon.objects.all()
-    serializer_class = BeaconSerializer
-    permission_classes = [IsAuthenticated]  # Enforce authentication
-
-    @extend_schema(
-        summary="Partially Update a Beacon",
-        description="Updates specific fields of a beacon using the provided data.",
-        request=BeaconSerializer(partial=True),
-        responses={
-            200: BeaconSerializer,
-            400: {"message": "Bad Request"},
-            404: {"message": "Beacon Not Found"},
-            401: {"message": "Unauthorized"},
-        },
-        tags=["Beacon Management"],
-    )
-    def patch(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
-
 class BeaconStatus(RetrieveUpdateAPIView):
     """API to get and update beacon status"""
 
