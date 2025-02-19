@@ -1,10 +1,13 @@
 from campaign.models import AdvertisementLog
 from campaign.serializers import AdvertisementLogSerializer
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
+from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.utils.timezone import now, timedelta
 from drf_spectacular.utils import extend_schema
+from datetime import datetime
 
 
 class LogPagination(PageNumberPagination):
@@ -26,14 +29,26 @@ class LogList(ListCreateAPIView):
 
         if log_id:
             qs = qs.filter(log_id__contains=log_id)
-            return qs
         if created_at:
-            qs = qs.filter(timestamp__icontains=created_at)
+            try:
+                # Parse 'created_at' parameter to date
+                parsed_created_at = datetime.strptime(created_at, "%Y-%m-%d").date()
+                # Filter queryset by 'sent_at' greater than or equal to parsed date
+                qs = qs.filter(created_at__gte=parsed_created_at)
+            except ValueError:
+                raise ValidationError("Invalid date format. Use YYYY-MM-DD.")
         return qs
 
-    @extend_schema(
+    extend_schema(
         summary="Retrieve Advertisement Logs",
-        description="Retrieve a paginated list of all advertisement logs.",
+        description="""
+                Retrieve a paginated list of all advertisement logs, with optional filtering by `log_id` and `created_at`.
+
+                **Example Request:**
+                ```
+                GET /api/logs/?log_id=123&created_at=2024-01-01
+                ```
+            """,
         responses={200: AdvertisementLogSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
@@ -51,13 +66,50 @@ class LogList(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
+class LogDetail(RetrieveUpdateDestroyAPIView):
+    serializer_class = AdvertisementLogSerializer
+    queryset = AdvertisementLog.objects.all()
 
-class LogsCount(RetrieveAPIView):
+    @extend_schema(
+        summary="Retrieve a Single Advertisement Log",
+        description="Retrieve the details of a specific advertisement log by providing its ID.",
+        responses={200: AdvertisementLogSerializer, 404: {"message": "Not Found"}},
+    )
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update an Advertisement Log",
+        description="Update an advertisement log by providing its ID and new data.",
+        request=AdvertisementLogSerializer,
+        responses={200: AdvertisementLogSerializer, 400: {"message": "Bad Request"}, 404: {"message": "Not Found"}},
+    )
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Partially Update an Advertisement Log",
+        description="Partially update an advertisement log by providing only the fields that need to be changed.",
+        request=AdvertisementLogSerializer(partial=True),
+        responses={200: AdvertisementLogSerializer, 400: {"message": "Bad Request"}, 404: {"message": "Not Found"}},
+    )
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Delete an Advertisement Log",
+        description="Delete a specific advertisement log by providing its ID.",
+        responses={204: None, 404: {"message": "Not Found"}},
+    )
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+class LogCount(APIView):
     """Count advertisement logs for the past 24 hours. """
 
     @extend_schema(
         summary="Count advertisement logs for the past 24 hours",
-        description="This endpoint counts the number of advertisement logs created in the past 24 hours",
+        description="This endpoint counts the number of advertisement logs created in the past 24 hours.",
         responses={
             200: {
                 "message": "Advertisement log count for the past 24 hours",
@@ -68,17 +120,16 @@ class LogsCount(RetrieveAPIView):
             }
         },
     )
-    def retrieve(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        # Calculate 24 hours ago from the current time
         start_date = now() - timedelta(days=1)
+        # Count the advertisement logs created in the past 24 hours
         recent_advertisements = AdvertisementLog.objects.filter(timestamp__gte=start_date).count()
 
         if not recent_advertisements:
             return Response({'message': 'No ads found'}, status=404)
 
-        return Response({
-            "count": recent_advertisements,
-            "message": f"Found {recent_advertisements} ads."
-        }, status=200)
+        return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} ads."}, status=200)
 
 
 
