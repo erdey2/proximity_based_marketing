@@ -1,9 +1,7 @@
 from campaign.models import BeaconMessage
 from campaign.serializers import BeaconMessageSerializer
 from datetime import datetime
-from rest_framework.exceptions import ValidationError, NotFound
-from rest_framework import status
-from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
@@ -112,7 +110,5 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
         },
     )
     def delete(self, request, *args, **kwargs):
-        try:
             return self.destroy(request, *args, **kwargs)
-        except NotFound:
-            return Response({"detail": "Beacon Message not found."}, status=status.HTTP_404_NOT_FOUND)
+

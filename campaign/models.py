@@ -14,10 +14,10 @@ def validate_battery_status(value):
 
 class Beacon(models.Model):
     beacon_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     minor = models.IntegerField(null=True)
     major = models.IntegerField(null=True)
-    location_name = models.CharField(max_length=100)
+    location_name = models.CharField(max_length=100, db_index=True)
     signal_strength = models.FloatField(null=True, blank=True, validators=[validate_signal_strength]) # updated by mobile app
     battery_status = models.FloatField(null=True, blank=True, validators=[validate_battery_status]) # updated by mobile app
     start_date = models.DateTimeField(auto_now_add=True)
@@ -41,10 +41,10 @@ class Beacon(models.Model):
 class Advertisement(models.Model):
     advertisement_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='advertisement')
-    title = models.CharField(max_length=255, null=False, default='ybs soap')
+    title = models.CharField(max_length=255, null=False, db_index=True)
     content = models.TextField(null=False)
     start_date = models.DateTimeField(db_index=True, default=now)
-    end_date = models.DateTimeField()
+    end_date = models.DateTimeField(db_index=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     media_file = models.FileField(upload_to='advertisements/', null=True, blank=True)
@@ -74,18 +74,17 @@ class BeaconMessage(models.Model):
         VIDEO = 'video', 'video'
         TEXT = 'text', 'text'
     type = models.CharField(max_length=10, choices=Type.choices, default=Type.TEXT)
-    sent_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
     read_at = models.DateTimeField(null=True)
 
     def __str__(self):
         return f"{self.beacon.name} {self.read_at}"
 
-
 class AdvertisementLog(models.Model):
     log_id = models.BigAutoField(primary_key=True)
     beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='logs')
     advertisement = models.ForeignKey(Advertisement, on_delete=models.CASCADE, to_field='advertisement_id', related_name='log')
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"Delivery: {self.advertisement.title} from {self.beacon.location_name} at {self.timestamp}"

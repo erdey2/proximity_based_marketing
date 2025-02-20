@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter,OpenApiResponse, OpenApiRequest
-from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, ListAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.pagination import PageNumberPagination
 
@@ -100,6 +99,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
     )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
 
 class BeaconActive(ListAPIView):
     """Retrieve a list of active beacons."""

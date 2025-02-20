@@ -9,7 +9,6 @@ from django.utils.timezone import now
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
-
 class AdvertisementRateThrottle(UserRateThrottle):
     rate = '10/minute'  # Custom throttle rate for this view
 
