@@ -11,7 +11,7 @@ class MessagePagination(PageNumberPagination):
     page_query_param = 'page_size' # Allow clients to specify page size
     max_page_size = 50  # Limit maximum page size
 
-class MessageCreate(generics.ListCreateAPIView):
+class MessageList(generics.ListCreateAPIView):
     """Create and List messages from beacons"""
     serializer_class = BeaconMessageSerializer
     pagination_class = MessagePagination # apply pagination
@@ -29,19 +29,21 @@ class MessageCreate(generics.ListCreateAPIView):
                 raise ValidationError("Invalid date format. Use YYYY-MM-DD.")
         return qs
 
-    summary = "List all messages sent by beacons",
-    description = "Retrieve a list of all existing messages. Optionally, filter by 'sent_at' date parameter.",
-    responses = {
-        200: BeaconMessageSerializer(many=True),
-        400: {
-            "description": "Bad request. Invalid date format provided for 'sent_at'.",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Invalid date format. Use YYYY-MM-DD."}
+    extend_schema(
+        summary="List all messages sent by beacons",
+        description="Retrieve a list of all existing messages. Optionally, filter by 'sent_at' date parameter.",
+        responses={
+            200: BeaconMessageSerializer(many=True),
+            400: {
+                "description": "Bad request. Invalid date format provided for 'sent_at'.",
+                "content": {
+                    "application/json": {
+                        "example": {"detail": "Invalid date format. Use YYYY-MM-DD."}
+                    }
                 }
             }
-        }
-    },
+        },
+    )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 

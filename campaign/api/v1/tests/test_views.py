@@ -63,7 +63,7 @@ class BeaconView(BaseAPITestCase):
         invalid_data = {
             "location_name": "Adey Abeba",
             "battery_status": 95,
-            "signal_strength": -70
+            "signal_strength": 70
         }
         # Act: Send a POST request with invalid data
         response = self.client.post(self.beacons_url, invalid_data, format="json")
@@ -71,6 +71,22 @@ class BeaconView(BaseAPITestCase):
         # Assert: Expecting 400 Bad Request
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "required field missed")
         self.assertIn("name", response.data)  # Check that error is related to name
+
+    def test_beacon_create_invalid_signal(self):
+        """Test creating a beacon with an invalid signal strength."""
+
+        # Arrange: Define beacon with an invalid signal strength
+        invalid_data = {
+            "name": "beacon 1",
+            "location_name": "Adey Abeba",
+            "battery_status": 95,
+            "signal_strength": 70
+        }
+        # Act: Send a POST request with invalid data
+        response = self.client.post(self.beacons_url, invalid_data, format="json")
+
+        # Assert: Expecting 400 Bad Request
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "required field missed")
 
 
 class AdvertisementView(BaseAPITestCase):

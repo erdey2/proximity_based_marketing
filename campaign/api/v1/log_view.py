@@ -9,7 +9,6 @@ from django.utils.timezone import now, timedelta
 from drf_spectacular.utils import extend_schema
 from datetime import datetime
 
-
 class LogPagination(PageNumberPagination):
     page_size = 2
     page_query_param = 'page_size'

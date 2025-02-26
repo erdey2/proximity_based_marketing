@@ -1,25 +1,15 @@
 from django.db import models
 from uuid import uuid4
-from django.core.exceptions import ValidationError
 from django.utils.timezone import now
-
-# Create your models here.
-def validate_signal_strength(value):
-    if value < 0 or value > 100:
-        raise ValidationError('Signal strength must be between 0 and 100.')
-
-def validate_battery_status(value):
-    if value < 0 or value > 100:
-        raise ValidationError('Battery status must be between 0 and 100.')
 
 class Beacon(models.Model):
     beacon_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    name = models.CharField(max_length=100, db_index=True)
-    minor = models.IntegerField(null=True)
-    major = models.IntegerField(null=True)
+    name = models.CharField(max_length=100, unique=True, db_index=True)
+    minor = models.IntegerField(null=True, blank=True)
+    major = models.IntegerField(null=True, blank=True)
     location_name = models.CharField(max_length=100, db_index=True)
-    signal_strength = models.FloatField(null=True, blank=True, validators=[validate_signal_strength]) # updated by mobile app
-    battery_status = models.FloatField(null=True, blank=True, validators=[validate_battery_status]) # updated by mobile app
+    signal_strength = models.FloatField(null=True, blank=True) # updated by mobile app
+    battery_status = models.FloatField(null=True, blank=True) # updated by mobile app
     start_date = models.DateTimeField(auto_now_add=True)
     class Status(models.TextChoices):
         ACTIVE = 'Active', 'Active'
@@ -37,7 +27,6 @@ class Beacon(models.Model):
             self.status = new_state
             self.save()
 
-
 class Advertisement(models.Model):
     advertisement_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='advertisement')
@@ -48,6 +37,7 @@ class Advertisement(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     media_file = models.FileField(upload_to='advertisements/', null=True, blank=True)
+    #beacons = models.ManyToManyField('campaign.Beacon', related_name='advertisements')
 
     class Type(models.TextChoices):
         IMAGE = 'image', 'image'

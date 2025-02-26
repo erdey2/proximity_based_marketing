@@ -16,6 +16,7 @@ class BeaconPagination(PageNumberPagination):
 class BeaconList(ListCreateAPIView):
         """List all beacons or create a new one."""
         serializer_class = BeaconSerializer
+        pagination_class = BeaconPagination
 
         def get_queryset(self):
             qs = Beacon.objects.all()
@@ -100,7 +101,6 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-
 class BeaconActive(ListAPIView):
     """Retrieve a list of active beacons."""
     serializer_class = BeaconSerializer
@@ -133,7 +133,6 @@ class BeaconActive(ListAPIView):
 
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
-
     permission_classes = [IsAuthenticated]  # Enforce authentication
 
     @extend_schema(

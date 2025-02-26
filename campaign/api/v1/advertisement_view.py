@@ -1,5 +1,5 @@
 from campaign.models import Advertisement
-from campaign.serializers import AdvertisementSerializer
+from campaign.serializers import AdvertisementSerializer, AdvertisementSerializerPartial
 from datetime import datetime
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -9,8 +9,8 @@ from django.utils.timezone import now
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
-class AdvertisementRateThrottle(UserRateThrottle):
-    rate = '10/minute'  # Custom throttle rate for this view
+class AdvertisementRateLimit(UserRateThrottle):
+    rate = '1/minute'  # Custom throttle rate for this view
 
 class AdvertisementPagination(PageNumberPagination):
     page_size = 2
@@ -18,10 +18,14 @@ class AdvertisementPagination(PageNumberPagination):
     max_page_size = 50
     invalid_page_message = 'page not found'
     display_page_controls = False
+    throttle_classes = [AdvertisementRateLimit]
 
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
     serializer_class = AdvertisementSerializer
+    pagination_class = AdvertisementPagination
+    ordering_fields = ['created_at', 'title']
+    ordering = ['-created_at']  # Default ordering
 
     def get_queryset(self):
         qs = Advertisement.objects.all()
@@ -216,7 +220,11 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-class AdvertisementsActive(ListAPIView):
+class AdvertisementBeacon(ListAPIView):
+    queryset = Advertisement.objects.select_related('beacon').all()
+    serializer_class = AdvertisementSerializerPartial
+
+class AdvertisementActive(ListAPIView):
     """List all active advertisements."""
     serializer_class = AdvertisementSerializer
 

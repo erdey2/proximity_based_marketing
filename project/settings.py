@@ -45,24 +45,24 @@ INSTALLED_APPS = [
     'campaign',
 ]
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+   # 'DEFAULT_AUTHENTICATION_CLASSES': (
+       # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+    #),
+    #'DEFAULT_PERMISSION_CLASSES': (
+    #    'rest_framework.permissions.IsAuthenticated',
+    #),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',    # Throttle per user
         'rest_framework.throttling.AnonRateThrottle',   # Throttle for anonymous users
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'user': '100/minute',     # Allow 100 requests per user per day
-        'anon': '10/minute',     # Allow 10 requests per anonymous user per hour
+        'user': '10/minute',     # Allow 100 requests per user per day
+        'anon': '5/minute',     # Allow 10 requests per anonymous user per hour
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,  # Number of records per page
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    #'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend', 'rest_framework.filters.SearchFilter'],
+
 
 }
 SPECTACULAR_SETTINGS = {
