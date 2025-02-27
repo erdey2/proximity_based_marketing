@@ -80,12 +80,16 @@ class AdvertisementSerializerPartial(serializers.ModelSerializer):
         fields = ['beacon_id', 'title', 'start_date', 'end_date', 'assigned_beacons']
 
 class BeaconMessageSerializer(serializers.ModelSerializer):
+    beacon_name = serializers.CharField(source="beacon.name", read_only=True)
     class Meta:
         model = BeaconMessage
-        fields = '__all__'
+        fields = ['message_id', 'content', 'sent_at', 'read_at', 'beacon_id', 'beacon_name']
 
 class AdvertisementLogSerializer(serializers.ModelSerializer):
+    beacon_name = serializers.CharField(source="advertisement.beacon.name", read_only=True)
+    advertisement_title = serializers.CharField(source="advertisement.title", read_only=True)
+
     class Meta:
         model = AdvertisementLog
-        fields = '__all__'
+        fields = ['beacon_id', 'log_id', 'timestamp', 'advertisement_title', 'beacon_name']
 
