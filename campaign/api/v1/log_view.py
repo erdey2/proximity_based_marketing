@@ -22,7 +22,7 @@ class LogList(ListCreateAPIView):
     pagination_class = LogPagination
 
     def get_queryset(self):
-        qs = AdvertisementLog.objects.all()
+        qs = AdvertisementLog.objects.select_related('advertisement', 'beacon').all()
         log_id = self.request.GET.get('log_id')
         created_at = self.request.GET.get('created_at')
 
