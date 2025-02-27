@@ -2,7 +2,7 @@ from campaign.models import BeaconMessage
 from campaign.serializers import BeaconMessageSerializer
 from datetime import datetime
 from rest_framework.exceptions import ValidationError
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 
@@ -14,10 +14,10 @@ class MessagePagination(PageNumberPagination):
 class MessageList(generics.ListCreateAPIView):
     """Create and List messages from beacons"""
     serializer_class = BeaconMessageSerializer
-    pagination_class = MessagePagination # apply pagination
+    pagination_class = MessagePagination  # Apply pagination
 
     def get_queryset(self):
-        qs = BeaconMessage.objects.all()
+        qs = BeaconMessage.objects.select_related('beacon').all()  # Optimize query
         sent_at = self.request.GET.get('sent_at')
         if sent_at:
             try:
@@ -29,9 +29,12 @@ class MessageList(generics.ListCreateAPIView):
                 raise ValidationError("Invalid date format. Use YYYY-MM-DD.")
         return qs
 
-    extend_schema(
+    @extend_schema(
         summary="List all messages sent by beacons",
         description="Retrieve a list of all existing messages. Optionally, filter by 'sent_at' date parameter.",
+        parameters=[
+            OpenApiParameter(name="sent_at", description="Filter by sent date (YYYY-MM-DD)", required=False, type=str),
+        ],
         responses={
             200: BeaconMessageSerializer(many=True),
             400: {
@@ -51,11 +54,13 @@ class MessageList(generics.ListCreateAPIView):
         summary="Create a new message",
         description="Create a new message with the provided data.",
         request=BeaconMessageSerializer,
-        responses={201: BeaconMessageSerializer},
+        responses={
+            201: BeaconMessageSerializer,
+            400: {"description": "Invalid input data."},
+        },
     )
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
-
 
 class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
     """Get and delete messages"""
