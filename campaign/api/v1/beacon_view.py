@@ -106,30 +106,33 @@ class BeaconActive(ListAPIView):
     serializer_class = BeaconSerializer
     permission_classes = [IsAuthenticated]  # Ensure authentication
 
+    def get_queryset(self):
+        """Dynamically filter active beacons."""
+        return Beacon.objects.filter(status__iexact='Active')  # Case-insensitive filtering
+
     @extend_schema(
         summary="Retrieve Active Beacons",
         description="""
-        This endpoint allows authenticated users to retrieve the list of active beacons.
+            This endpoint allows authenticated users to retrieve the list of active beacons.
 
-        **Methods:**
-        - `GET`: Returns a list of active beacons.
+            **Methods:**
+            - `GET`: Returns a list of active beacons.
 
-        **Example Use Case:**
-        - A system admin wants to monitor active beacons in a given area.
-        - A user needs to confirm whether active beacons are available.
+            **Example Use Case:**
+            - A system admin wants to monitor active beacons in a given area.
+            - A user needs to confirm whether active beacons are available.
 
-        **Validation:**
-        - Authentication is required (`IsAuthenticated`).
-        - If no active beacons are found, an empty list is returned.
-        """,
+            **Validation:**
+            - Authentication is required (`IsAuthenticated`).
+            - If no active beacons are found, an empty list is returned.
+            """,
         responses={
             200: BeaconSerializer(many=True),
             401: {"detail": "Authentication credentials were not provided."}
         },
     )
-    def get_queryset(self):
-        """Dynamically filter active beacons."""
-        return Beacon.objects.filter(status__iexact='Active')  # Case-insensitive filtering
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
@@ -278,7 +281,6 @@ class BeaconStatus(RetrieveUpdateAPIView):
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 

@@ -6,7 +6,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils.timezone import now, timedelta
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from datetime import datetime
 
 class LogPagination(PageNumberPagination):
@@ -30,24 +30,32 @@ class LogList(ListCreateAPIView):
             qs = qs.filter(log_id__contains=log_id)
         if created_at:
             try:
-                # Parse 'created_at' parameter to date
                 parsed_created_at = datetime.strptime(created_at, "%Y-%m-%d").date()
-                # Filter queryset by 'sent_at' greater than or equal to parsed date
                 qs = qs.filter(created_at__gte=parsed_created_at)
             except ValueError:
                 raise ValidationError("Invalid date format. Use YYYY-MM-DD.")
         return qs
 
-    extend_schema(
+    @extend_schema(
         summary="Retrieve Advertisement Logs",
         description="""
                 Retrieve a paginated list of all advertisement logs, with optional filtering by `log_id` and `created_at`.
 
-                **Example Request:**
+                **Example Response:**
+                ```json
+                {
+                    "id": 1,
+                    "log_id": "LOG123",
+                    "created_at": "2024-02-23",
+                    "advertisement_title": "Promo Sale",
+                    "beacon_name": "Beacon A"
+                }
                 ```
-                GET /api/logs/?log_id=123&created_at=2024-01-01
-                ```
-            """,
+                """,
+        parameters=[
+            OpenApiParameter(name="log_id", description="Filter by log ID", required=False, type=str),
+            OpenApiParameter(name="created_at", description="Filter by created date (YYYY-MM-DD)", required=False, type=str),
+        ],
         responses={200: AdvertisementLogSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):

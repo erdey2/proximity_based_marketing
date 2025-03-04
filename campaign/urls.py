@@ -1,8 +1,7 @@
 from django.urls import path
-from .api.v1 import advertisement_view, beacon_view, log_view
+from .api.v1 import advertisement_view, beacon_view, log_view, advertisement_assignment_view, message_view
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from .api.v1.message_view import MessageList, MessageDetail
 
 
 urlpatterns = [
@@ -17,9 +16,13 @@ urlpatterns = [
     # advertisement related views
     path('api/v1/advertisements/', advertisement_view.AdvertisementList.as_view(), name='advertisements_list'),
     path('api/v1/advertisements/<uuid:pk>', advertisement_view.AdvertisementDetail.as_view(), name='advertisement_detail'),
-    path('api/v1/advertisements/list', advertisement_view.AdvertisementBeacon.as_view(), name='advertisement_beacon'),
+    path('api/v1/advertisements/<uuid:pk>', advertisement_view.CachedAdvertisementList.as_view(), name='cached_ad'),
     path('api/v1/advertisements/active', advertisement_view.AdvertisementActive.as_view(), name='advertisements_active'),
-    path('api/v1/advertisements/beacons', advertisement_view.AdvertisementBeacon.as_view(), name='advertisement_beacon'),
+
+    # advertisement assignments
+    path('api/v1/advertisements/assignments', advertisement_assignment_view.AdvertisementAssignmentList.as_view(), name='advertisement_assignment'),
+    path('api/v1/beacons/advertisements/', advertisement_assignment_view.BeaconListWithAdsView.as_view(), name='beacons_ads'),
+    path('api/v1/advertisements/beacons', advertisement_assignment_view.AdvertisementListWithBeaconsView.as_view(), name='advertisements_beacons'),
 
     # logs
     path('api/v1/logs/', log_view.LogList.as_view(), name='logs_list'),
@@ -27,8 +30,8 @@ urlpatterns = [
     path('api/v1/logs/count', log_view.LogCount.as_view(), name='ads_count'),
 
     # view for messages sent from beacons
-    path('api/v1/messages/', MessageList.as_view(), name='message_create'),
-    path('api/v1/messages/<uuid:pk>', MessageDetail.as_view(), name='message_detail'),
+    path('api/v1/messages/', message_view.MessageList.as_view(), name='message_create'),
+    path('api/v1/messages/<uuid:pk>', message_view.MessageDetail.as_view(), name='message_detail'),
 
     # documentation
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),

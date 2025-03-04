@@ -1,50 +1,11 @@
 from rest_framework import serializers
 from django.utils.timezone import now
-from .models import Advertisement, Beacon, AdvertisementLog, BeaconMessage
-
-class BeaconSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Beacon
-        fields = '__all__'
-
-    def validate_minor(self, value):
-        if value is None or value < 0:
-            raise serializers.ValidationError('value must be a numeric')
-        return value
-
-    def validate_major(self, value):
-        if value is None or value < 0:
-            raise serializers.ValidationError('value must be numeric')
-        return value
-
-    def validate_signal_strength(self, value):
-        """ Ensure signal strength is between -100 and 0."""
-        if value is not None and ( value < -100 or value > 0 ):
-            raise serializers.ValidationError('Signal strength must be between -100 and 0.')
-        return value
-
-    def validate_battery_status(self, value):
-        if value is not None and (value < 0 or value > 100):
-            raise serializers.ValidationError('battery status must be between 0 and 100')
-        return value
-
-class BeaconStatusSerializer(serializers.ModelSerializer):
-    """ Serializer for updating beacon status"""
-    class Meta:
-        model = Beacon
-        fields = ["status"]  # Only allow updating status
-        read_only_fields = ["id"]  # Prevent ID modification
-
-    def validate_status(self, value):
-        """ Ensure the status is either Active or Inactive"""
-        if value not in [Beacon.Status.ACTIVE, Beacon.Status.INACTIVE]:
-            raise serializers.ValidationError("Invalid status. Use 'Active' or 'Inactive'.")
-        return value
+from .models import Advertisement, Beacon, AdvertisementLog, BeaconMessage, AdvertisementAssignment
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
-        fields = '__all__'
+        fields = ['advertisement_id', 'title', 'content', 'start_date', 'end_date', 'is_active']
 
     def validate_start_date(self, value):
         """ Validate that start_date is not in the past. """
@@ -68,19 +29,75 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The end date must be after the start date.")
         return data
 
-class BeaconSerializerPartial(serializers.ModelSerializer):
+class BeaconSerializer(serializers.ModelSerializer):
+    advertisements = serializers.SerializerMethodField()
+
     class Meta:
         model = Beacon
-        fields = ['name', 'status']
+        fields = ['beacon_id', 'name', 'location_name', 'advertisements']
 
-class AdvertisementSerializerPartial(serializers.ModelSerializer):
-    assigned_beacons = BeaconSerializerPartial(source='beacon') # Renaming "beacon" to "assigned_beacons"
+    def get_advertisements(self, obj):
+        return AdvertisementSerializer(
+            [assignment.advertisement for assignment in obj.advertisement_assignments.all()], many=True).data
+
+    def validate_minor(self, value):
+        if value is None or value < 0:
+            raise serializers.ValidationError('value must be a numeric')
+        return value
+
+    def validate_major(self, value):
+        if value is None or value < 0:
+            raise serializers.ValidationError('value must be numeric')
+        return value
+
+    def validate_signal_strength(self, value):
+        """ Ensure signal strength is between -100 and 0."""
+        if value is not None and ( value < -100 or value > 0 ):
+            raise serializers.ValidationError('Signal strength must be between -100 and 0.')
+        return value
+
+    def validate_battery_status(self, value):
+        if value is not None and (value < 0 or value > 100):
+            raise serializers.ValidationError('battery status must be between 0 and 100')
+        return value
+
+class BeaconSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beacon
+        fields = ['beacon_id', 'name', 'location_name']
+
+class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
+    beacons = serializers.SerializerMethodField()
+
     class Meta:
         model = Advertisement
-        fields = ['beacon_id', 'title', 'start_date', 'end_date', 'assigned_beacons']
+        fields = ["advertisement_id", "title", "start_date", 'end_date', "beacons"]
+
+    def get_beacons(self, obj):
+        return BeaconSimpleSerializer(
+            [assignment.beacon for assignment in obj.advertisement_assignments.all()], many=True).data
+
+class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementAssignment
+        fields = ['beacon', 'advertisement', 'assigned_at']
+
+class BeaconStatusSerializer(serializers.ModelSerializer):
+    """ Serializer for updating beacon status"""
+    class Meta:
+        model = Beacon
+        fields = ["status"]  # Only allow updating status
+        read_only_fields = ["id"]  # Prevent ID modification
+
+    def validate_status(self, value):
+        """ Ensure the status is either Active or Inactive"""
+        if value not in [Beacon.Status.ACTIVE, Beacon.Status.INACTIVE]:
+            raise serializers.ValidationError("Invalid status. Use 'Active' or 'Inactive'.")
+        return value
 
 class BeaconMessageSerializer(serializers.ModelSerializer):
     beacon_name = serializers.CharField(source="beacon.name", read_only=True)
+
     class Meta:
         model = BeaconMessage
         fields = ['message_id', 'content', 'sent_at', 'read_at', 'beacon_id', 'beacon_name']

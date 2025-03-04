@@ -27,9 +27,9 @@ class Beacon(models.Model):
             self.status = new_state
             self.save()
 
+
 class Advertisement(models.Model):
     advertisement_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='advertisement')
     title = models.CharField(max_length=255, null=False, db_index=True)
     content = models.TextField(null=False)
     start_date = models.DateTimeField(db_index=True, default=now)
@@ -37,7 +37,6 @@ class Advertisement(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     media_file = models.FileField(upload_to='advertisements/', null=True, blank=True)
-    #beacons = models.ManyToManyField('campaign.Beacon', related_name='advertisements')
 
     class Type(models.TextChoices):
         IMAGE = 'image', 'image'
@@ -55,6 +54,16 @@ class Advertisement(models.Model):
     def __str__(self):
         return f"{self.title} Advertisement ({self.end_date})"
 
+
+class AdvertisementAssignment(models.Model):
+    beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='advertisement_assignments')
+    advertisement = models.ForeignKey(Advertisement, on_delete=models.CASCADE, to_field='advertisement_id', related_name='advertisement_assignments')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('beacon', 'advertisement') # prevents duplicate assignments
+
+
 class BeaconMessage(models.Model):
     message_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='message')
@@ -69,6 +78,7 @@ class BeaconMessage(models.Model):
 
     def __str__(self):
         return f"{self.beacon.name} {self.read_at}"
+
 
 class AdvertisementLog(models.Model):
     log_id = models.BigAutoField(primary_key=True)

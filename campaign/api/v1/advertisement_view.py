@@ -1,5 +1,10 @@
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.core.cache import cache
+
+from rest_framework.views import APIView
 from campaign.models import Advertisement
-from campaign.serializers import AdvertisementSerializer, AdvertisementSerializerPartial
+from campaign.serializers import AdvertisementSerializer, AdvertisementWithBeaconsSerializer
 from datetime import datetime
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -220,9 +225,6 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-class AdvertisementBeacon(ListAPIView):
-    queryset = Advertisement.objects.select_related('beacon').all()
-    serializer_class = AdvertisementSerializerPartial
 
 class AdvertisementActive(ListAPIView):
     """List all active advertisements."""
@@ -258,3 +260,23 @@ class AdvertisementActive(ListAPIView):
             return Response({"message": "No active advertisements found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class CachedAdvertisementList(APIView):
+    """Retrieve advertisements for a given beacon with Redis caching."""
+    def get(self, request, pk):
+        cache_key = f"ads_for_beacon_{pk}"
+        cached_ads = cache.get(cache_key)
+
+        if cached_ads is None:
+            ads = Advertisement.objects.filter(beacon_id=pk)
+            serialized_ads = AdvertisementSerializer(ads, many=True).data
+            cache.set(cache_key, serialized_ads, timeout=60 * 5)  # Cache for 5 minutes
+        else:
+            serialized_ads = cached_ads  # Use cached data
+        return Response(serialized_ads)
+
+@receiver(post_save, sender=Advertisement)
+@receiver(post_delete, sender=Advertisement)
+def clear_ad_cache(instance, **kwargs):
+    cache_key = f"ads_for_beacon_{instance.beacon_id}"
+    cache.delete(cache_key)  # Remove stale data from Redis

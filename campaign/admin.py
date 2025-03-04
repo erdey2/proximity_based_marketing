@@ -8,7 +8,7 @@ class BeaconAdmin(admin.ModelAdmin):
 
 @admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
-    list_display=('advertisement_id', 'beacon_id', 'content', 'start_date', 'end_date', 'created_at', 'type')
+    list_display=('advertisement_id', 'content', 'start_date', 'end_date', 'created_at', 'type')
 
 @admin.register(AdvertisementLog)
 class AdvertisementLogAdmin(admin.ModelAdmin):
