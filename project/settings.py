@@ -136,12 +136,12 @@ DATABASES = {
 }
 
 # Redis Cache Configuration
-CACHES = {
+""" CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",  # Redis database index 1
     }
-}
+} """
 
 
 # Password validation
