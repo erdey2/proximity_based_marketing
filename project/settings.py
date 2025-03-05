@@ -114,7 +114,11 @@ DATABASE_URL = "postgresql://neondb_owner:npg_6njoeWwZT7Im@ep-shrill-smoke-a8atn
 parsed_url = urlparse(DATABASE_URL)
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=True
+    )
 
     # 'default': {
         # 'ENGINE': 'django.db.backends.postgresql',
