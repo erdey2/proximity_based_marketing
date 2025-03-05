@@ -21,6 +21,7 @@ urlpatterns = [
 
     # advertisement assignments
     path('api/v1/advertisements/assignments', advertisement_assignment_view.AdvertisementAssignmentList.as_view(), name='advertisement_assignment'),
+    path('api/v1/advertisements/assignments/<uuid:pk>', advertisement_assignment_view.AdvertisementAssignmentDetail.as_view(), name='advertisement_assignment_detail'),
     path('api/v1/beacons/advertisements/', advertisement_assignment_view.BeaconListWithAdsView.as_view(), name='beacons_ads'),
     path('api/v1/advertisements/beacons', advertisement_assignment_view.AdvertisementListWithBeaconsView.as_view(), name='advertisements_beacons'),
 
