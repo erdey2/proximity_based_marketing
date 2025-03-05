@@ -21,6 +21,8 @@ class BeaconsModelTest(APITestCase):
         self.assertEqual(self.beacon1.battery_status, None)
         self.assertEqual(self.beacon1.minor, None)
         self.assertEqual(self.beacon1.major, None)
+        self.assertEqual(self.beacon1.latitude, None)
+        self.assertEqual(self.beacon1.longitude, None)
         self.assertEqual(self.beacon1.status, "Inactive")
 
     def test_is_active(self):
@@ -40,7 +42,7 @@ class AdvertisementModelTest(APITestCase):
         """Setup test data"""
         self.beacon1 = Beacon.objects.create(name="beacon 1", location_name="Garment")
         self.ad1 = Advertisement.objects.create(
-            beacon=self.beacon1, title="Test Ad", content="This is a test advertisement.",
+            title="Test Ad", content="This is a test advertisement.",
             start_date = now(), end_date = now() + timedelta(days=10)
         )
 
@@ -60,7 +62,7 @@ class AdvertisementLogModelTest(APITestCase):
     def setUp(self):
         self.beacon1 = Beacon.objects.create(name="beacon 1", location_name="Garment")
         self.ad1 = Advertisement.objects.create(
-            beacon=self.beacon1, title="Test Ad", content="This is a test advertisement.",
+            title="Test Ad", content="This is a test advertisement.",
             start_date=now(), end_date=now() + timedelta(days=10)
         )
         self.log = AdvertisementLog.objects.create(

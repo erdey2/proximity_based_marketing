@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from urllib.parse import urlparse
 from pathlib import Path
 
+import os
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,9 +26,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%7vimodp6z3r5$e$7+%ab)*c-!xygdgwf3=8md3@a(o&o6e@9b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'campaign.onrender.com'
+]
 
 
 # Application definition
@@ -45,12 +50,12 @@ INSTALLED_APPS = [
     'campaign',
 ]
 REST_FRAMEWORK = {
-   # 'DEFAULT_AUTHENTICATION_CLASSES': (
-       # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-    #),
-    #'DEFAULT_PERMISSION_CLASSES': (
-    #    'rest_framework.permissions.IsAuthenticated',
-    #),
+   'DEFAULT_AUTHENTICATION_CLASSES': (
+       'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',    # Throttle per user
         'rest_framework.throttling.AnonRateThrottle',   # Throttle for anonymous users
@@ -106,16 +111,27 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+DATABASE_URL = "postgresql://neondb_owner:npg_6njoeWwZT7Im@ep-shrill-smoke-a8atnvfr-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+
+parsed_url = urlparse(DATABASE_URL)
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'beacon_market_db',
-        'USER': 'marketer',
-        'PASSWORD': 'Marketer@1234',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+
+    # 'default': {
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': parsed_url.path[1:],  # Remove leading slash
+        # 'USER': parsed_url.username,
+        # 'PASSWORD': parsed_url.password,
+        # 'HOST': parsed_url.hostname,
+        # 'PORT': parsed_url.port,
+
+        # 'NAME': 'beacon_market_db',
+        # 'USER': 'marketer',
+        # 'PASSWORD': 'Marketer@1234',
+        # 'HOST': 'localhost',
+        # 'PORT': '5432',
+    # }
 }
 
 # Redis Cache Configuration
