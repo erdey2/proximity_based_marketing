@@ -1,5 +1,5 @@
 from campaign.models import Beacon
-from campaign.serializers import BeaconSerializer, BeaconStatusSerializer
+from campaign.serializers import BeaconSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -56,7 +56,7 @@ class BeaconList(ListCreateAPIView):
 class BeaconDetail(RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a beacon."""
     queryset = Beacon.objects.all()
-    serializer_class = BeaconSerializer
+    serializer_class = BeaconPartialUpdateSerializer
 
     @extend_schema(
         summary="Retrieve a Beacon",
@@ -104,7 +104,6 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
 class BeaconActive(ListAPIView):
     """Retrieve a list of active beacons."""
     serializer_class = BeaconSerializer
-    permission_classes = [IsAuthenticated]  # Ensure authentication
 
     def get_queryset(self):
         """Dynamically filter active beacons."""

@@ -66,6 +66,11 @@ class BeaconSimpleSerializer(serializers.ModelSerializer):
         model = Beacon
         fields = ['beacon_id', 'name', 'location_name']
 
+class BeaconPartialUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beacon
+        fields = ['beacon_id', 'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude']
+
 class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
     beacons = serializers.SerializerMethodField()
 
