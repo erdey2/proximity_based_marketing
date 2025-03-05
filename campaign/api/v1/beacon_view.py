@@ -135,7 +135,7 @@ class BeaconActive(ListAPIView):
 
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
-    permission_classes = [IsAuthenticated]  # Enforce authentication
+    # permission_classes = [IsAuthenticated]  # Enforce authentication
 
     @extend_schema(
         summary="Retrieve Total Beacon Count",
