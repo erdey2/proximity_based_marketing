@@ -60,12 +60,8 @@ class BeaconSerializer(serializers.ModelSerializer):
     advertisements = serializers.SerializerMethodField()
 
     def get_advertisements(self, obj):
-        """Retrieve the list of advertisement IDs linked to this beacon."""
-        return [assignment.advertisement.id for assignment in AdvertisementAssignment.objects.filter(beacon=obj)]
-
-    """ def get_advertisements(self, obj):
         return AdvertisementSerializer(
-            [assignment.advertisement for assignment in obj.advertisement_assignments.all()], many=True).data """
+            [assignment.advertisement for assignment in obj.advertisement_assignments.all()], many=True).data
 
     class Meta:
         model = Beacon
