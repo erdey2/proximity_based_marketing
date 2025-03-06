@@ -12,6 +12,7 @@ def api_root(request):
         "endpoints": {
             "Beacons": request.build_absolute_uri('/api/v1/beacons/'),
             "Active Beacons": request.build_absolute_uri('/api/v1/beacons/active'),
+            "Beacons Message Count": request.build_absolute_uri('/api/v1/beacons/messages/count/'),
             "Advertisements": request.build_absolute_uri('/api/v1/advertisements/'),
             "Cached Advertisements": request.build_absolute_uri('/api/v1/advertisements/cached_ad'),
             "Advertisement Assignments": request.build_absolute_uri('/api/v1/advertisements/assignments'),
