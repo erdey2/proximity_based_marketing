@@ -33,6 +33,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['proximity-based-marketing.onrender.com', 'localhost', '127.0.0.1']
 #ALLOWED_HOSTS = ["*"]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Allow frontend (React, Vue, etc.)
+    "https://proximity-based-marketing.onrender.com", # Your production domain
+]
 
 # Application definition
 
@@ -49,6 +53,7 @@ INSTALLED_APPS = [
     'celery',
     'django_celery_beat',
     'campaign',
+    'corsheaders',
 ]
 REST_FRAMEWORK = {
    # 'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -78,6 +83,7 @@ SPECTACULAR_SETTINGS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
