@@ -1,5 +1,5 @@
 from campaign.models import Beacon, Advertisement, AdvertisementAssignment
-from campaign.serializers import BeaconSerializer, AdvertisementAssignmentSerializer, AdvertisementWithBeaconsSerializer
+from campaign.serializers import BeaconSerializer, BeaconListSerializer, AdvertisementAssignmentSerializer, AdvertisementWithBeaconsSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema
@@ -89,7 +89,7 @@ class AdvertisementListWithBeaconsView(ListAPIView):
 class BeaconListWithAdsView(ListAPIView):
     """ API endpoint to list beacons along with their assigned advertisements."""
     queryset = Beacon.objects.prefetch_related("advertisement_assignments__advertisement").all()
-    serializer_class = BeaconSerializer
+    serializer_class = BeaconListSerializer
     pagination_class = AdvertisementAssignmentPagination
 
     @extend_schema(

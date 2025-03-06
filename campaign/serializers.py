@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from django.utils.timezone import now
 from .models import Advertisement, Beacon, AdvertisementLog, BeaconMessage, AdvertisementAssignment
 
@@ -83,9 +84,14 @@ class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
         model = Advertisement
         fields = ["advertisement_id", "title", "start_date", 'end_date', "beacons"]
 
-    def get_beacons(self, obj):
+    """ @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
+    def get_beacons(self, obj) -> list:
         return BeaconSimpleSerializer(
-            [assignment.beacon for assignment in obj.advertisement_assignments.all()], many=True).data
+            [assignment.beacon for assignment in obj.advertisement_assignments.all()], many=True).data """
+
+    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))  # Correct return type
+    def get_beacons(self, obj):
+        return [assignment.beacon.id for assignment in obj.advertisement_assignments.all()]  # Return list of UUIDs
 
 class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
