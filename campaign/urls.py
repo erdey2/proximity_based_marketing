@@ -1,10 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 from .api.v1 import advertisement_view, beacon_view, log_view, advertisement_assignment_view, message_view
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 
 urlpatterns = [
+    # root
+    path('api/v1/', include('campaign.urls')),  # Include all your API URLs
+
     # beacon related views
     path('api/v1/beacons/', beacon_view.BeaconList.as_view(), name='beacons_list'),
     path('api/v1/beacons/<uuid:pk>', beacon_view.BeaconDetail.as_view(), name='beacons_detail'),

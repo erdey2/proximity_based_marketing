@@ -29,12 +29,10 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The end date must be after the start date.")
         return data
 
-class BeaconSerializer(serializers.ModelSerializer):
-    advertisements = serializers.SerializerMethodField()
-
+class BeaconListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
-        fields = ['beacon_id', 'name', 'location_name', 'advertisements']
+        fields = ['beacon_id', 'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude']
 
     def get_advertisements(self, obj):
         return AdvertisementSerializer(
@@ -60,6 +58,13 @@ class BeaconSerializer(serializers.ModelSerializer):
         if value is not None and (value < 0 or value > 100):
             raise serializers.ValidationError('battery status must be between 0 and 100')
         return value
+
+class BeaconSerializer(serializers.ModelSerializer):
+    advertisements = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Beacon
+        fields = ['beacon_id', 'name', 'location_name', 'advertisements']
 
 class BeaconSimpleSerializer(serializers.ModelSerializer):
     class Meta:

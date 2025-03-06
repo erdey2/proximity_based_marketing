@@ -1,5 +1,5 @@
 from campaign.models import Beacon
-from campaign.serializers import BeaconSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
+from campaign.serializers import BeaconSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,7 +15,7 @@ class BeaconPagination(PageNumberPagination):
 
 class BeaconList(ListCreateAPIView):
         """List all beacons or create a new one."""
-        serializer_class = BeaconSerializer
+        serializer_class = BeaconListSerializer
         pagination_class = BeaconPagination
 
         def get_queryset(self):
