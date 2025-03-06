@@ -36,6 +36,7 @@ urlpatterns = [
     # view for messages sent from beacons
     path('api/v1/messages/', message_view.MessageList.as_view(), name='message_create'),
     path('api/v1/messages/<uuid:pk>/', message_view.MessageDetail.as_view(), name='message_detail'),
+    path('api/v1/beacons/messages/count/', message_view.BeaconMessageCountView.as_view(), name='beacon_messages_count'),
 
     # documentation
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),

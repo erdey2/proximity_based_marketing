@@ -1,10 +1,14 @@
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+
 from campaign.models import BeaconMessage
 from campaign.serializers import BeaconMessageSerializer
 from datetime import datetime
 from rest_framework.exceptions import ValidationError
-from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import generics
+from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 class MessagePagination(PageNumberPagination):
     page_size = 2 # Customize page size
@@ -118,4 +122,12 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
     )
     def delete(self, request, *args, **kwargs):
             return self.destroy(request, *args, **kwargs)
+
+class BeaconMessageCountView(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        message_counts = (BeaconMessage.objects.values('beacon__beacon_id', 'beacon__name', date=TruncDate('sent_at'))
+                          .annotate(total_messages=Count('message_id')).order_by('date')
+                          )
+        return Response(message_counts)
+
 
