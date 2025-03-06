@@ -124,10 +124,51 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
 
 class BeaconMessageCountView(generics.ListAPIView):
+    """ API endpoint to get the total messages sent by each beacon per day. """
+    extend_schema(
+        summary="Retrieve beacon message counts per day",
+        description="Returns a list of beacons with the total number of messages sent each day.",
+        parameters=[
+            OpenApiParameter(
+                name="date",
+                type=str,
+                description="Filter results by a specific date (YYYY-MM-DD). Example: ?date=2025-03-06",
+                required=False
+            ),
+        ],
+        responses={
+            200: {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "beacon__beacon_id": {"type": "string", "example": "123e4567-e89b-12d3-a456-426614174000"},
+                        "beacon__name": {"type": "string", "example": "Beacon A"},
+                        "date": {"type": "string", "format": "date", "example": "2025-03-06"},
+                        "total_messages": {"type": "integer", "example": 10},
+                    },
+                },
+            },
+        },
+    )
     def get(self, request, *args, **kwargs):
-        message_counts = (BeaconMessage.objects.values('beacon__beacon_id', 'beacon__name', date=TruncDate('sent_at'))
-                          .annotate(total_messages=Count('message_id')).order_by('date')
-                          )
+        """
+        Returns the total number of messages sent by each beacon per day.
+        Optional: Filter by date using the query parameter `?date=YYYY-MM-DD`.
+        """
+        date_filter = request.GET.get('date')
+
+        queryset = BeaconMessage.objects.all()
+
+        if date_filter:
+            queryset = queryset.filter(sent_at__date=date_filter)
+
+        message_counts = (
+            queryset.values('beacon__beacon_id', 'beacon__name', date=TruncDate('sent_at'))
+            .annotate(total_messages=Count('message_id'))
+            .order_by('date')
+        )
+
         return Response(message_counts)
 
 
