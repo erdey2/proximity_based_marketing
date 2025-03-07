@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-%7vimodp6z3r5$e$7+%ab)*c-!xygdgwf3=8md3@a(o&o6e@9b
 DEBUG = True
 
 # ALLOWED_HOSTS = ['proximity-based-marketing.onrender.com', 'localhost', '127.0.0.1']
-ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -184,10 +184,20 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Allow frontend (React, Vue, etc.)
-    "http://127.0.0.1",
-    "https://proximity-based-marketing.onrender.com", # Your production domain
-]
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all domains (for testing only)
 
-CORS_ALLOW_ALL_ORIGINS = False
+# Alternatively, use:
+# CORS_ALLOWED_ORIGINS = [
+#     "https://proximity-based-marketing.onrender.com",
+#     "http://127.0.0.1:8000",
+#     "http://localhost:8000",
+# ]
+
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials (if needed)
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://proximity-based-marketing.onrender.com",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
