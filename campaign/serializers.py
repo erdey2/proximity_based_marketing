@@ -85,14 +85,14 @@ class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
         model = Advertisement
         fields = ["advertisement_id", "title", "start_date", 'end_date', "beacons"]
 
-    """ @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
+    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))
     def get_beacons(self, obj) -> list:
         return BeaconSimpleSerializer(
-            [assignment.beacon for assignment in obj.advertisement_assignments.all()], many=True).data """
+            [assignment.beacon for assignment in obj.advertisement_assignments.all()], many=True).data
 
-    @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))  # Correct return type
+    """ @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))  # Correct return type
     def get_beacons(self, obj):
-        return [assignment.beacon_id for assignment in obj.advertisement_assignments.all()]  # Return list of UUIDs
+        return [assignment.beacon_id for assignment in obj.advertisement_assignments.all()]  # Return list of UUIDs """
 
 class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
