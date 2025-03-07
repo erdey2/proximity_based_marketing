@@ -34,6 +34,7 @@ class BeaconListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
         fields = ['beacon_id', 'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude']
+        # fields = ['__all__']
 
     def validate_minor(self, value):
         if value is None or value < 0:
@@ -91,7 +92,7 @@ class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.ListField(child=serializers.UUIDField()))  # Correct return type
     def get_beacons(self, obj):
-        return [assignment.beacon.id for assignment in obj.advertisement_assignments.all()]  # Return list of UUIDs
+        return [assignment.beacon_id for assignment in obj.advertisement_assignments.all()]  # Return list of UUIDs
 
 class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
     class Meta:

@@ -12,12 +12,21 @@ def api_root(request):
         "endpoints": {
             "Beacons": request.build_absolute_uri('/api/v1/beacons/'),
             "Active Beacons": request.build_absolute_uri('/api/v1/beacons/active'),
+            "Beacons Count": request.build_absolute_uri('/api/v1/beacons/count'),
+            "Beacon with Ads": request.build_absolute_uri('/api/v1/beacons/advertisements/'),
+            "Beacon Location Count": request.build_absolute_uri('/api/v1/beacons/location_count/'),
             "Beacons Message Count": request.build_absolute_uri('/api/v1/beacons/messages/count/'),
+
             "Advertisements": request.build_absolute_uri('/api/v1/advertisements/'),
             "Cached Advertisements": request.build_absolute_uri('/api/v1/advertisements/cached_ad'),
             "Advertisement Assignments": request.build_absolute_uri('/api/v1/advertisements/assignments'),
+            "Advertisement assigned to Beacon": request.build_absolute_uri('/api/v1/advertisements/beacons/'),
+
             "Logs": request.build_absolute_uri('/api/v1/logs/'),
+            "Logs Count": request.build_absolute_uri('/api/v1/logs/count/'),
+
             "Messages": request.build_absolute_uri('/api/v1/messages/'),
+
             "Authentication": {
                 "Obtain Token": request.build_absolute_uri(reverse('token_obtain_pair')),
                 "Refresh Token": request.build_absolute_uri(reverse('token_refresh')),
