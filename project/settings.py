@@ -33,32 +33,10 @@ DEBUG = True
 # ALLOWED_HOSTS = ['proximity-based-marketing.onrender.com', 'localhost', '127.0.0.1']
 ALLOWED_HOSTS = ["*"]
 
-CORS_ALLOW_METHODS = [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS"
-]
-
-CORS_ALLOW_HEADERS = [
-    "authorization",
-    "content-type",
-    "x-requested-with",
-    "accept",
-    "origin"
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Allow frontend (React, Vue, etc.)
-    "https://proximity-based-marketing.onrender.com", # Your production domain
-]
-
-
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -71,7 +49,6 @@ INSTALLED_APPS = [
     'celery',
     'django_celery_beat',
     'campaign',
-    'corsheaders',
 ]
 REST_FRAMEWORK = {
    # 'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -101,7 +78,7 @@ SPECTACULAR_SETTINGS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Should be here
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -206,3 +183,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Allow frontend (React, Vue, etc.)
+    "http://127.0.0.1",
+    "https://proximity-based-marketing.onrender.com", # Your production domain
+]
+
+CORS_ALLOW_ALL_ORIGINS = False
