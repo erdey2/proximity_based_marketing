@@ -104,7 +104,7 @@ class BeaconStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
         fields = ["status"]  # Only allow updating status
-        read_only_fields = ["id"]  # Prevent ID modification
+        read_only_fields = ["beacon_id"]  # Prevent ID modification
 
     def validate_status(self, value):
         """ Ensure the status is either Active or Inactive"""

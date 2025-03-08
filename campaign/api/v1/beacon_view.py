@@ -115,7 +115,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Partially Update a Beacon",
         description="Partially updates an existing beacon (only the provided fields).",
-        request=BeaconSimpleSerializer,
+        request=BeaconStatusSerializer,
         responses={
             200: BeaconListSerializer,
             400: {"description": "Invalid data provided."},
@@ -245,7 +245,6 @@ class BeaconLocationCount(APIView):
 
 class BeaconStatus(RetrieveUpdateAPIView):
     """API to get and update beacon status"""
-
     queryset = Beacon.objects.all()
     serializer_class = BeaconListSerializer
     # permission_classes = [IsAuthenticated]  # Enforce authentication
