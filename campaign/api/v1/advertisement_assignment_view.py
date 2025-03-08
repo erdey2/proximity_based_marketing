@@ -1,5 +1,5 @@
 from campaign.models import Beacon, Advertisement, AdvertisementAssignment
-from campaign.serializers import BeaconSerializer, AdvertisementAssignmentSerializer, AdvertisementWithBeaconsSerializer
+from campaign.serializers import BeaconSerializer, AdvertisementAssignmentSerializer, AdvertisementWithBeaconsSerializer, AdvertisementAssignmentBeaconSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiResponse
@@ -99,18 +99,12 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
             **Required Fields:**
             - `advertisement` (integer): The advertisement ID.
             - `beacon` (integer): The beacon ID.
-            - `start_time` (datetime): Assignment start time.
-            - `end_time` (datetime): Assignment end time.
-            - `is_active` (boolean): Whether the assignment is active.
 
             **Example Request:**
             ```json
             {
                 "advertisement": 1,
                 "beacon": 5,
-                "start_time": "2025-03-07T10:00:00Z",
-                "end_time": "2025-03-07T18:00:00Z",
-                "is_active": true
             }
             ```
 
@@ -137,7 +131,7 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
             **Example Request:**
             ```json
             {
-                "is_active": false
+                "beacon": 3
             }
             ```
 
@@ -146,7 +140,7 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
             - `400 Bad Request`: If validation fails.
             - `404 Not Found`: If the assignment does not exist.
         """,
-        request=AdvertisementAssignmentSerializer,
+        request=AdvertisementAssignmentBeaconSerializer,
         responses={
             200: AdvertisementAssignmentSerializer,
             400: OpenApiResponse(description="Invalid input"),

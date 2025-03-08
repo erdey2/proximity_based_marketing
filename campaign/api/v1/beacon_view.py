@@ -201,6 +201,7 @@ class BeaconCount(APIView):
 
 class BeaconLocationList(ListAPIView):
     """Retrieve all beacons with their latitude and longitude."""
+    pagination_class = BeaconPagination
     queryset = Beacon.objects.all()
     serializer_class = BeaconLocationSerializer
 

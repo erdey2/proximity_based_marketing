@@ -127,6 +127,11 @@ class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
         model = AdvertisementAssignment
         fields = ['beacon', 'advertisement', 'assigned_at']
 
+class AdvertisementAssignmentBeaconSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementAssignment
+        fields = ['beacon']
+
 class BeaconMessageSerializer(serializers.ModelSerializer):
     beacon_name = serializers.CharField(source="beacon.name", read_only=True)
 

@@ -13,14 +13,15 @@ def api_root(request):
             "Beacons": request.build_absolute_uri('/api/v1/beacons/'),
             "Active Beacons": request.build_absolute_uri('/api/v1/beacons/active'),
             "Beacons Count": request.build_absolute_uri('/api/v1/beacons/count'),
-            "Beacon with Ads": request.build_absolute_uri('/api/v1/beacons/advertisements/'),
+            "Beacon with Ads": request.build_absolute_uri('/api/v1/beacons-with-ads'),
+            "Beacon Location List": request.build_absolute_uri('/api/v1/beacons/location'),
             "Beacon Location Count": request.build_absolute_uri('/api/v1/beacons/location_count/'),
             "Beacons Message Count": request.build_absolute_uri('/api/v1/beacons/messages/count/'),
 
             "Advertisements": request.build_absolute_uri('/api/v1/advertisements/'),
             "Cached Advertisements": request.build_absolute_uri('/api/v1/advertisements/cached_ad'),
             "Advertisement Assignments": request.build_absolute_uri('/api/v1/advertisements/assignments'),
-            "Advertisement assigned to Beacon": request.build_absolute_uri('/api/v1/advertisements/beacons/'),
+            "Advertisement assigned to Beacon": request.build_absolute_uri('/api/v1/advertisements-with-beacons/'),
 
             "Logs": request.build_absolute_uri('/api/v1/logs/'),
             "Logs Count": request.build_absolute_uri('/api/v1/logs/count/'),
