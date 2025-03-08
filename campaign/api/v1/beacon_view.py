@@ -3,9 +3,9 @@ from campaign.serializers import BeaconSerializer, BeaconListSerializer, BeaconS
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status, filters
-from drf_spectacular.utils import extend_schema, OpenApiParameter,OpenApiResponse, OpenApiRequest
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, ListAPIView, GenericAPIView, RetrieveUpdateAPIView
+from rest_framework import status
+from drf_spectacular.utils import extend_schema, OpenApiParameter,OpenApiResponse
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveUpdateAPIView
 from rest_framework.pagination import PageNumberPagination
 
 class BeaconPagination(PageNumberPagination):
@@ -29,26 +29,57 @@ class BeaconList(ListCreateAPIView):
             return qs
 
         @extend_schema(
-            summary="Retrieve All Beacons",
-            description="Fetches a paginated list of all registered beacons in the system.",
+            summary="Retrieve Beacons",
+            description="""
+                Retrieves a **paginated list** of beacons with optional filters:
+                **Filter Parameters:**
+                - `name` (string, optional): Search for beacons by name.
+                - `location_name` (string, optional): Filter beacons by location.
+                
+                **Example Requests:**
+                ``` GET /api/beacons/?name=beacon1&location_name=Jemo ```
+                **Responses:**
+                - `200 OK`: Returns a paginated list of beacons.
+                - `400 Bad Request`: If an invalid filter is provided.
+                """,
+            parameters=[
+                OpenApiParameter(name="name", type=str, description="Filter by beacon name", required=False),
+                OpenApiParameter(name="location_name", type=str, description="Filter by location name", required=False),
+            ],
             responses={
-                200: OpenApiResponse(
-                    response=BeaconSerializer(many=True),
-                    description="A paginated list of beacons.",
-                )
-            }
+                200: BeaconListSerializer(many=True),
+                400: OpenApiResponse(description="Invalid input data"),
+            },
         )
         def get(self, request, *args, **kwargs):
             return self.list(request, *args, **kwargs)
 
         @extend_schema(
-            summary="Register a New Beacon",
-            description="Creates a new beacon entry with the provided details.",
-            request=OpenApiRequest(BeaconSerializer),
+            summary="Create a New Beacon",
+            description="""
+                Creates a **new beacon** with the required data.
+                
+                **Required Fields:**
+                - `name` (string): The beacon's name.
+                - `location_name` (string): The location where the beacon is located.
+
+                **Example Request Body:**
+                ```json
+                {
+                    "name": "Beacon 1",
+                    "location_name": "Jemo"
+                }
+                ```
+
+                **Responses:**
+                - `201 Created`: Successfully created a new beacon.
+                - `400 Bad Request`: If validation fails.
+                """,
+            request=BeaconListSerializer,
             responses={
-                201: OpenApiResponse(response=BeaconSerializer, description="Beacon successfully created."),
-                400: OpenApiResponse(description="Invalid input data.")
-            }
+                201: BeaconListSerializer,
+                400: OpenApiResponse(description="Invalid input data"),
+            },
         )
         def post(self, request, *args, **kwargs):
             return self.create(request, *args, **kwargs)
