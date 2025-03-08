@@ -70,35 +70,106 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = AdvertisementAssignmentSerializer
 
     @extend_schema(
-        summary="Retrieve an Advertisement Assignment",
-        description="Get the details of a specific advertisement assignment by its ID.",
-        responses={200: AdvertisementAssignmentSerializer}
+        summary="Retrieve Advertisement Assignment",
+        description="""
+            Fetch details of a specific **Advertisement Assignment** by its ID.
+
+            **Example Request:**
+            ```
+            GET /api/advertisement-assignments/1/
+            ```
+
+            **Responses:**
+            - `200 OK`: Successfully retrieved assignment details.
+            - `404 Not Found`: If the assignment does not exist.
+        """,
+        responses={
+            200: AdvertisementAssignmentSerializer,
+            404: OpenApiResponse(description="Assignment not found"),
+        }
     )
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Update an Advertisement Assignment",
-        description="Fully update an advertisement assignment by its ID.",
+        summary="Update Advertisement Assignment",
+        description="""
+            Fully update an **Advertisement Assignment** by its ID.
+
+            **Required Fields:**
+            - `advertisement` (integer): The advertisement ID.
+            - `beacon` (integer): The beacon ID.
+            - `start_time` (datetime): Assignment start time.
+            - `end_time` (datetime): Assignment end time.
+            - `is_active` (boolean): Whether the assignment is active.
+
+            **Example Request:**
+            ```json
+            {
+                "advertisement": 1,
+                "beacon": 5,
+                "start_time": "2025-03-07T10:00:00Z",
+                "end_time": "2025-03-07T18:00:00Z",
+                "is_active": true
+            }
+            ```
+
+            **Responses:**
+            - `200 OK`: Successfully updated.
+            - `400 Bad Request`: If validation fails.
+            - `404 Not Found`: If the assignment does not exist.
+        """,
         request=AdvertisementAssignmentSerializer,
-        responses={200: AdvertisementAssignmentSerializer}
+        responses={
+            200: AdvertisementAssignmentSerializer,
+            400: OpenApiResponse(description="Invalid input"),
+            404: OpenApiResponse(description="Assignment not found"),
+        }
     )
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Partially Update an Advertisement Assignment",
-        description="Partially update specific fields of an advertisement assignment.",
+        summary="Partially Update Advertisement Assignment",
+        description="""
+            Partially update an **Advertisement Assignment** by ID.
+
+            **Example Request:**
+            ```json
+            {
+                "is_active": false
+            }
+            ```
+
+            **Responses:**
+            - `200 OK`: Successfully updated.
+            - `400 Bad Request`: If validation fails.
+            - `404 Not Found`: If the assignment does not exist.
+        """,
         request=AdvertisementAssignmentSerializer,
-        responses={200: AdvertisementAssignmentSerializer}
+        responses={
+            200: AdvertisementAssignmentSerializer,
+            400: OpenApiResponse(description="Invalid input"),
+            404: OpenApiResponse(description="Assignment not found"),
+        }
     )
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Delete an Advertisement Assignment",
-        description="Delete an advertisement assignment by its ID.",
-        responses={204: None}
+        summary="Delete Advertisement Assignment",
+        description="""
+            Remove an **Advertisement Assignment** by its ID.
+
+            **Responses:**
+            - `204 No Content`: Successfully deleted.
+            - `404 Not Found`: If the assignment does not exist.
+        """,
+        responses={
+            204: OpenApiResponse(description="Deleted successfully"),
+            404: OpenApiResponse(description="Assignment not found"),
+        }
+
     )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
@@ -110,9 +181,24 @@ class AdvertisementListWithBeaconsView(ListAPIView):
     pagination_class = AdvertisementAssignmentPagination
 
     @extend_schema(
-        summary="List Advertisements with Beacons",
-        description="Retrieve a list of advertisements along with the beacons they are assigned to.",
-        responses={200: AdvertisementWithBeaconsSerializer(many=True)},
+        summary="List Advertisements with Assigned Beacons",
+        description="""
+            Retrieves a **paginated list** of advertisements along with their assigned beacons.
+
+            Each advertisement will include a list of associated beacons (including their locations).
+
+            **Example Request:**
+            ```
+            GET /api/advertisements-with-beacons/
+            ```
+
+            **Responses:**
+            - `200 OK`: Returns a paginated list of advertisements with assigned beacons.
+        """,
+        responses={
+            200: AdvertisementWithBeaconsSerializer(many=True),
+            400: OpenApiResponse(description="Invalid request"),
+        }
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -124,9 +210,25 @@ class BeaconListWithAdsView(ListAPIView):
     pagination_class = AdvertisementAssignmentPagination
 
     @extend_schema(
-        summary="List Beacons with Advertisements",
-        description="Retrieve a list of beacons along with the advertisements they have been assigned.",
-        responses={200: BeaconSerializer(many=True)},
+        summary="List Beacons with Assigned Advertisements",
+        description="""
+            Retrieves a **paginated list** of beacons along with their assigned advertisements.
+
+            Each beacon will include a list of advertisements it is linked to.
+
+            **Example Request:**
+            ```
+            GET /api/beacons-with-ads/
+            ```
+
+            **Responses:**
+            - `200 OK`: Returns a paginated list of beacons with assigned advertisements.
+            - `400 Bad Request`: If the request is invalid.
+        """,
+        responses={
+            200: BeaconSerializer(many=True),
+            400: OpenApiResponse(description="Invalid request"),
+        }
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
