@@ -93,7 +93,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
         summary="Retrieve a Beacon",
         description="Fetches the details of a specific beacon using its ID.",
         responses={
-            200: BeaconSerializer,
+            200: BeaconListSerializer,
             404: {"description": "Beacon not found."},
         }
     )
