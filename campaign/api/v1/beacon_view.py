@@ -1,5 +1,5 @@
 from campaign.models import Beacon
-from campaign.serializers import BeaconSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
+from campaign.serializers import BeaconSerializer, BeaconSimpleSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -103,9 +103,9 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Update a Beacon",
         description="Updates an existing beacon. Requires full object replacement.",
-        request=BeaconSerializer,
+        request=BeaconSimpleSerializer,
         responses={
-            200: BeaconSerializer,
+            200: BeaconListSerializer,
             400: {"description": "Invalid data provided."},
         }
     )
@@ -115,9 +115,9 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Partially Update a Beacon",
         description="Partially updates an existing beacon (only the provided fields).",
-        request=BeaconSerializer,
+        request=BeaconSimpleSerializer,
         responses={
-            200: BeaconSerializer,
+            200: BeaconListSerializer,
             400: {"description": "Invalid data provided."},
         }
     )
@@ -134,7 +134,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
 
 class BeaconActive(ListAPIView):
     """Retrieve a list of active beacons."""
-    serializer_class = BeaconSerializer
+    serializer_class = BeaconListSerializer
 
     def get_queryset(self):
         """Dynamically filter active beacons."""
@@ -157,7 +157,7 @@ class BeaconActive(ListAPIView):
             - If no active beacons are found, an empty list is returned.
             """,
         responses={
-            200: BeaconSerializer(many=True),
+            200: BeaconListSerializer(many=True),
             401: {"detail": "Authentication credentials were not provided."}
         },
     )
@@ -201,7 +201,7 @@ class BeaconCount(APIView):
 
 class BeaconLocationCount(APIView):
     """API endpoint to count the total number of unique beacon locations."""
-    permission_classes = [IsAuthenticated]  # Enforce authentication
+    # permission_classes = [IsAuthenticated]  # Enforce authentication
     @extend_schema(
         summary="Get Total Unique Beacon Locations",
         description="Returns the total number of unique beacon locations in the system.",
@@ -247,8 +247,8 @@ class BeaconStatus(RetrieveUpdateAPIView):
     """API to get and update beacon status"""
 
     queryset = Beacon.objects.all()
-    serializer_class = BeaconSerializer
-    permission_classes = [IsAuthenticated]  # Enforce authentication
+    serializer_class = BeaconListSerializer
+    # permission_classes = [IsAuthenticated]  # Enforce authentication
 
     @extend_schema(
         summary="Retrieve Beacon Status",

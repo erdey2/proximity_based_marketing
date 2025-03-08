@@ -33,7 +33,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 class BeaconListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
-        fields = ['beacon_id', 'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude']
+        fields = ['beacon_id', 'name', 'location_name',  'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude', 'status']
         # fields = ['__all__']
 
     def validate_minor(self, value):
