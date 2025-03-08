@@ -4,7 +4,7 @@ from django.core.cache import cache
 
 from rest_framework.views import APIView
 from campaign.models import Advertisement
-from campaign.serializers import AdvertisementSerializer, AdvertisementWithBeaconsSerializer
+from campaign.serializers import AdvertisementSerializer, AdvertisementWithBeaconsSerializer, AdvertisementSimpleSerializer, AdvertisementDateSerializer
 from datetime import datetime
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -73,7 +73,7 @@ class AdvertisementList(ListCreateAPIView):
             **Responses:**
             - `200 OK`: Returns a paginated list of advertisements.
             - `400 Bad Request`: If an invalid date format is provided.
-            """,
+        """,
         parameters=[
             OpenApiParameter(name="title", type=str, description="Filter by advertisement title", required=False),
             OpenApiParameter(name="start_date", type=str, description="Filter by start date (YYYY-MM-DD)", required=False),
@@ -94,25 +94,25 @@ class AdvertisementList(ListCreateAPIView):
 
             **Required Fields:**
             - `title` (string): The advertisement title.
+            - `content` (string): The advertisement content
             - `start_date` (YYYY-MM-DD): The start date of the advertisement.
             - `end_date` (YYYY-MM-DD): The end date of the advertisement.
-            - `is_active` (boolean, optional): Whether the advertisement is active.
 
             **Example Request Body:**
             ```json
             {
                 "title": "Gena Sale",
+                "content": "We are offering a ybs soap with 30% discount", 
                 "start_date": "2024-06-01",
                 "end_date": "2024-06-30",
-                "is_active": true
             }
             ```
 
             **Responses:**
             - `201 Created`: Successfully created a new advertisement.
             - `400 Bad Request`: If validation fails.
-            """,
-        request=AdvertisementSerializer,
+        """,
+        request=AdvertisementSimpleSerializer,
         responses={
             201: AdvertisementSerializer,
             400: OpenApiResponse(description="Invalid input data"),
@@ -129,16 +129,16 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Retrieve an Advertisement",
         description="""
-                Fetch the details of a specific advertisement using its `id`.
+            Fetch the details of a specific advertisement using its `id`.
 
-                **Example Request:**
-                ```
-                GET /api/advertisements/3/
-                ```
-                **Responses:**
-                - `200 OK`: Returns advertisement details.
-                - `404 Not Found`: If the advertisement does not exist.
-            """,
+            **Example Request:**
+            ```
+            GET /api/advertisements/3/
+            ```
+            **Responses:**
+            - `200 OK`: Returns advertisement details.
+            - `404 Not Found`: If the advertisement does not exist.
+        """,
         responses={
             200: AdvertisementSerializer,
             404: OpenApiResponse(description="Advertisement not found"),
@@ -150,23 +150,23 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Update an Advertisement",
         description="""
-                Update an advertisement by replacing all its fields with new values.
+            Update an advertisement by replacing all its fields with new values.
 
-                **Example Request Body:**
-                ```json
-                {
-                    "title": "Gena Sale",
-                    "start_date": "2025-12-01",
-                    "end_date": "2025-12-30",
-                    "is_active": true
-                }
-                ```
-                **Responses:**
-                - `200 OK`: Successfully updated the advertisement.
-                - `400 Bad Request`: If validation fails.
-                - `404 Not Found`: If the advertisement does not exist.
-            """,
-        request=AdvertisementSerializer,
+            **Example Request Body:**
+            ```json
+            {
+                "title": "Gena Sale",
+                "content": "We are offering a ybs soap with 30% discount", 
+                "start_date": "2025-12-01",
+                "end_date": "2025-12-30",
+            }
+            ```
+            **Responses:**
+            - `200 OK`: Successfully updated the advertisement.
+            - `400 Bad Request`: If validation fails.
+            - `404 Not Found`: If the advertisement does not exist.
+        """,
+        request=AdvertisementSimpleSerializer,
         responses={
             200: AdvertisementSerializer,
             400: OpenApiResponse(description="Invalid input data"),
@@ -179,21 +179,21 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Partially Update an Advertisement",
         description="""
-                Partially update an advertisement. Only the provided fields will be modified.
+            Partially update an advertisement. Only the provided fields will be modified.
 
-                **Example Request Body (Partial Update):**
-                ```json
-                {
-                    "title": "Ybs asbeza"
-                }
-                ```
+            **Example Request Body (Partial Update):**
+            ```json
+            {
+                "title": "Ybs asbeza"
+            }
+            ```
 
-                **Responses:**
-                - `200 OK`: Successfully updated the advertisement.
-                - `400 Bad Request`: If validation fails.
-                - `404 Not Found`: If the advertisement does not exist.
-            """,
-        request=AdvertisementSerializer,
+            **Responses:**
+            - `200 OK`: Successfully updated the advertisement.
+            - `400 Bad Request`: If validation fails.
+            - `404 Not Found`: If the advertisement does not exist.
+        """,
+        request=AdvertisementDateSerializer,
         responses={
             200: AdvertisementSerializer,
             400: OpenApiResponse(description="Invalid input data"),
@@ -206,17 +206,17 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Delete an Advertisement",
         description="""
-                Delete a specific advertisement using its `id`.
+            Delete a specific advertisement using its `id`.
 
-                **Example Request:**
-                ```
-                DELETE /api/advertisements/3/
-                ```
+            **Example Request:**
+            ```
+            DELETE /api/advertisements/3/
+            ```
 
-                **Responses:**
-                - `204 No Content`: Advertisement deleted successfully.
-                - `404 Not Found`: If the advertisement does not exist.
-            """,
+            **Responses:**
+            - `204 No Content`: Advertisement deleted successfully.
+            - `404 Not Found`: If the advertisement does not exist.
+        """,
         responses={
             204: OpenApiResponse(description="Advertisement deleted successfully"),
             404: OpenApiResponse(description="Advertisement not found"),
@@ -224,7 +224,6 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-
 
 class AdvertisementActive(ListAPIView):
     """List all active advertisements."""
@@ -238,17 +237,17 @@ class AdvertisementActive(ListAPIView):
     @extend_schema(
         summary="Get active advertisements",
         description="""
-                Fetch all advertisements that are currently active based on their start and end dates.
+            Fetch all advertisements that are currently active based on their start and end dates.
 
-                **Example Request:**
-                ```
-                GET /api/advertisements/active/
-                ```
+            **Example Request:**
+            ```
+            GET /api/advertisements/active/
+            ```
 
-                **Responses:**
-                - `200 OK`: Returns a list of active advertisements.
-                - `404 Not Found`: If no active advertisements are available.
-            """,
+            **Responses:**
+            - `200 OK`: Returns a list of active advertisements.
+            - `404 Not Found`: If no active advertisements are available.
+        """,
         responses={
             200: AdvertisementSerializer(many=True),
             404: OpenApiResponse(description="No active advertisements found")
@@ -263,6 +262,37 @@ class AdvertisementActive(ListAPIView):
 
 class CachedAdvertisementList(APIView):
     """Retrieve advertisements for a given beacon with Redis caching."""
+
+    @extend_schema(
+        summary="Retrieve Cached Advertisements for a Beacon",
+        description="""
+            Fetches advertisements associated with a specific beacon.
+            Uses **Redis caching** to improve performance.
+
+            **How It Works:**
+            - When first requested, ads are fetched from the database and stored in Redis for **5 minutes**.
+            - Subsequent requests within this timeframe **retrieve cached data**, reducing database load.
+
+            **URL Parameter:**
+            - `pk` (integer, required): The ID of the beacon.
+
+            **Example Request:**
+            ```
+            GET /api/beacons/{pk}/advertisements/
+            ```
+
+            **Responses:**
+            - `200 OK`: Returns a list of cached advertisements.
+            - `404 Not Found`: If no advertisements are found for the given beacon.
+        """,
+        parameters=[
+            OpenApiParameter(name="pk", type=int, description="Beacon ID", required=True),
+        ],
+        responses={
+            200: AdvertisementSerializer(many=True),
+            404: OpenApiResponse(description="No advertisements found"),
+        },
+    )
     def get(self, request, pk):
         cache_key = f"ads_for_beacon_{pk}"
         cached_ads = cache.get(cache_key)
@@ -278,5 +308,6 @@ class CachedAdvertisementList(APIView):
 @receiver(post_save, sender=Advertisement)
 @receiver(post_delete, sender=Advertisement)
 def clear_ad_cache(instance, **kwargs):
+    """ Clears the cached advertisements when an advertisement is added or deleted. """
     cache_key = f"ads_for_beacon_{instance.beacon_id}"
-    cache.delete(cache_key)  # Remove stale data from Redis
+    cache.delete(cache_key)
