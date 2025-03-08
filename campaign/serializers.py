@@ -139,6 +139,12 @@ class BeaconMessageSerializer(serializers.ModelSerializer):
         model = BeaconMessage
         fields = ['message_id', 'content', 'sent_at', 'read_at', 'beacon_id', 'beacon_name']
 
+class BeaconMessageCountSerializer(serializers.Serializer):
+    beacon_id = serializers.UUIDField(source="beacon__beacon_id")
+    beacon_name = serializers.CharField(source="beacon__name")
+    date = serializers.DateField()
+    total_messages = serializers.IntegerField()
+
 class AdvertisementLogSerializer(serializers.ModelSerializer):
     beacon_name = serializers.CharField(source="advertisement.beacon.name", read_only=True)
     advertisement_title = serializers.CharField(source="advertisement.title", read_only=True)
