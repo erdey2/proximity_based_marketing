@@ -2,7 +2,7 @@ from campaign.models import Beacon, Advertisement, AdvertisementAssignment
 from campaign.serializers import BeaconSerializer, AdvertisementAssignmentSerializer, AdvertisementWithBeaconsSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.pagination import PageNumberPagination
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 class AdvertisementAssignmentPagination(PageNumberPagination):
     page_size = 3
@@ -17,19 +17,50 @@ class AdvertisementAssignmentList(ListCreateAPIView):
     pagination_class = AdvertisementAssignmentPagination
 
     @extend_schema(
-        summary="List Advertisement Assignments",
-        description="Retrieve a paginated list of all advertisement assignments.",
-        responses={200: AdvertisementAssignmentSerializer(many=True)},
+        summary="Retrieve Advertisement Assignments",
+        description="""
+            Retrieves a **paginated list** of advertisement assignments.
+
+            **Responses:**
+            - `200 OK`: Returns a paginated list of advertisement assignments.
+            - `400 Bad Request`: If an invalid request is made.
+        """,
+        responses={
+            200: AdvertisementAssignmentSerializer(many=True),
+            400: OpenApiResponse(description="Invalid request"),
+        },
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Create an Advertisement Assignment",
-        description="Create a new advertisement assignment by providing advertisement and beacon details.",
+        summary="Create a New Advertisement Assignment",
+        description="""
+            Assigns an advertisement to a specific beacon.
+
+            **Required Fields:**
+            - `advertisement` (integer): The ID of the advertisement.
+            - `beacon` (integer): The ID of the beacon.
+
+            **Example Request Body:**
+            ```json
+            {
+                "advertisement": 1,
+                "beacon": 2,
+            }
+            ```
+
+            **Responses:**
+            - `201 Created`: Successfully assigned the advertisement.
+            - `400 Bad Request`: If validation fails.
+        """,
         request=AdvertisementAssignmentSerializer,
-        responses={201: AdvertisementAssignmentSerializer},
+        responses={
+            201: AdvertisementAssignmentSerializer,
+            400: OpenApiResponse(description="Invalid input data"),
+        },
     )
+
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 

@@ -104,6 +104,11 @@ class BeaconPartialUpdateSerializer(serializers.ModelSerializer):
         model = Beacon
         fields = ['beacon_id', 'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude']
 
+class BeaconLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beacon
+        fields = ['beacon_id', 'name', 'latitude', 'longitude']
+
 class BeaconStatusSerializer(serializers.ModelSerializer):
     """ Serializer for updating beacon status"""
     class Meta:

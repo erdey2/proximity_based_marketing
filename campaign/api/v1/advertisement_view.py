@@ -184,7 +184,7 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
             **Example Request Body (Partial Update):**
             ```json
             {
-                "title": "Ybs asbeza"
+                "end_date": "2025-05-26"
             }
             ```
 

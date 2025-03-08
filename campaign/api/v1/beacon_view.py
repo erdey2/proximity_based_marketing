@@ -1,5 +1,5 @@
 from campaign.models import Beacon
-from campaign.serializers import BeaconSerializer, BeaconSimpleSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
+from campaign.serializers import BeaconSerializer, BeaconLocationSerializer, BeaconSimpleSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -198,6 +198,39 @@ class BeaconCount(APIView):
             return Response({'message': 'No beacons available.'}, status=status.HTTP_204_NO_CONTENT)
 
         return Response({"count": total_beacons, "message": f"Found {total_beacons} beacons."}, status=status.HTTP_200_OK)
+
+class BeaconLocationList(ListAPIView):
+    """Retrieve all beacons with their latitude and longitude."""
+    queryset = Beacon.objects.all()
+    serializer_class = BeaconLocationSerializer
+
+    @extend_schema(
+        summary="Retrieve All Beacons' Locations",
+        description="""
+            Fetch a list of all beacons with their respective locations (latitude & longitude).
+
+            **Example Response:**
+            ```json
+            [
+                {
+                    "beacon_id": 1,
+                    "name": "Beacon 1",
+                    "latitude": 9.031,
+                    "longitude": 38.746
+                },
+                {
+                    "beacon_id": 2,
+                    "name": "Beacon 2",
+                    "latitude": 9.035,
+                    "longitude": 38.750
+                }
+            ]
+            ```
+        """,
+        responses={200: BeaconLocationSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 class BeaconLocationCount(APIView):
     """API endpoint to count the total number of unique beacon locations."""
