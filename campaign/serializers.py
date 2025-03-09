@@ -154,3 +154,8 @@ class AdvertisementLogSerializer(serializers.ModelSerializer):
         model = AdvertisementLog
         fields = ['beacon_id', 'beacon_name', 'log_id', 'timestamp', 'advertisement_title', 'advertisement_content', 'beacon_name']
 
+class AdvertisementLogPartialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementLog
+        fields = ['advertisement']
+

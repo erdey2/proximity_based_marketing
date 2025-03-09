@@ -1,12 +1,12 @@
 from campaign.models import AdvertisementLog
-from campaign.serializers import AdvertisementLogSerializer
+from campaign.serializers import AdvertisementLogSerializer, AdvertisementLogPartialSerializer
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils.timezone import now, timedelta
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from datetime import datetime
 
 class LogPagination(PageNumberPagination):
@@ -61,12 +61,36 @@ class LogList(ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Create a New Advertisement Log",
-        description="Create a new advertisement log with the provided data.",
+        summary="Create a new Advertisement Log",
+        description="""
+            Create a new advertisement log entry when a beacon sends an advertisement.  
+            The log records details such as which advertisement was sent, the beacon that sent it, 
+            and the timestamp of the event.
+
+            **Example Request:**
+            ```json
+            {
+                "log_id": "LOG123",
+                "advertisement": 1,
+                "beacon": 2,
+                "created_at": "2024-03-08T12:30:00Z"
+            }
+            ```
+
+            **Example Response (201 Created):**
+            ```json
+            {
+                "log_id": "LOG123",
+                "advertisement": 1,
+                "beacon": 2,
+                "created_at": "2024-03-08T12:30:00Z"
+            }
+            ```
+        """,
         request=AdvertisementLogSerializer,
         responses={
             201: AdvertisementLogSerializer,
-            400: {"message": "Invalid input data."},
+            400: OpenApiResponse(description="Bad Request - Invalid data format"),
         },
     )
     def post(self, request, *args, **kwargs):
@@ -77,35 +101,90 @@ class LogDetail(RetrieveUpdateDestroyAPIView):
     queryset = AdvertisementLog.objects.all()
 
     @extend_schema(
-        summary="Retrieve a Single Advertisement Log",
-        description="Retrieve the details of a specific advertisement log by providing its ID.",
-        responses={200: AdvertisementLogSerializer, 404: {"message": "Not Found"}},
+        summary="Retrieve an Advertisement Log",
+        description="""
+                Get details of a specific advertisement log by its ID.
+
+                **Example Response (200 OK):**
+                ```json
+                {
+                    "log_id": "LOG123",
+                    "advertisement": 1,
+                    "beacon": 2,
+                    "created_at": "2024-03-08T12:30:00Z"
+                }
+                ```
+            """,
+        responses={200: AdvertisementLogSerializer, 404: OpenApiResponse(description="Not Found")}
     )
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
     @extend_schema(
         summary="Update an Advertisement Log",
-        description="Update an advertisement log by providing its ID and new data.",
+        description="""
+                Replace an existing advertisement log entry with new data.
+
+                **Example Request:**
+                ```json
+                {
+                    "log_id": "LOG123",
+                    "advertisement": 2,
+                    "beacon": 3,
+                    "created_at": "2024-03-09T10:00:00Z"
+                }
+                ```
+
+                **Example Response (200 OK):**
+                ```json
+                {
+                    "log_id": "LOG123",
+                    "advertisement": 2,
+                    "beacon": 3,
+                    "created_at": "2024-03-09T10:00:00Z"
+                }
+                ```
+            """,
         request=AdvertisementLogSerializer,
-        responses={200: AdvertisementLogSerializer, 400: {"message": "Bad Request"}, 404: {"message": "Not Found"}},
+        responses={200: AdvertisementLogSerializer, 400: OpenApiResponse(description="Bad Request")}
+
     )
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
         summary="Partially Update an Advertisement Log",
-        description="Partially update an advertisement log by providing only the fields that need to be changed.",
-        request=AdvertisementLogSerializer(partial=True),
-        responses={200: AdvertisementLogSerializer, 400: {"message": "Bad Request"}, 404: {"message": "Not Found"}},
+        description="""
+                Update specific fields of an advertisement log without replacing the entire entry.
+
+                **Example Request:**
+                ```json
+                {
+                    "advertisement": 3
+                }
+                ```
+
+                **Example Response (200 OK):**
+                ```json
+                {
+                    "log_id": "LOG123",
+                    "advertisement": 3,
+                    "beacon": 2,
+                    "created_at": "2024-03-08T12:30:00Z"
+                }
+                ```
+            """,
+        request=AdvertisementLogSerializer,
+        responses={200: AdvertisementLogPartialSerializer, 400: OpenApiResponse(description="Bad Request")}
+
     )
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
 
     @extend_schema(
         summary="Delete an Advertisement Log",
-        description="Delete a specific advertisement log by providing its ID.",
-        responses={204: None, 404: {"message": "Not Found"}},
+        description="Delete a specific advertisement log by ID.",
+        responses={204: OpenApiResponse(description="No Content"), 404: OpenApiResponse(description="Not Found")}
     )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
