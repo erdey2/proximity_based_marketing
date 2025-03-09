@@ -39,19 +39,18 @@ class LogList(ListCreateAPIView):
     @extend_schema(
         summary="Retrieve Advertisement Logs",
         description="""
-                Retrieve a paginated list of all advertisement logs, with optional filtering by `log_id` and `created_at`.
-
-                **Example Response:**
-                ```json
-                {
-                    "id": 1,
-                    "log_id": "LOG123",
-                    "created_at": "2024-02-23",
-                    "advertisement_title": "Promo Sale",
-                    "beacon_name": "Beacon A"
-                }
-                ```
-                """,
+            Retrieve a paginated list of all advertisement logs, with optional filtering by `log_id` and `created_at`.
+            **Example Response:**
+            ```json
+            {
+                "id": 1,
+                "log_id": "LOG123",
+                "created_at": "2024-02-23",
+                "advertisement_title": "New Year Sale",
+                "beacon_name": "Beacon A"
+            }
+            ```
+        """,
         parameters=[
             OpenApiParameter(name="log_id", description="Filter by log ID", required=False, type=str),
             OpenApiParameter(name="created_at", description="Filter by created date (YYYY-MM-DD)", required=False, type=str),
