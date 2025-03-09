@@ -55,13 +55,46 @@ class MessageList(generics.ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Create a new message",
-        description="Create a new message with the provided data.",
+        summary="Create a new beacon message",
+        description="""
+            This endpoint allows creating a new message sent by a beacon. 
+            The request should include details such as the beacon ID, message content, 
+            and timestamp when the message was sent.
+
+            **Example Request:**
+            ```json
+            {
+                "beacon": "123e4567-e89b-12d3-a456-426614174000",
+                "message": "Special discount available!",
+                "sent_at": "2025-03-08T12:30:00Z"
+            }
+            ```
+        """,
         request=BeaconMessageSerializer,
         responses={
-            201: BeaconMessageSerializer,
-            400: {"description": "Invalid input data."},
+            201: {
+                "description": "Message successfully created.",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "id": 1,
+                            "beacon": "123e4567-e89b-12d3-a456-426614174000",
+                            "message": "Special discount available!",
+                            "sent_at": "2025-03-08T12:30:00Z"
+                        }
+                    }
+                }
+            },
+            400: {
+                "description": "Bad request. Invalid or missing data.",
+                "content": {
+                    "application/json": {
+                        "example": {"detail": "Invalid beacon ID or missing required fields."}
+                    }
+                }
+            }
         },
+
     )
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
@@ -72,46 +105,12 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BeaconMessageSerializer
 
     @extend_schema(
-        summary="Retrieve a specific Beacon Message",
-        description="Retrieve a Beacon Message by its ID.",
-        responses={200: BeaconMessageSerializer},
-    )
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Update an Advertisement Log",
-        description="Replace an existing advertisement log with the provided data.",
-        request=BeaconMessageSerializer,
+        summary="Retrieve a specific beacon message",
+        description="Fetch the details of a single beacon message by its ID.",
         responses={
             200: BeaconMessageSerializer,
-            400: {"message": "Bad Request"},
-            404: {"message": "Not Found"},
-        },
-    )
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Partially Update an Advertisement Log",
-        description="Update specific fields of an advertisement log.",
-        request=BeaconMessageSerializer(partial=True),
-        responses={
-            200: BeaconMessageSerializer,
-            400: {"message": "Bad Request"},
-            404: {"message": "Not Found"},
-        },
-    )
-    def patch(self, request, *args, **kwargs):
-        self.partial_update(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Delete a specific Beacon Message",
-        description="Delete a Beacon Message by its ID.",
-        responses={
-            204: None,
             404: {
-                "description": "Not Found. The specified Beacon Message does not exist.",
+                "description": "Message not found.",
                 "content": {
                     "application/json": {
                         "example": {"detail": "Not found."}
@@ -120,9 +119,89 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
             }
         },
     )
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update a beacon message",
+        description="""
+            Replace the entire message object with a new one.
+
+            **Example Request:**
+            ```json
+            {
+                "beacon": "123e4567-e89b-12d3-a456-426614174000",
+                "message": "Updated advertisement message!",
+                "sent_at": "2025-03-08T15:45:00Z"
+            }
+            ```
+        """,
+        request=BeaconMessageSerializer,
+        responses={
+            200: BeaconMessageSerializer,
+            400: {
+                "description": "Bad request. Invalid or missing data.",
+                "content": {
+                    "application/json": {
+                        "example": {"detail": "Invalid beacon ID or missing required fields."}
+                    }
+                }
+            }
+        },
+
+    )
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Partially update a beacon message",
+        description="""
+            Update specific fields of a beacon message without replacing the whole object.
+
+            **Example Request:**
+            ```json
+            {
+                "message": "Limited-time offer!"
+            }
+            ```
+        """,
+        request=BeaconMessageSerializer(partial=True),
+        responses={
+            200: BeaconMessageSerializer,
+            400: {
+                "description": "Bad request. Invalid or missing data.",
+                "content": {
+                    "application/json": {
+                        "example": {"detail": "Invalid data provided."}
+                    }
+                }
+            }
+        },
+
+    )
+    def patch(self, request, *args, **kwargs):
+        self.partial_update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Delete a beacon message",
+        description="Remove a beacon message from the system permanently.",
+        responses={
+            204: {
+                "description": "Message successfully deleted."
+            },
+            404: {
+                "description": "Message not found.",
+                "content": {
+                    "application/json": {
+                        "example": {"detail": "Not found."}
+                    }
+                }
+            }
+        },
+
+    )
     def delete(self, request, *args, **kwargs):
             return self.destroy(request, *args, **kwargs)
-
 
 class BeaconMessageCountView(generics.ListAPIView):
     """ API endpoint to get the total messages sent by each beacon per day. """
