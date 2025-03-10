@@ -18,7 +18,7 @@ class MessagePagination(PageNumberPagination):
 class MessageList(generics.ListCreateAPIView):
     """Create and List messages from beacons"""
     serializer_class = BeaconMessageSerializer
-    pagination_class = MessagePagination  # Apply pagination
+    # pagination_class = MessagePagination  # Apply pagination
 
     def get_queryset(self):
         qs = BeaconMessage.objects.select_related('beacon').all()  # Optimize query

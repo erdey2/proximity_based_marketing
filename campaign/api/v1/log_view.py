@@ -19,7 +19,7 @@ class LogPagination(PageNumberPagination):
 class LogList(ListCreateAPIView):
     """List all Advertisement Logs or create a new one."""
     serializer_class = AdvertisementLogSerializer
-    pagination_class = LogPagination
+    # pagination_class = LogPagination
 
     def get_queryset(self):
         qs = AdvertisementLog.objects.select_related('advertisement', 'beacon').all()

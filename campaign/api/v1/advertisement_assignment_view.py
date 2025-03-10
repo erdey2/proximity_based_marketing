@@ -14,7 +14,7 @@ class AdvertisementAssignmentList(ListCreateAPIView):
 
     queryset = AdvertisementAssignment.objects.all()
     serializer_class = AdvertisementAssignmentSerializer
-    pagination_class = AdvertisementAssignmentPagination
+    # pagination_class = AdvertisementAssignmentPagination
 
     @extend_schema(
         summary="Retrieve Advertisement Assignments",

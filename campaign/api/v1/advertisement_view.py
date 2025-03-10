@@ -28,7 +28,7 @@ class AdvertisementPagination(PageNumberPagination):
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
     serializer_class = AdvertisementSerializer
-    pagination_class = AdvertisementPagination
+    # pagination_class = AdvertisementPagination
     ordering_fields = ['created_at', 'title']
     ordering = ['-created_at']  # Default ordering
 
