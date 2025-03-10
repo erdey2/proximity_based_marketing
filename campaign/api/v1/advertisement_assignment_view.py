@@ -4,17 +4,10 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
-class AdvertisementAssignmentPagination(PageNumberPagination):
-    page_size = 3
-    page_query_param = 'page_size'
-    max_page_size = 50
-
 class AdvertisementAssignmentList(ListCreateAPIView):
     """API endpoint for listing and creating advertisement assignments."""
-
     queryset = AdvertisementAssignment.objects.all()
     serializer_class = AdvertisementAssignmentSerializer
-    # pagination_class = AdvertisementAssignmentPagination
 
     @extend_schema(
         summary="Retrieve Advertisement Assignments",

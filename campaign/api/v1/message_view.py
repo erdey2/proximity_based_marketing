@@ -1,24 +1,16 @@
 from django.db.models import Count
 from django.db.models.functions import TruncDate
-
 from campaign.models import BeaconMessage
 from campaign.serializers import BeaconMessageSerializer, BeaconMessageCountSerializer
 from datetime import datetime
 from rest_framework.exceptions import ValidationError
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-
-class MessagePagination(PageNumberPagination):
-    page_size = 2 # Customize page size
-    page_query_param = 'page_size' # Allow clients to specify page size
-    max_page_size = 50  # Limit maximum page size
 
 class MessageList(generics.ListCreateAPIView):
     """Create and List messages from beacons"""
     serializer_class = BeaconMessageSerializer
-    # pagination_class = MessagePagination  # Apply pagination
 
     def get_queryset(self):
         qs = BeaconMessage.objects.select_related('beacon').all()  # Optimize query

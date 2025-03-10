@@ -17,18 +17,9 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiRespon
 class AdvertisementRateLimit(UserRateThrottle):
     rate = '1/minute'  # Custom throttle rate for this view
 
-""" class AdvertisementPagination(PageNumberPagination):
-    page_size = 2
-    page_query_param = 'page_size'
-    max_page_size = 50
-    invalid_page_message = 'page not found'
-    display_page_controls = False
-    throttle_classes = [AdvertisementRateLimit] """
-
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
     serializer_class = AdvertisementSerializer
-    # pagination_class = AdvertisementPagination
     ordering_fields = ['created_at', 'title']
     ordering = ['-created_at']  # Default ordering
 

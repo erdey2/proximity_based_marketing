@@ -9,17 +9,9 @@ from django.utils.timezone import now, timedelta
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from datetime import datetime
 
-class LogPagination(PageNumberPagination):
-    page_size = 2
-    page_query_param = 'page_size'
-    max_page_size = 50
-    display_page_controls = False
-    invalid_page_message = 'invalid page'
-
 class LogList(ListCreateAPIView):
     """List all Advertisement Logs or create a new one."""
     serializer_class = AdvertisementLogSerializer
-    # pagination_class = LogPagination
 
     def get_queryset(self):
         qs = AdvertisementLog.objects.select_related('advertisement', 'beacon').all()
