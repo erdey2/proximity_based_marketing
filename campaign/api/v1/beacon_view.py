@@ -16,7 +16,7 @@ class BeaconPagination(PageNumberPagination):
 class BeaconList(ListCreateAPIView):
         """List all beacons or create a new one."""
         serializer_class = BeaconListSerializer
-        pagination_class = BeaconPagination
+        # pagination_class = BeaconPagination
 
         def get_queryset(self):
             qs = Beacon.objects.all()
