@@ -1,7 +1,6 @@
 from campaign.models import Beacon
 from campaign.serializers import BeaconSerializer, BeaconLocationSerializer, BeaconSimpleSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter,OpenApiResponse
@@ -10,7 +9,6 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 class BeaconList(ListCreateAPIView):
         """List all beacons or create a new one."""
         serializer_class = BeaconListSerializer
-        # pagination_class = BeaconPagination
 
         def get_queryset(self):
             qs = Beacon.objects.all()
@@ -195,7 +193,6 @@ class BeaconCount(APIView):
 
 class BeaconLocationList(ListAPIView):
     """Retrieve all beacons with their latitude and longitude."""
-    pagination_class = BeaconPagination
     queryset = Beacon.objects.all()
     serializer_class = BeaconLocationSerializer
 

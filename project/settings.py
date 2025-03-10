@@ -116,6 +116,7 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+
 DATABASE_URL = "postgresql://neondb_owner:npg_6njoeWwZT7Im@ep-shrill-smoke-a8atnvfr-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
 parsed_url = urlparse(DATABASE_URL)
@@ -124,7 +125,7 @@ DATABASES = {
     'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 
     # 'default': {
-        # 'ENGINE': 'django.db.backends.postgresql',
+        #'ENGINE': 'django.db.backends.postgresql',
         # 'NAME': parsed_url.path[1:],  # Remove leading slash
         # 'USER': parsed_url.username,
         # 'PASSWORD': parsed_url.password,

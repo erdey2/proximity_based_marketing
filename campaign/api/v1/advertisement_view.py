@@ -1,13 +1,7 @@
-from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
-from django.core.cache import cache
-
-from rest_framework.views import APIView
 from campaign.models import Advertisement
-from campaign.serializers import AdvertisementSerializer, AdvertisementWithBeaconsSerializer, AdvertisementSimpleSerializer, AdvertisementDateSerializer
+from campaign.serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementDateSerializer
 from datetime import datetime
 from rest_framework import status
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from django.utils.timezone import now
@@ -20,8 +14,6 @@ class AdvertisementRateLimit(UserRateThrottle):
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
     serializer_class = AdvertisementSerializer
-    ordering_fields = ['created_at', 'title']
-    ordering = ['-created_at']  # Default ordering
 
     def get_queryset(self):
         qs = Advertisement.objects.all()

@@ -35,7 +35,6 @@ class LogList(ListCreateAPIView):
             **Example Response:**
             ```json
             {
-                "id": 1,
                 "log_id": "LOG123",
                 "created_at": "2024-02-23",
                 "advertisement_title": "New Year Sale",

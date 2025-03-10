@@ -7,7 +7,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         # fields = ['advertisement_id', 'title', 'content', 'start_date', 'end_date', 'is_active', 'created_at', 'media_file']
-        fields = ['__all__']
+        fields = '__all__'
 
     def validate_start_date(self, value):
         """ Validate that start_date is not in the past. """
@@ -60,8 +60,7 @@ class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
 class BeaconListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
-        fields = ['beacon_id', 'name', 'location_name',  'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude', 'status']
-        # fields = ['__all__']
+        fields = '__all__'
 
     def validate_minor(self, value):
         if value is None or value < 0:
