@@ -5,8 +5,8 @@ from django.utils.timezone import now
 class Beacon(models.Model):
     beacon_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=100, unique=True, db_index=True)
-    minor = models.IntegerField(null=True, blank=True)
-    major = models.IntegerField(null=True, blank=True)
+    minor = models.IntegerField(null=True, blank=True, default=0)
+    major = models.IntegerField(null=True, blank=True, default=0)
     location_name = models.CharField(max_length=100, db_index=True)
     signal_strength = models.FloatField(null=True, blank=True) # updated by mobile app
     battery_status = models.FloatField(null=True, blank=True) # updated by mobile app
@@ -15,8 +15,8 @@ class Beacon(models.Model):
         ACTIVE = 'Active', 'Active'
         INACTIVE = 'Inactive', 'Inactive'
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.INACTIVE)
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True, default=9.1450)
+    longitude = models.FloatField(null=True, blank=True, default=38.7525)
 
     def __str__(self):
         return f"{self.name} {self.location_name} ({self.status})"
