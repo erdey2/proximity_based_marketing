@@ -9,7 +9,7 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
 class AdvertisementRateLimit(UserRateThrottle):
-    rate = '1/minute'  # Custom throttle rate for this view
+    rate = '100/minute'  # Custom throttle rate for this view
 
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
