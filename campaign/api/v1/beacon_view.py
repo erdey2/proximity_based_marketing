@@ -79,7 +79,7 @@ class BeaconList(ListCreateAPIView):
 class BeaconDetail(RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a beacon."""
     queryset = Beacon.objects.all()
-    serializer_class = BeaconPartialUpdateSerializer
+    serializer_class = BeaconListSerializer
 
     @extend_schema(
         summary="Retrieve a Beacon",
