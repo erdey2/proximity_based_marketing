@@ -13,11 +13,11 @@ class BeaconList(ListCreateAPIView):
         def get_queryset(self):
             qs = Beacon.objects.all()
             name = self.request.GET.get('name')
-            location_name = self.request.GET.get('location_name')
+            price = self.request.GET.get('price')
             if name:
                 qs = qs.filter(name__icontains=name)
-            if location_name:
-                qs = qs.filter(location_name__icontains=location_name)
+            if price:
+                qs = qs.filter(price__leq=price)
             return qs
 
         @extend_schema(

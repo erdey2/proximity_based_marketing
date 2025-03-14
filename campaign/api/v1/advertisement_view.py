@@ -1,10 +1,6 @@
 from campaign.models import Advertisement
 from campaign.serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementDateSerializer
-from datetime import datetime
-from rest_framework import status
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.response import Response
-from django.utils.timezone import now
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
@@ -18,24 +14,9 @@ class AdvertisementList(ListCreateAPIView):
     def get_queryset(self):
         qs = Advertisement.objects.all()
         title = self.request.GET.get('title')
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
 
         if title:
             qs = qs.filter(title__icontains=title)
-        if start_date:
-            try:
-                parsed_start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-                qs = qs.filter(start_date__gte=parsed_start_date)
-            except ValueError:
-                return Advertisement.objects.none()  # Return empty queryset if date format is invalid
-
-        if end_date:
-            try:
-                parsed_end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
-                qs = qs.filter(end_date__lte=parsed_end_date)
-            except ValueError:
-                return Advertisement.objects.none()
         return qs
 
     @extend_schema(
@@ -45,8 +26,6 @@ class AdvertisementList(ListCreateAPIView):
 
             **Filter Parameters:**
             - `title` (string, optional): Search for advertisements by title.
-            - `start_date` (YYYY-MM-DD, optional): Filter ads that started **on or after** this date.
-            - `end_date` (YYYY-MM-DD, optional): Filter ads that ended **on or before** this date.
 
             **Example Requests:**
             ```
@@ -59,8 +38,6 @@ class AdvertisementList(ListCreateAPIView):
         """,
         parameters=[
             OpenApiParameter(name="title", type=str, description="Filter by advertisement title", required=False),
-            OpenApiParameter(name="start_date", type=str, description="Filter by start date (YYYY-MM-DD)", required=False),
-            OpenApiParameter(name="end_date", type=str, description="Filter by end date (YYYY-MM-DD)", required=False),
         ],
         responses={
             200: AdvertisementSerializer(many=True),
@@ -78,16 +55,12 @@ class AdvertisementList(ListCreateAPIView):
             **Required Fields:**
             - `title` (string): The advertisement title.
             - `content` (string): The advertisement content
-            - `start_date` (YYYY-MM-DD): The start date of the advertisement.
-            - `end_date` (YYYY-MM-DD): The end date of the advertisement.
 
             **Example Request Body:**
             ```json
             {
                 "title": "Gena Sale",
                 "content": "We are offering a ybs soap with 30% discount", 
-                "start_date": "2024-06-01",
-                "end_date": "2024-06-30",
             }
             ```
 
@@ -140,8 +113,6 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
             {
                 "title": "Gena Sale",
                 "content": "We are offering a ybs soap with 30% discount", 
-                "start_date": "2025-12-01",
-                "end_date": "2025-12-30",
             }
             ```
             **Responses:**
@@ -207,38 +178,3 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-
-class AdvertisementActive(ListAPIView):
-    """List all active advertisements."""
-    serializer_class = AdvertisementSerializer
-
-    def get_queryset(self):
-        """Return only active advertisements based on start and end dates."""
-        current_time = now()
-        return Advertisement.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
-
-    @extend_schema(
-        summary="Get active advertisements",
-        description="""
-            Fetch all advertisements that are currently active based on their start and end dates.
-
-            **Example Request:**
-            ```
-            GET /api/advertisements/active/
-            ```
-
-            **Responses:**
-            - `200 OK`: Returns a list of active advertisements.
-            - `404 Not Found`: If no active advertisements are available.
-        """,
-        responses={
-            200: AdvertisementSerializer(many=True),
-            404: OpenApiResponse(description="No active advertisements found")
-        }
-    )
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if not queryset.exists():
-            return Response({"message": "No active advertisements found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,12 +1,35 @@
 from campaign.models import Beacon, Advertisement, AdvertisementAssignment
 from campaign.serializers import BeaconSerializer, AdvertisementAssignmentSerializer, AdvertisementWithBeaconsSerializer, AdvertisementAssignmentBeaconSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from rest_framework.response import Response
+from rest_framework import status
+from datetime import datetime
+from django.utils.timezone import now
 
 class AdvertisementAssignmentList(ListCreateAPIView):
     """API endpoint for listing and creating advertisement assignments."""
-    queryset = AdvertisementAssignment.objects.all()
     serializer_class = AdvertisementAssignmentSerializer
+
+    def get_queryset(self):
+        qs = AdvertisementAssignment.objects.all()
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        if start_date:
+            try:
+                parsed_start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+                qs = qs.filter(start_date__gte=parsed_start_date)
+            except ValueError:
+                return Advertisement.objects.none()  # Return empty queryset if date format is invalid
+
+        if end_date:
+            try:
+                parsed_end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+                qs = qs.filter(end_date__lte=parsed_end_date)
+            except ValueError:
+                return Advertisement.objects.none()
+        return qs
 
     @extend_schema(
         summary="Retrieve Advertisement Assignments",
@@ -17,6 +40,10 @@ class AdvertisementAssignmentList(ListCreateAPIView):
             - `200 OK`: Returns a paginated list of advertisement assignments.
             - `400 Bad Request`: If an invalid request is made.
         """,
+        parameters=[
+            OpenApiParameter(name="start_date", type=str, description="Filter by start date (YYYY-MM-DD)", required=False),
+            OpenApiParameter(name="end_date", type=str, description="Filter by end date (YYYY-MM-DD)", required=False),
+        ],
         responses={
             200: AdvertisementAssignmentSerializer(many=True),
             400: OpenApiResponse(description="Invalid request"),
@@ -187,6 +214,41 @@ class AdvertisementListWithBeaconsView(ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+class AdvertisementActive(ListAPIView):
+    """List all active advertisements."""
+    serializer_class = AdvertisementAssignmentSerializer
+
+    def get_queryset(self):
+        """Return only active advertisements based on start and end dates."""
+        current_time = now()
+        return Advertisement.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
+
+    @extend_schema(
+        summary="Get active advertisements",
+        description="""
+            Fetch all advertisements that are currently active based on their start and end dates.
+
+            **Example Request:**
+            ```
+            GET /api/advertisements/active/
+            ```
+
+            **Responses:**
+            - `200 OK`: Returns a list of active advertisements.
+            - `404 Not Found`: If no active advertisements are available.
+        """,
+        responses={
+            200: AdvertisementAssignmentSerializer(many=True),
+            404: OpenApiResponse(description="No active advertisements found")
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset.exists():
+            return Response({"message": "No active advertisements found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class BeaconListWithAdsView(ListAPIView):
     """ API endpoint to list beacons along with their assigned advertisements."""

@@ -34,8 +34,6 @@ class Advertisement(models.Model):
     advertisement_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=255, null=False, db_index=True)
     content = models.TextField(null=False)
-    start_date = models.DateTimeField(db_index=True, default=now)
-    end_date = models.DateTimeField(db_index=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     media_file = models.FileField(upload_to='advertisements/', null=True, blank=True)
@@ -50,20 +48,22 @@ class Advertisement(models.Model):
         choices=Type.choices,
         default = Type.TEXT
     )
-    class Meta:
-        ordering = ['-start_date']
 
     def __str__(self):
         return f"{self.title} Advertisement ({self.end_date})"
 
 
 class AdvertisementAssignment(models.Model):
+    assignment_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     beacon = models.ForeignKey(Beacon, on_delete=models.CASCADE, to_field='beacon_id', related_name='advertisement_assignments')
     advertisement = models.ForeignKey(Advertisement, on_delete=models.CASCADE, to_field='advertisement_id', related_name='advertisement_assignments')
+    start_date = models.DateTimeField(db_index=True, default=now)
+    end_date = models.DateTimeField(db_index=True)
     assigned_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('beacon', 'advertisement') # prevents duplicate assignments
+        ordering = ['-start_date']
 
 
 class BeaconMessage(models.Model):

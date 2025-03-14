@@ -5,7 +5,6 @@ from campaign.serializers import BeaconMessageSerializer, BeaconMessageCountSeri
 from datetime import datetime
 from rest_framework.exceptions import ValidationError
 from rest_framework import generics
-from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 class MessageList(generics.ListCreateAPIView):

@@ -22,10 +22,10 @@ urlpatterns = [
     # advertisement related views
     path('api/v1/advertisements/', advertisement_view.AdvertisementList.as_view(), name='advertisements_list'),
     path('api/v1/advertisements/<uuid:pk>/', advertisement_view.AdvertisementDetail.as_view(), name='advertisement_detail'),
-    path('api/v1/advertisements/active/', advertisement_view.AdvertisementActive.as_view(), name='advertisements_active'),
     path('api/v1/advertisements-with-beacons/', advertisement_assignment_view.AdvertisementListWithBeaconsView.as_view(), name='ad_beacons'),
 
     # advertisement assignments
+    path('api/v1/advertisements/active/', advertisement_assignment_view.AdvertisementActive.as_view(), name='advertisements_active'),
     path('api/v1/advertisements/assignments/', advertisement_assignment_view.AdvertisementAssignmentList.as_view(), name='advertisement_assignment'),
     path('api/v1/advertisements/assignments/<uuid:pk>/', advertisement_assignment_view.AdvertisementAssignmentDetail.as_view(), name='ads_assignment_detail'),
 
