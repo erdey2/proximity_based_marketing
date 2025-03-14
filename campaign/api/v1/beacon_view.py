@@ -105,9 +105,9 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Partially Update a Beacon",
-        description="Partially updates an existing beacon (only the provided fields).",
-        request=BeaconStatusSerializer,
+        summary="Update a Beacon status from data received from mobile app",
+        description="Updates an existing beacon (only the provided fields).",
+        request=BeaconPartialUpdateSerializer,
         responses={
             200: BeaconListSerializer,
             400: {"description": "Invalid data provided."},
