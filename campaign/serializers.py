@@ -125,7 +125,7 @@ class BeaconStatusSerializer(serializers.ModelSerializer):
 class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdvertisementAssignment
-        fields = ['beacon', 'advertisement', 'assigned_at']
+        fields = '__all__'
 
 class AdvertisementAssignmentBeaconSerializer(serializers.ModelSerializer):
     class Meta:
