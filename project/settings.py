@@ -14,8 +14,14 @@ from urllib.parse import urlparse
 from pathlib import Path
 
 import os
-import dj_database_url
+import environ
 from tutorial.settings import ALLOWED_HOSTS
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+# Initialize environment variables
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -120,10 +126,8 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASE_URL = "postgresql://neondb_owner:npg_6njoeWwZT7Im@ep-shrill-smoke-a8atnvfr-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
-parsed_url = urlparse(DATABASE_URL)
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL')),
+    "default": env.db(),
 }
 
 """ DATABASES = {
