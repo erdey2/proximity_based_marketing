@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%7vimodp6z3r5$e$7+%ab)*c-!xygdgwf3=8md3@a(o&o6e@9b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -53,6 +53,11 @@ INSTALLED_APPS = [
     'celery',
     'django_celery_beat',
     'campaign',
+    'beacons',
+    'advertisements',
+    'assignments',
+    'beacon_messages',
+    'logs',
 ]
 REST_FRAMEWORK = {
    # 'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -89,7 +94,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 
 
 ROOT_URLCONF = 'project.urls'
