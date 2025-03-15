@@ -39,12 +39,18 @@ const ProductManagement = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessage("✅ Product added successfully!");
-      setName("");
-      setPrice("");
+      setName("");  // Clear input fields
+      setPrice(""); 
       fetchProducts();
     } catch (error) {
       setMessage("❌ Failed to add product.");
     }
+  };
+
+  // 🔹 Handle Logout Function
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken"); // Remove token from storage
+    setIsLoggedIn(false); // Update state to reflect logout
   };
 
   return (
@@ -52,10 +58,18 @@ const ProductManagement = () => {
       {isLoggedIn ? (
         <>
           <Typography variant="h4">Manage Products</Typography>
+
+          {/* 🔹 Logout Button */}
+          <Button onClick={handleLogout} variant="contained" color="secondary" sx={{ marginBottom: 2 }}>
+            Logout
+          </Button>
+
           {message && <Alert severity="info">{message}</Alert>}
+
           <TextField label="Product Name" fullWidth value={name} onChange={(e) => setName(e.target.value)} sx={{ marginBottom: 2 }} />
           <TextField label="Price" type="number" fullWidth value={price} onChange={(e) => setPrice(e.target.value)} sx={{ marginBottom: 2 }} />
           <Button onClick={handleAddProduct} variant="contained" color="primary">Add Product</Button>
+
           <List>
             {products.map((product) => (
               <ListItem key={product.id}>
