@@ -120,13 +120,13 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-""" DATABASE_URL = "postgresql://neondb_owner:npg_6njoeWwZT7Im@ep-shrill-smoke-a8atnvfr-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+DATABASE_URL = "postgresql://neondb_owner:npg_6njoeWwZT7Im@ep-shrill-smoke-a8atnvfr-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 parsed_url = urlparse(DATABASE_URL)
 DATABASES = {
     'default': dj_database_url.config(default=os.getenv('DATABASE_URL')),
-} """
+}
 
-DATABASES = {
+""" DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'beacon_market_db',
@@ -135,7 +135,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     }
-}
+} """
 
 # Redis Cache Configuration
 """ CACHES = {
