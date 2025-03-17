@@ -197,7 +197,6 @@ class BeaconStatus(RetrieveUpdateAPIView):
     serializer_class = BeaconListSerializer
 
     # permission_classes = [IsAuthenticated]  # Enforce authentication
-
     @extend_schema(
         summary="Retrieve Beacon Status",
         description="Fetch the current active/inactive status of a beacon.",
