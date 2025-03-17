@@ -50,7 +50,6 @@ psycopg2-binary==2.9.10
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pycparser==2.22
-pygraphviz==1.14
 PyJWT==2.10.1
 pyOpenSSL==25.0.0
 python-crontab==3.2.0
