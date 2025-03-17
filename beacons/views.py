@@ -1,6 +1,5 @@
 from .models import Beacon
-from .serializers import BeaconSerializer, BeaconLocationSerializer, BeaconSimpleSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconPartialUpdateSerializer
-from rest_framework.views import APIView
+from .serializers import BeaconLocationSerializer, BeaconSimpleSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconDataUpdateSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
@@ -68,7 +67,7 @@ class BeaconList(ListCreateAPIView):
                 - `201 Created`: Successfully created a new beacon.
                 - `400 Bad Request`: If validation fails.
                 """,
-        request=BeaconListSerializer,
+        request=BeaconSimpleSerializer,
         responses={
             201: BeaconListSerializer,
             400: OpenApiResponse(description="Invalid input data"),
@@ -76,7 +75,6 @@ class BeaconList(ListCreateAPIView):
     )
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
-
 
 class BeaconDetail(RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a beacon."""
@@ -96,7 +94,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
 
     @extend_schema(
         summary="Update a Beacon",
-        description="Updates an existing beacon. Requires full object replacement.",
+        description="Updates an existing beacon name and/or location name.",
         request=BeaconSimpleSerializer,
         responses={
             200: BeaconListSerializer,
@@ -109,7 +107,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Update a Beacon status from data received from mobile app",
         description="Updates an existing beacon (only the provided fields).",
-        request=BeaconPartialUpdateSerializer,
+        request=BeaconDataUpdateSerializer,
         responses={
             200: BeaconListSerializer,
             400: {"description": "Invalid data provided."},

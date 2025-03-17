@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Beacon
+from advertisements.serializers import AdvertisementSerializer
 
 class BeaconListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,9 +42,9 @@ class BeaconSerializer(serializers.ModelSerializer):
 class BeaconSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
-        fields = ['beacon_id', 'name', 'location_name']
+        fields = ['name', 'location_name']
 
-class BeaconPartialUpdateSerializer(serializers.ModelSerializer):
+class BeaconDataUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
         fields = ['beacon_id', 'minor', 'major', 'signal_strength', 'battery_status', 'latitude', 'longitude']
