@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'celery',
     'django_celery_beat',
+    'django_extensions',
     'campaign',
     'beacons',
     'advertisements',
