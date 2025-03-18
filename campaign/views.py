@@ -16,7 +16,7 @@ def api_root(request):
             "Beacon with Ads": request.build_absolute_uri('/api/v1/beacons-with-ads'),
             "Beacon Location List": request.build_absolute_uri('/api/v1/beacons/location'),
             "Beacon Location Count": request.build_absolute_uri('/api/v1/beacons/location_count/'),
-            "Beacons Message Count": request.build_absolute_uri('/api/v1/beacons/beacon-messages/count/'),
+            "Beacons Message Count": request.build_absolute_uri('/api/v1/beacons/beacon_messages/count/'),
 
             "Advertisements": request.build_absolute_uri('/api/v1/advertisements/'),
             "Cached Advertisements": request.build_absolute_uri('/api/v1/advertisements/cached_ad'),
@@ -26,7 +26,7 @@ def api_root(request):
             "Logs": request.build_absolute_uri('/api/v1/logs/'),
             "Logs Count": request.build_absolute_uri('/api/v1/logs/count/'),
 
-            "Messages": request.build_absolute_uri('/api/v1/beacon-messages/'),
+            "Messages": request.build_absolute_uri('/api/v1/beacon_messages/'),
 
             "Authentication": {
                 "Obtain Token": request.build_absolute_uri(reverse('token_obtain_pair')),

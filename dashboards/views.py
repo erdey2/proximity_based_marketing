@@ -94,12 +94,12 @@ class BeaconLocationCount(APIView):
         return Response({'total_locations': total_locations}, status=status.HTTP_200_OK)
 
 class BeaconMessageCountView(generics.ListAPIView):
-    """ API endpoint to get the total beacon-messages sent by each beacon per day. """
+    """ API endpoint to get the total beacon_messages sent by each beacon per day. """
     serializer_class = BeaconMessageCountSerializer
 
     extend_schema(
         summary="Retrieve beacon message counts per day",
-        description="Returns a list of beacons with the total number of beacon-messages sent each day.",
+        description="Returns a list of beacons with the total number of beacon_messages sent each day.",
         parameters=[
             OpenApiParameter(
                 name="date",
@@ -112,7 +112,7 @@ class BeaconMessageCountView(generics.ListAPIView):
     )
 
     def get_queryset(self):
-        """Filter beacon-messages based on the optional `date` query parameter."""
+        """Filter beacon_messages based on the optional `date` query parameter."""
         date_filter = self.request.GET.get('date')
 
         queryset = BeaconMessage.objects.all()

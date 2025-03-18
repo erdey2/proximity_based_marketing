@@ -8,7 +8,7 @@ from rest_framework import generics
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 class MessageList(generics.ListCreateAPIView):
-    """Create and List beacon-messages from beacons"""
+    """Create and List beacon_messages from beacons"""
     serializer_class = BeaconMessageSerializer
 
     def get_queryset(self):
@@ -25,8 +25,8 @@ class MessageList(generics.ListCreateAPIView):
         return qs
 
     @extend_schema(
-        summary="List all beacon-messages sent by beacons",
-        description="Retrieve a list of all existing beacon-messages. Optionally, filter by 'sent_at' date parameter.",
+        summary="List all beacon_messages sent by beacons",
+        description="Retrieve a list of all existing beacon_messages. Optionally, filter by 'sent_at' date parameter.",
         parameters=[
             OpenApiParameter(name="sent_at", description="Filter by sent date (YYYY-MM-DD)", required=False, type=str),
         ],
@@ -91,7 +91,7 @@ class MessageList(generics.ListCreateAPIView):
         return self.create(request, *args, **kwargs)
 
 class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
-    """Get and delete beacon-messages"""
+    """Get and delete beacon_messages"""
     queryset = BeaconMessage.objects.all()
     serializer_class = BeaconMessageSerializer
 
