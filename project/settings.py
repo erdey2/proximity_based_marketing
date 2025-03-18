@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'beacons',
     'advertisements',
     'assignments',
-    'beacon_messages',
+    'beacon-messages',
     'logs',
 ]
 REST_FRAMEWORK = {

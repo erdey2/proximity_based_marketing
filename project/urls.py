@@ -26,8 +26,8 @@ urlpatterns = [
     path('api/v1/beacons/', include('beacons.urls')),  # Includes all beacon-related URLs
     path('api/v1/advertisements/', include('advertisements.urls')),
     path('api/v1/assignments/', include('assignments.urls')),
-    path('api/v1/beacon_messages', include('beacon_messages.urls')),
-    path('api/v1/logs', include('logs.urls')),
+    path('api/v1/beacon-messages/', include('beacon-messages.urls')),
+    path('api/v1/logs/', include('logs.urls')),
     path('api/v1/dashboards/', include('dashboards.urls')),
 
     # documentation
