@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from .models import Beacon
-from advertisements.serializers import AdvertisementSerializer
 
-class BeaconListSerializer(serializers.ModelSerializer):
+class BeaconSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
         fields = '__all__'
@@ -28,17 +27,6 @@ class BeaconListSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('battery status must be between 0 and 100')
         return value
 
-class BeaconSerializer(serializers.ModelSerializer):
-    advertisements = serializers.SerializerMethodField()
-
-    def get_advertisements(self, obj):
-        return AdvertisementSerializer(
-            [assignment.advertisement for assignment in obj.advertisement_assignments.all()], many=True).data
-
-    class Meta:
-        model = Beacon
-        fields = ['beacon_id', 'name', 'location_name', 'advertisements']
-
 class BeaconSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beacon
@@ -58,7 +46,7 @@ class BeaconStatusSerializer(serializers.ModelSerializer):
     """ Serializer for updating beacon status"""
     class Meta:
         model = Beacon
-        fields = ["status"]  # Only allow updating status
+        fields = ['status']  # Only allow updating status
         read_only_fields = ["beacon_id"]  # Prevent ID modification
 
     def validate_status(self, value):
@@ -66,3 +54,5 @@ class BeaconStatusSerializer(serializers.ModelSerializer):
         if value not in [Beacon.Status.ACTIVE, Beacon.Status.INACTIVE]:
             raise serializers.ValidationError("Invalid status. Use 'Active' or 'Inactive'.")
         return value
+
+

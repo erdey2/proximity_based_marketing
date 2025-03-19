@@ -1,5 +1,7 @@
+from rest_framework.parsers import MultiPartParser, FormParser
+
 from .models import Advertisement
-from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer
+from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
@@ -10,6 +12,7 @@ class AdvertisementRateLimit(UserRateThrottle):
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
     serializer_class = AdvertisementSerializer
+    parser_classes = (MultiPartParser, FormParser)  # Allows image uploads
 
     def get_queryset(self):
         qs = Advertisement.objects.all()
@@ -20,59 +23,37 @@ class AdvertisementList(ListCreateAPIView):
         return qs
 
     @extend_schema(
-        summary="Retrieve Advertisements",
-        description="""
-                Retrieves a **paginated list** of advertisements with optional filters.
-
-                **Filter Parameters:**
-                - `title` (string, optional): Search advertisements by title.
-
-                **Example Requests:**
-                ```
-                GET /api/advertisements/?title=Soap Sale
-                ```
-
-                **Responses:**
-                - `200 OK`: Returns a paginated list of advertisements.
-                - `400 Bad Request`: If an invalid filter is provided.
-            """,
+        summary="Retrieve a list of advertisements",
+        description="Fetch all advertisements. You can filter by the title by using the `title` query parameter.",
         parameters=[
-            OpenApiParameter(name="title", type=str, description="Filter by advertisement title", required=False),
+            OpenApiParameter(name='title', type=str, required=False, description="Filter advertisements by title")
         ],
         responses={
-            200: AdvertisementSerializer(many=True),
-            400: OpenApiResponse(description="Invalid input data"),
-        },
+            200: AdvertisementSerializer,
+            400: {
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "example": "Invalid parameters"}
+                }
+            }
+        }
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Create a New Advertisement",
-        description="""
-                Creates a **new advertisement** with the required data.
-
-                **Required Fields:**
-                - `title` (string): The advertisement title.
-                - `content` (string): The advertisement content.
-
-                **Example Request Body:**
-                ```json
-                {
-                    "title": "Soap Sale",
-                    "content": "Buy one get one free!"
-                }
-                ```
-
-                **Responses:**
-                - `201 Created`: Successfully created a new advertisement.
-                - `400 Bad Request`: If validation fails.
-            """,
-        request=AdvertisementSerializer,
+        summary="Create a new advertisement",
+        description="Create a new advertisement by providing title, description, type and media_file.",
+        request=AdvertisementSimpleSerializer,
         responses={
             201: AdvertisementSerializer,
-            400: OpenApiResponse(description="Invalid input data"),
-        },
+            400: {
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "example": "Invalid data. Please check the fields."}
+                }
+            }
+        }
 
     )
     def post(self, request, *args, **kwargs):
@@ -82,6 +63,7 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete an advertisement item."""
     serializer_class = AdvertisementSerializer
     queryset = Advertisement.objects.all()
+    parser_classes = (MultiPartParser, FormParser)
 
     @extend_schema(
         summary="Retrieve an Advertisement",
@@ -108,7 +90,7 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     @extend_schema(
         summary="Update an Advertisement",
         description="""
-                Fully updates an **existing advertisement**.
+                Updates an **existing advertisement**.
 
                 **Example Request Body:**
                 ```json
@@ -123,13 +105,12 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
                 - `400 Bad Request`: If validation fails.
                 - `404 Not Found`: If the advertisement does not exist.
             """,
-        request=AdvertisementSerializer,
+        request=AdvertisementSimpleSerializer,
         responses={
             200: AdvertisementSerializer,
             400: OpenApiResponse(description="Invalid input data"),
             404: OpenApiResponse(description="Advertisement not found"),
         },
-
     )
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
@@ -151,7 +132,7 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
                 - `400 Bad Request`: If validation fails.
                 - `404 Not Found`: If the advertisement does not exist.
             """,
-        request=AdvertisementSerializer,
+        request=AdvertisementTitleSerializer,
         responses={
             200: AdvertisementSerializer,
             400: OpenApiResponse(description="Invalid input data"),

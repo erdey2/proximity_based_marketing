@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from beacons.models import Beacon
 from advertisements.models import Advertisement
+from advertisements.serializers import AdvertisementSerializer
 from drf_spectacular.utils import extend_schema_field
 from beacons.serializers import BeaconSimpleSerializer
 from assignments.models import AdvertisementAssignment
@@ -37,7 +39,23 @@ class AdvertisementDateSerializer(serializers.ModelSerializer):
         model = AdvertisementAssignment
         fields = ['end_date']
 
-class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
+class AdvertisementAssignmentBeaconSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementAssignment
+        fields = ['beacon']
+
+class BeaconAdvertisementsSerializer(serializers.ModelSerializer):
+    advertisements = serializers.SerializerMethodField()
+
+    def get_advertisements(self, obj):
+        return AdvertisementSerializer(
+            [assignment.advertisement for assignment in obj.advertisement_assignments.all()], many=True).data
+
+    class Meta:
+        model = Beacon
+        fields = ['beacon_id', 'name', 'location_name', 'advertisements']
+
+class AdvertisementBeaconsSerializer(serializers.ModelSerializer):
     beacons = serializers.SerializerMethodField()
 
     class Meta:
@@ -54,9 +72,3 @@ class AdvertisementWithBeaconsSerializer(serializers.ModelSerializer):
                 }
                 for assignment in obj.advertisement_assignments.all()
             ]
-
-
-class AdvertisementAssignmentBeaconSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AdvertisementAssignment
-        fields = ['beacon']

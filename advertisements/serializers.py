@@ -10,4 +10,9 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 class AdvertisementSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
-        fields = ['title', 'content']
+        fields = ['title', 'content', 'type', 'media_file']
+
+class AdvertisementTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Advertisement
+        fields = ['title']

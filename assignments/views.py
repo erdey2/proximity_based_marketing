@@ -1,7 +1,7 @@
 from beacons.models import Beacon
 from advertisements.models import Advertisement
 from assignments.models import AdvertisementAssignment
-from .serializers import AdvertisementAssignmentSerializer, AdvertisementWithBeaconsSerializer, AdvertisementAssignmentBeaconSerializer
+from .serializers import AdvertisementAssignmentSerializer, AdvertisementBeaconsSerializer, AdvertisementDateSerializer, BeaconAdvertisementsSerializer
 from beacons.serializers import BeaconSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
@@ -68,13 +68,13 @@ class AdvertisementAssignmentList(ListCreateAPIView):
     @extend_schema(
         summary="Create a New Advertisement Assignment",
         description="""
-                Creates a **new advertisement assignment**.
+                Assign list of advertisements to a specific beacon or list of beacons to specific advertisement.
 
                 **Required Fields:**
                 - `advertisement` (integer): The advertisement being assigned.
                 - `start_date` (YYYY-MM-DD): Start date of the assignment.
                 - `end_date` (YYYY-MM-DD): End date of the assignment.
-                - `assigned_to` (integer): The user or entity assigned to the advertisement.
+                - `assigned_to` (integer): The entity(beacon) assigned to the advertisement.
 
                 **Example Request Body:**
                 ```json
@@ -174,7 +174,7 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
                 - `400 Bad Request`: If validation fails.
                 - `404 Not Found`: If the assignment does not exist.
             """,
-        request=AdvertisementAssignmentSerializer,
+        request=AdvertisementDateSerializer,
         responses={
             200: AdvertisementAssignmentSerializer,
             400: OpenApiResponse(description="Invalid input data"),
@@ -206,34 +206,6 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
     )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-
-class AdvertisementListWithBeaconsView(ListAPIView):
-    """ API endpoint to list advertisements along with their assigned beacons. """
-    queryset = Advertisement.objects.prefetch_related("advertisement_assignments__beacon").all()
-    serializer_class = AdvertisementWithBeaconsSerializer
-
-    @extend_schema(
-        summary="List Advertisements with Assigned Beacons",
-        description="""
-            Retrieves a **paginated list** of advertisements along with their assigned beacons.
-
-            Each advertisement will include a list of associated beacons (including their locations).
-
-            **Example Request:**
-            ```
-            GET /api/advertisements-with-beacons/
-            ```
-
-            **Responses:**
-            - `200 OK`: Returns a paginated list of advertisements with assigned beacons.
-        """,
-        responses={
-            200: AdvertisementWithBeaconsSerializer(many=True),
-            400: OpenApiResponse(description="Invalid request"),
-        }
-    )
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
 
 class AdvertisementActive(ListAPIView):
     """List all active advertisements."""
@@ -270,13 +242,41 @@ class AdvertisementActive(ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class BeaconListWithAdsView(ListAPIView):
-    """ API endpoint to list beacons along with their assigned advertisements."""
-    queryset = Beacon.objects.prefetch_related("advertisement_assignments__advertisement").all()
-    serializer_class = BeaconSerializer
+class AdvertisementBeaconsView(ListAPIView):
+    """ API endpoint to list advertisement along with their assigned beacons. """
+    queryset = Advertisement.objects.prefetch_related("advertisement_assignments__beacon").all()
+    serializer_class = AdvertisementBeaconsSerializer
 
     @extend_schema(
-        summary="List Beacons with Assigned Advertisements",
+        summary="List Advertisement with Assigned Beacons",
+        description="""
+            Retrieves a **list** of advertisement along with their assigned beacons.
+
+            Each advertisement will include a list of associated beacons (including their locations).
+
+            **Example Request:**
+            ```
+            GET /api/advertisement-beacons/
+            ```
+
+            **Responses:**
+            - `200 OK`: Returns a paginated list of advertisements with assigned beacons.
+        """,
+        responses={
+            200: AdvertisementBeaconsSerializer(many=True),
+            400: OpenApiResponse(description="Invalid request"),
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+class BeaconAdvertisementsView(ListAPIView):
+    """ API endpoint to list beacons along with their assigned advertisements."""
+    queryset = Beacon.objects.prefetch_related("advertisement_assignments__advertisement").all()
+    serializer_class = BeaconAdvertisementsSerializer
+
+    @extend_schema(
+        summary="List Beacon with Assigned Advertisements",
         description="""
             Retrieves a **paginated list** of beacons along with their assigned advertisements.
 
@@ -292,7 +292,7 @@ class BeaconListWithAdsView(ListAPIView):
             - `400 Bad Request`: If the request is invalid.
         """,
         responses={
-            200: BeaconSerializer(many=True),
+            200: BeaconAdvertisementsSerializer(many=True),
             400: OpenApiResponse(description="Invalid request"),
         }
     )

@@ -1,47 +1,45 @@
+from rest_framework.viewsets import GenericViewSet
+
 from .models import Beacon
-from .serializers import BeaconLocationSerializer, BeaconSimpleSerializer, BeaconListSerializer, BeaconStatusSerializer, BeaconDataUpdateSerializer
+from .serializers import BeaconLocationSerializer, BeaconSimpleSerializer, BeaconSerializer, BeaconStatusSerializer, BeaconDataUpdateSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveUpdateAPIView
 
-
 class BeaconList(ListCreateAPIView):
     """List all beacons or create a new one."""
-    serializer_class = BeaconListSerializer
+    serializer_class = BeaconSerializer
 
     def get_queryset(self):
         qs = Beacon.objects.all()
         name = self.request.GET.get('name')
-        price = self.request.GET.get('price')
+        location_name = self.request.GET.get('location_name')
+
         if name:
             qs = qs.filter(name__icontains=name)
-        if price:
-            qs = qs.filter(price__leq=price)
+        if location_name:
+            qs = qs.filter(location_name__icontains=location_name)
         return qs
 
     @extend_schema(
-        summary="Retrieve Beacons",
-        description="""
-                Retrieves a **paginated list** of beacons with optional filters:
-                **Filter Parameters:**
-                - `name` (string, optional): Search for beacons by name.
-                - `location_name` (string, optional): Filter beacons by location.
-
-                **Example Requests:**
-                ``` GET /api/beacons/?name=beacon1&location_name=Jemo ```
-                **Responses:**
-                - `200 OK`: Returns a paginated list of beacons.
-                - `400 Bad Request`: If an invalid filter is provided.
-                """,
+        summary="Retrieve a list of beacons",
+        description="Fetch all beacons with optional filtering by name and location name.",
         parameters=[
-            OpenApiParameter(name="name", type=str, description="Filter by beacon name", required=False),
-            OpenApiParameter(name="location_name", type=str, description="Filter by location name", required=False),
+            OpenApiParameter(
+                name="name",
+                type=str,
+                description="Filter by beacon name (case-insensitive).",
+                required=False
+            ),
+            OpenApiParameter(
+                name="location_name",
+                type=str,
+                description="Filter by location name (case-insensitive).",
+                required=False
+            ),
         ],
-        responses={
-            200: BeaconListSerializer(many=True),
-            400: OpenApiResponse(description="Invalid input data"),
-        },
+        responses={200: BeaconSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -69,7 +67,7 @@ class BeaconList(ListCreateAPIView):
                 """,
         request=BeaconSimpleSerializer,
         responses={
-            201: BeaconListSerializer,
+            201: BeaconSerializer,
             400: OpenApiResponse(description="Invalid input data"),
         },
     )
@@ -79,13 +77,13 @@ class BeaconList(ListCreateAPIView):
 class BeaconDetail(RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a beacon."""
     queryset = Beacon.objects.all()
-    serializer_class = BeaconListSerializer
+    serializer_class = BeaconSerializer
 
     @extend_schema(
         summary="Retrieve a Beacon",
         description="Fetches the details of a specific beacon using its ID.",
         responses={
-            200: BeaconListSerializer,
+            200: BeaconSerializer,
             404: {"description": "Beacon not found."},
         }
     )
@@ -97,7 +95,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
         description="Updates an existing beacon name and/or location name.",
         request=BeaconSimpleSerializer,
         responses={
-            200: BeaconListSerializer,
+            200: BeaconSerializer,
             400: {"description": "Invalid data provided."},
         }
     )
@@ -109,7 +107,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
         description="Updates an existing beacon (only the provided fields).",
         request=BeaconDataUpdateSerializer,
         responses={
-            200: BeaconListSerializer,
+            200: BeaconSerializer,
             400: {"description": "Invalid data provided."},
         }
     )
@@ -127,7 +125,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
 
 class BeaconActive(ListAPIView):
     """Retrieve a list of active beacons."""
-    serializer_class = BeaconListSerializer
+    serializer_class = BeaconSerializer
 
     def get_queryset(self):
         """Dynamically filter active beacons."""
@@ -135,24 +133,9 @@ class BeaconActive(ListAPIView):
 
     @extend_schema(
         summary="Retrieve Active Beacons",
-        description="""
-            This endpoint allows authenticated users to retrieve the list of active beacons.
-
-            **Methods:**
-            - `GET`: Returns a list of active beacons.
-
-            **Example Use Case:**
-            - A system admin wants to monitor active beacons in a given area.
-            - A user needs to confirm whether active beacons are available.
-
-            **Validation:**
-            - Authentication is required (`IsAuthenticated`).
-            - If no active beacons are found, an empty list is returned.
-            """,
-        responses={
-            200: BeaconListSerializer(many=True),
-            401: {"detail": "Authentication credentials were not provided."}
-        },
+        description="Fetch a list of all beacons that are currently active. "
+                    "This endpoint returns only beacons with a status of 'Active'.",
+        responses={200: BeaconSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -194,9 +177,9 @@ class BeaconLocationList(ListAPIView):
 class BeaconStatus(RetrieveUpdateAPIView):
     """API to get and update beacon status"""
     queryset = Beacon.objects.all()
-    serializer_class = BeaconListSerializer
+    serializer_class = BeaconSerializer
+    http_method_names = ['get', 'patch']
 
-    # permission_classes = [IsAuthenticated]  # Enforce authentication
     @extend_schema(
         summary="Retrieve Beacon Status",
         description="Fetch the current active/inactive status of a beacon.",
@@ -242,7 +225,7 @@ class BeaconStatus(RetrieveUpdateAPIView):
             }
         }
     )
-    def put(self, request, pk):
+    def patch(self, request, pk):
         """Change the status of a beacon (Active/Inactive)"""
         beacon = self.get_object()
         serializer = self.get_serializer(beacon, data=request.data, partial=True)
