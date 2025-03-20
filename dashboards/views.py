@@ -14,8 +14,6 @@ from django.utils.timezone import now, timedelta
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
 
-    # permission_classes = [IsAuthenticated]  # Enforce authentication
-
     @extend_schema(
         summary="Retrieve Total Beacon Count",
         description="""
@@ -148,6 +146,6 @@ class LogCount(APIView):
         recent_advertisements = AdvertisementLog.objects.filter(timestamp__gte=start_date).count()
 
         if not recent_advertisements:
-            return Response({'message': 'No ads found'}, status=404)
+            return Response({'message': 'No logs found'}, status=404)
 
-        return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} ads."}, status=200)
+        return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} logs."}, status=200)

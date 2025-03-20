@@ -1,7 +1,5 @@
 from beacon_messages.models import BeaconMessage
-from .serializers import BeaconMessageSerializer, BeaconMessageCountSerializer
-from django.db.models import Count
-from django.db.models.functions import TruncDate
+from .serializers import BeaconMessageSerializer
 from datetime import datetime
 from rest_framework.exceptions import ValidationError
 from rest_framework import generics
