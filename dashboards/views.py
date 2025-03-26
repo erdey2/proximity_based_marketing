@@ -10,11 +10,14 @@ from beacon_messages.models import BeaconMessage
 from beacon_messages.serializers import BeaconMessageCountSerializer
 from logs.models import AdvertisementLog
 from django.utils.timezone import now, timedelta
+from advertisements.models import Advertisement, AdEngagement
+from advertisements.serializers import AdvertisementSerializer
 
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
 
     @extend_schema(
+        tags=["Dashboards"],
         summary="Retrieve Total Beacon Count",
         description="""
         This endpoint allows authenticated users to retrieve the total count of beacons in the system.
@@ -51,6 +54,7 @@ class BeaconLocationCount(APIView):
 
     # permission_classes = [IsAuthenticated]  # Enforce authentication
     @extend_schema(
+        tags=["Dashboards"],
         summary="Get Total Unique Beacon Locations",
         description="Returns the total number of unique beacon locations in the system.",
         responses={
@@ -95,7 +99,8 @@ class BeaconMessageCountView(generics.ListAPIView):
     """ API endpoint to get the total beacon_messages sent by each beacon per day. """
     serializer_class = BeaconMessageCountSerializer
 
-    extend_schema(
+    @extend_schema(
+        tags=['Dashboards'],
         summary="Retrieve beacon message counts per day",
         description="Returns a list of beacons with the total number of beacon_messages sent each day.",
         parameters=[
@@ -127,6 +132,7 @@ class LogCount(APIView):
     """Count advertisement logs for the past 24 hours. """
 
     @extend_schema(
+        tags=["Dashboards"],
         summary="Count advertisement logs for the past 24 hours",
         description="This endpoint counts the number of advertisement logs created in the past 24 hours.",
         responses={
@@ -149,3 +155,25 @@ class LogCount(APIView):
             return Response({'message': 'No logs found'}, status=404)
 
         return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} logs."}, status=200)
+
+
+class TrendingAdsView(APIView):
+    """Fetch the most popular ads based on user engagement"""
+
+    @extend_schema(
+        tags=['Dashboards'],
+        summary="Get Trending Ads",
+        description="Fetches the top 10 most popular ads based on user engagement in the last 7 days.",
+        responses={
+            200: AdvertisementSerializer(many=True),
+            400: {"error": "Invalid request"}
+        }
+    )
+    def get(self, request):
+        last_week = now() - timedelta(days=7)
+
+        trending_ads = Advertisement.objects.annotate(
+            engagement_score=Count('engagements')
+        ).filter(engagements__viewed_at__gte=last_week).order_by('-engagement_score')[:10]
+
+        return Response({"trending_ads": AdvertisementSerializer(trending_ads, many=True).data})

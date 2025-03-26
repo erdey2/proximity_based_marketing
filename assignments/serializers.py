@@ -6,6 +6,8 @@ from drf_spectacular.utils import extend_schema_field
 from beacons.serializers import BeaconSimpleSerializer
 from assignments.models import AdvertisementAssignment
 from django.utils.timezone import now
+from typing import List
+from drf_spectacular.utils import extend_schema_field
 
 class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,13 +49,20 @@ class AdvertisementAssignmentBeaconSerializer(serializers.ModelSerializer):
 class BeaconAdvertisementsSerializer(serializers.ModelSerializer):
     advertisements = serializers.SerializerMethodField()
 
-    def get_advertisements(self, obj):
+    @extend_schema_field(serializers.ListField(child=serializers.DictField(allow_empty=True)))
+    def get_advertisements(self, obj):  # Adjust the return type if necessary
         return AdvertisementSerializer(
-            [assignment.advertisement for assignment in obj.advertisement_assignments.all()], many=True).data
+            [assignment.advertisement for assignment in obj.advertisement_assignments.all()], many=True
+        ).data
 
     class Meta:
         model = Beacon
         fields = ['beacon_id', 'name', 'location_name', 'advertisements']
+
+class AdvertisementBeaconAssignmentSerializer(serializers.Serializer):
+    beacon = BeaconSimpleSerializer()
+    start_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", required=False)
+    end_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", required=False)
 
 class AdvertisementBeaconsSerializer(serializers.ModelSerializer):
     beacons = serializers.SerializerMethodField()
@@ -62,13 +71,13 @@ class AdvertisementBeaconsSerializer(serializers.ModelSerializer):
         model = Advertisement
         fields = ["advertisement_id", "title", "beacons"]
 
-    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
+    @extend_schema_field(AdvertisementBeaconAssignmentSerializer(many=True))
     def get_beacons(self, obj) -> list:
         return [
-                {
-                    "beacon": BeaconSimpleSerializer(assignment.beacon).data,
-                    "start_date": assignment.start_date,
-                    "end_date": assignment.end_date
-                }
-                for assignment in obj.advertisement_assignments.all()
-            ]
+            {
+                "beacon": BeaconSimpleSerializer(assignment.beacon).data,
+                "start_date": assignment.start_date.isoformat() if assignment.start_date else None,
+                "end_date": assignment.end_date.isoformat() if assignment.end_date else None,
+            }
+            for assignment in obj.advertisement_assignments.all()
+        ]

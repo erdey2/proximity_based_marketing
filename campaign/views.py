@@ -10,6 +10,7 @@ def api_root(request):
             "openapi_schema": request.build_absolute_uri(reverse('schema')),
         },
         "endpoints": {
+            "Users": request.build_absolute_uri('/api/v1/users/'),
             "Beacons": request.build_absolute_uri('/api/v1/beacons/'),
             "Active Beacons": request.build_absolute_uri('/api/v1/beacons/active'),
             "Beacons Count": request.build_absolute_uri('/api/v1/dashboards/beacons-count/'),
@@ -27,10 +28,5 @@ def api_root(request):
 
             "Messages": request.build_absolute_uri('/api/v1/beacon-messages/'),
             "Messages Count": request.build_absolute_uri('/api/v1/dashboards/message-count'),
-
-            "Authentication": {
-                "Obtain Token": request.build_absolute_uri(reverse('token_obtain_pair')),
-                "Refresh Token": request.build_absolute_uri(reverse('token_refresh')),
-            }
         }
     })

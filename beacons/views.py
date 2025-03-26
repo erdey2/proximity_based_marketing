@@ -1,11 +1,12 @@
-from rest_framework.viewsets import GenericViewSet
-
 from .models import Beacon
 from .serializers import BeaconLocationSerializer, BeaconSimpleSerializer, BeaconSerializer, BeaconStatusSerializer, BeaconDataUpdateSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveUpdateAPIView
+from rest_framework.views import APIView
+from advertisements.serializers import AdvertisementSerializer
+from advertisements.models import Advertisement
 
 class BeaconList(ListCreateAPIView):
     """List all beacons or create a new one."""
@@ -23,6 +24,7 @@ class BeaconList(ListCreateAPIView):
         return qs
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Retrieve a list of beacons",
         description="Fetch all beacons with optional filtering by name and location name.",
         parameters=[
@@ -45,6 +47,7 @@ class BeaconList(ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Create a New Beacon",
         description="""
                 Creates a **new beacon** with the required data.
@@ -80,6 +83,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = BeaconSerializer
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Retrieve a Beacon",
         description="Fetches the details of a specific beacon using its ID.",
         responses={
@@ -91,6 +95,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
         return self.retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Update a Beacon",
         description="Updates an existing beacon name and/or location name.",
         request=BeaconSimpleSerializer,
@@ -103,6 +108,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Update a Beacon status from data received from mobile app",
         description="Updates an existing beacon (only the provided fields).",
         request=BeaconDataUpdateSerializer,
@@ -115,6 +121,7 @@ class BeaconDetail(RetrieveUpdateDestroyAPIView):
         return self.partial_update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Delete a Beacon",
         description="Deletes a beacon permanently from the system.",
         responses={204: None}
@@ -132,6 +139,7 @@ class BeaconActive(ListAPIView):
         return Beacon.objects.filter(status__iexact='Active')  # Case-insensitive filtering
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Retrieve Active Beacons",
         description="Fetch a list of all beacons that are currently active. "
                     "This endpoint returns only beacons with a status of 'Active'.",
@@ -146,6 +154,7 @@ class BeaconLocationList(ListAPIView):
     serializer_class = BeaconLocationSerializer
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Retrieve All Beacons' Locations",
         description="""
             Fetch a list of all beacons with their respective locations (latitude & longitude).
@@ -181,6 +190,7 @@ class BeaconStatus(RetrieveUpdateAPIView):
     http_method_names = ['get', 'patch']
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Retrieve Beacon Status",
         description="Fetch the current active/inactive status of a beacon.",
         responses={
@@ -205,6 +215,7 @@ class BeaconStatus(RetrieveUpdateAPIView):
         return Response({"beacon_id": str(beacon.beacon_id), "is_active": beacon.is_active()})
 
     @extend_schema(
+        tags=["Beacons"],
         summary="Update Beacon Status",
         description="Change the beacon status (Active/Inactive).",
         request=BeaconStatusSerializer,
@@ -241,3 +252,33 @@ class BeaconStatus(RetrieveUpdateAPIView):
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class BeaconDataView(APIView):
+    """Receive beacon ID and return relevant ads."""
+
+    @extend_schema(
+        tags=['Beacons'],
+        summary="Get Active Ads for a Beacon",
+        description="Receives a beacon ID and returns all active advertisements linked to it.",
+        request=OpenApiParameter(name="beacon_id", description="ID of the beacon", required=True, type=int),
+        responses={
+            200: AdvertisementSerializer(many=True),
+            400: {"error": "Invalid beacon ID"}
+        }
+    )
+    def get(self, request):
+        beacon_id = request.data.get("beacon_id")
+
+        # Validate beacon
+        try:
+            beacon = Beacon.objects.get(id=beacon_id)
+        except Beacon.DoesNotExist:
+            return Response({"error": "Invalid beacon ID"}, status=400)
+
+        # Fetch active ads linked to this beacon via Assignment table
+        ads = Advertisement.objects.filter(
+            assignment__beacon=beacon,  # Use the reverse relationship from Assignment
+            is_active=True  # Filter by global ad status
+        ).distinct()  # Avoid duplicates in case of multiple assignments
+
+        return Response({"ads": AdvertisementSerializer(ads, many=True).data})

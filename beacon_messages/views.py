@@ -23,6 +23,7 @@ class MessageList(generics.ListCreateAPIView):
         return qs
 
     @extend_schema(
+        tags=["Messages"],
         summary="List all beacon_messages sent by beacons",
         description="Retrieve a list of all existing beacon_messages. Optionally, filter by 'sent_at' date parameter.",
         parameters=[
@@ -44,6 +45,7 @@ class MessageList(generics.ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Messages"],
         summary="Create a new beacon message",
         description="""
             This endpoint allows creating a new message sent by a beacon. 
@@ -94,6 +96,7 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BeaconMessageSerializer
 
     @extend_schema(
+        tags=["Messages"],
         summary="Retrieve a specific beacon message",
         description="Fetch the details of a single beacon message by its ID.",
         responses={
@@ -112,6 +115,7 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
         return self.retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Messages"],
         summary="Update a beacon message",
         description="""
             Replace the entire message object with a new one.
@@ -143,6 +147,7 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Messages"],
         summary="Partially update a beacon message",
         description="""
             Update specific fields of a beacon message without replacing the whole object.
@@ -172,6 +177,7 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
         self.partial_update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Messages"],
         summary="Delete a beacon message",
         description="Remove a beacon message from the system permanently.",
         responses={

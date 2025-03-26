@@ -35,6 +35,7 @@ class AdvertisementAssignmentList(ListCreateAPIView):
         return qs
 
     @extend_schema(
+        tags=["Assignments"],
         summary="Retrieve Advertisement Assignments",
         description="""
                 Retrieves a **list of advertisement assignments** with optional date filters.
@@ -66,6 +67,7 @@ class AdvertisementAssignmentList(ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Assignments"],
         summary="Create a New Advertisement Assignment",
         description="""
                 Assign list of advertisements to a specific beacon or list of beacons to specific advertisement.
@@ -105,6 +107,7 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = AdvertisementAssignmentSerializer
 
     @extend_schema(
+        tags=["Assignments"],
         summary="Retrieve an Advertisement Assignment",
         description="""
                 Fetches a **single advertisement assignment** by its ID.
@@ -127,6 +130,7 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
         return self.retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Assignments"],
         summary="Update an Advertisement Assignment",
         description="""
                 Fully updates an **existing advertisement assignment**.
@@ -158,6 +162,7 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Assignments"],
         summary="Partially Update an Advertisement Assignment",
         description="""
                 Partially updates specific fields of an **existing advertisement assignment**.
@@ -186,6 +191,7 @@ class AdvertisementAssignmentDetail(RetrieveUpdateDestroyAPIView):
         return self.partial_update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Assignments"],
         summary="Delete an Advertisement Assignment",
         description="""
                 Deletes an advertisement assignment by its ID.
@@ -217,6 +223,7 @@ class AdvertisementActive(ListAPIView):
         return Advertisement.objects.filter(start_date__lte=current_time, end_date__gte=current_time)
 
     @extend_schema(
+        tags=["Assignments"],
         summary="Get active advertisements",
         description="""
             Fetch all advertisements that are currently active based on their start and end dates.
@@ -248,6 +255,7 @@ class AdvertisementBeaconsView(ListAPIView):
     serializer_class = AdvertisementBeaconsSerializer
 
     @extend_schema(
+        tags=["Assignments"],
         summary="List Advertisement with Assigned Beacons",
         description="""
             Retrieves a **list** of advertisement along with their assigned beacons.
@@ -276,6 +284,7 @@ class BeaconAdvertisementsView(ListAPIView):
     serializer_class = BeaconAdvertisementsSerializer
 
     @extend_schema(
+        tags=["Assignments"],
         summary="List Beacon with Assigned Advertisements",
         description="""
             Retrieves a **paginated list** of beacons along with their assigned advertisements.

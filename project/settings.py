@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'assignments',
     'beacon_messages',
     'logs',
+    'users',
 ]
 REST_FRAMEWORK = {
    # 'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -193,6 +194,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# customized user
+AUTH_USER_MODEL = 'users.User'
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # Allow all domains (for testing only)

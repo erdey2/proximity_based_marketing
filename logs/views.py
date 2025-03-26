@@ -28,6 +28,7 @@ class LogList(ListCreateAPIView):
         return qs
 
     @extend_schema(
+        tags=["Logs"],
         summary="Retrieve Advertisement Logs",
         description="""
             Retrieve a paginated list of all advertisement logs, with optional filtering by `log_id` and `created_at`.
@@ -51,6 +52,7 @@ class LogList(ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Logs"],
         summary="Create a new Advertisement Log",
         description="""
             Create a new advertisement log entry when a beacon sends an advertisement.  
@@ -91,6 +93,7 @@ class LogDetail(RetrieveUpdateDestroyAPIView):
     queryset = AdvertisementLog.objects.all()
 
     @extend_schema(
+        tags=["Logs"],
         summary="Retrieve an Advertisement Log",
         description="""
                 Get details of a specific advertisement log by its ID.
@@ -111,6 +114,7 @@ class LogDetail(RetrieveUpdateDestroyAPIView):
         return self.retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Logs"],
         summary="Update an Advertisement Log",
         description="""
                 Replace an existing advertisement log entry with new data.
@@ -143,6 +147,7 @@ class LogDetail(RetrieveUpdateDestroyAPIView):
         return self.update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Logs"],
         summary="Partially Update an Advertisement Log",
         description="""
                 Update specific fields of an advertisement log without replacing the entire entry.
@@ -172,6 +177,7 @@ class LogDetail(RetrieveUpdateDestroyAPIView):
         return self.partial_update(request, *args, **kwargs)
 
     @extend_schema(
+        tags=["Logs"],
         summary="Delete an Advertisement Log",
         description="Delete a specific advertisement log by ID.",
         responses={204: OpenApiResponse(description="No Content"), 404: OpenApiResponse(description="Not Found")}
