@@ -23,7 +23,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from campaign.views import api_root
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('', api_root, name='root_view'),
     path('api/v1/beacons/', include('beacons.urls')),  # Includes all beacon-related URLs
     path('api/v1/advertisements/', include('advertisements.urls')),
