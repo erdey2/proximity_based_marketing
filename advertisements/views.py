@@ -13,8 +13,10 @@ class AdvertisementRateLimit(UserRateThrottle):
     rate = '100/minute'  # Custom throttle rate for this view
 
 class AdvertisementPagination(PageNumberPagination):
-    page_size = 5
-    page_query_param = 'page_size'
+    page_size = 3  # Default number of items per page
+    page_query_param = 'page'  # Query parameter for specifying page number (e.g., ?page=2)
+    page_size_query_param = 'page_size'  # Allows users to specify page size dynamically (e.g., ?page_size=10)
+    max_page_size = 100  # Optional: Limit the maximum number of results per page
 
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
