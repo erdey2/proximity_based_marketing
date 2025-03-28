@@ -67,12 +67,12 @@ INSTALLED_APPS = [
     'users',
 ]
 REST_FRAMEWORK = {
-   # 'DEFAULT_AUTHENTICATION_CLASSES': (
-       # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-    # ),
-    # 'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated',
-    # ),
+   'DEFAULT_AUTHENTICATION_CLASSES': (
+       'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',    # Throttle per user
         'rest_framework.throttling.AnonRateThrottle',   # Throttle for anonymous users
@@ -140,7 +140,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     }
-}"""
+} """
 
 
 # Password validation

@@ -1,7 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from uuid import uuid4
 from users.models import User
 
+User = get_user_model()
 class Advertisement(models.Model):
     advertisement_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=255, null=False, db_index=True)
@@ -36,7 +38,7 @@ class AdEngagement(models.Model):
         unique_together = ('user', 'ad')  # One record per user per ad
 
     def __str__(self):
-        return f"{self.user.username} engaged with {self.ad.title}"
+        return f"{self.user} engaged liked {self.ad}"
 
 class SavedAd(models.Model):
     """Stores ads that users have saved for later"""
@@ -49,3 +51,4 @@ class SavedAd(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.ad.title}"
+

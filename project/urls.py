@@ -41,8 +41,8 @@ urlpatterns = [
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 
     # authentication
-    # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 # Serve media files in development

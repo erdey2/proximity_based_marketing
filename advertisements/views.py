@@ -1,4 +1,8 @@
+from drf_spectacular.types import OpenApiTypes
+from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
+
 from .models import Advertisement
 from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer, LikeAdSerializer, SaveAdSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -17,6 +21,8 @@ class AdvertisementPagination(PageNumberPagination):
     page_query_param = 'page'  # Query parameter for specifying page number (e.g., ?page=2)
     page_size_query_param = 'page_size'  # Allows users to specify page size dynamically (e.g., ?page_size=10)
     max_page_size = 100  # Optional: Limit the maximum number of results per page
+    invalid_page_message = '[]'
+
 
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
@@ -70,10 +76,10 @@ class AdvertisementList(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
-class AdvertisementListPagination(ListCreateAPIView):
+class AdvertisementListWithPagination(ListCreateAPIView):
     """List all advertisements or create a new one."""
     serializer_class = AdvertisementSerializer
-    queryset = Advertisement.objects.all()
+    queryset = Advertisement.objects.all().order_by('created_at')
     parser_classes = (MultiPartParser, FormParser)
     pagination_class = AdvertisementPagination
 
@@ -222,42 +228,51 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-class LikeAdView(APIView):
-    """Allow users to like an ad"""
+
+class LikeAdView(ListCreateAPIView):
+    """Allow users to like an ad and retrieve all liked ads"""
     serializer_class = LikeAdSerializer
+    queryset = AdEngagement.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=['Advertisements'],
+        summary="Retrieve all liked ads",
+        description="Returns a list of all ad engagements (likes) by authenticated users.",
+        responses={200: LikeAdSerializer(many=True)},
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     @extend_schema(
         tags=['Advertisements'],
         summary="Like an Advertisement",
-        description="Allows a user to like a specific advertisement.",
-        request=LikeAdSerializer,
+        description="Allows a user to like an advertisement using UUID.",
+        request=LikeAdSerializer,  # Define the expected request body
+        responses={
+            201: {"description": "Ad liked successfully"},
+            400: {"description": "Invalid request"},
+            404: {"description": "Advertisement not found"},
+        },
         parameters=[
             OpenApiParameter(
                 name="ad_id",
-                description="ID of the advertisement to like",
+                description="UUID of the advertisement to like",
                 required=True,
-                type=int,
+                type=OpenApiTypes.UUID,
                 location=OpenApiParameter.PATH
-            )
+            ),
         ],
-        responses={
-            200: {"description": "Ad liked successfully"},
-            400: {"description": "Ad not found"},
-        }
-
     )
-    def post(self, request, ad_id):
-        serializer = self.serializer_class(data={'ad_id': ad_id})
+    def post(self, request, *args, **kwargs):
+        """Allow users to like an ad"""
+        serializer = self.serializer_class(data=request.data, context=self.get_serializer_context())
+
         if serializer.is_valid():
-            try:
-                ad = Advertisement.objects.get(id=ad_id)
-                engagement, created = AdEngagement.objects.get_or_create(user=request.user, ad=ad)
-                engagement.liked = True
-                engagement.save()
-                return Response({"message": "Ad liked successfully"})
-            except Advertisement.DoesNotExist:
-                return Response({"error": "Ad not found"}, status=400)
-        return Response(serializer.errors, status=400)
+            serializer.save()
+            return Response({"message": "Ad liked successfully"}, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SaveAdView(APIView):
     """Allow users to save an ad for later"""
