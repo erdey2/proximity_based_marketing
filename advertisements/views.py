@@ -228,7 +228,6 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-
 class LikeAdView(ListCreateAPIView):
     """Allow users to like an ad and retrieve all liked ads"""
     serializer_class = LikeAdSerializer
@@ -274,40 +273,32 @@ class LikeAdView(ListCreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class SaveAdView(APIView):
+class SaveAdView(ListCreateAPIView):
     """Allow users to save an ad for later"""
     serializer_class = SaveAdSerializer
+    queryset = SavedAd.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    extend_schema(
+        summary="List saved ads",
+        description="Retrieve a list of ads saved by the authenticated user.",
+        responses={200: SaveAdSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     @extend_schema(
-        tags=['Advertisements'],
-        summary="Save an Advertisement",
-        description="Allows a user to save an advertisement for later viewing.",
+        summary="Save an ad",
+        description="Save an ad by providing its ID. Returns a success message if saved successfully.",
         request=SaveAdSerializer,
-        parameters=[
-            OpenApiParameter(
-                name="ad_id",
-                description="ID of the advertisement to save",
-                required=True,
-                type=int,
-                location=OpenApiParameter.PATH
-            )
-        ],
-        responses={
-            200: {"message": "Ad saved successfully"},
-            400: {"error": "Ad not found"}
-        },
-
+        responses={201: {"message": "Ad saved successfully"}, 400: "Validation errors"}
     )
-    def post(self, request, ad_id):
-        serializer = self.serializer_class(data={'ad_id': ad_id})
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context=self.get_serializer_context())
         if serializer.is_valid():
-            try:
-                ad = Advertisement.objects.get(id=ad_id)
-                SavedAd.objects.create(user=request.user, ad=ad)
-                return Response({"message": "Ad saved successfully"})
-            except Advertisement.DoesNotExist:
-                return Response({"error": "Ad not found"}, status=400)
-        return Response(serializer.errors, status=400)
+            serializer.save()
+            return Response({"message": "Ad saved successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

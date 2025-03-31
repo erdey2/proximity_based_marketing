@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from advertisements.models import Advertisement
-from .models import AdEngagement
+from .models import AdEngagement, SavedAd
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,7 +24,7 @@ class LikeAdSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AdEngagement
-        fields = ['ad_id', 'liked']
+        fields = '__all__'
 
     def create(self, validated_data):
         """Override create method to handle the like action"""
@@ -44,5 +44,24 @@ class LikeAdSerializer(serializers.ModelSerializer):
 
         return engagement
 
-class SaveAdSerializer(serializers.Serializer):
-    ad_id = serializers.IntegerField()
+class SaveAdSerializer(serializers.ModelSerializer):
+    ad_id = serializers.UUIDField(write_only=True)  # Required for input
+
+    class Meta:
+        model = SavedAd
+        fields = '__all__'
+
+    def create(self, validated_data):
+        """Override create method to save an ad"""
+        user = self.context['request'].user
+        ad_id = validated_data.pop('ad_id')
+
+        # Look up the ad by UUID
+        try:
+            ad = Advertisement.objects.get(advertisement_id=ad_id)
+        except Advertisement.DoesNotExist:
+            raise serializers.ValidationError({"ad_id": "Advertisement not found"})
+
+        # Save the ad for the user
+        saved_ad, created = SavedAd.objects.get_or_create(user=user, ad=ad)
+        return saved_ad
