@@ -4,14 +4,14 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Advertisement
-from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer, LikeAdSerializer, SaveAdSerializer
+from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import AdEngagement, SavedAd
+from .models import AdView, AdLike, AdClick, AdSaved
+from .serializers import ViewAdSerializer, LikeAdSerializer, ClickAdSerializer, SaveAdSerializer
 
 class AdvertisementRateLimit(UserRateThrottle):
     rate = '100/minute'  # Custom throttle rate for this view
@@ -22,7 +22,6 @@ class AdvertisementPagination(PageNumberPagination):
     page_size_query_param = 'page_size'  # Allows users to specify page size dynamically (e.g., ?page_size=10)
     max_page_size = 100  # Optional: Limit the maximum number of results per page
     invalid_page_message = '[]'
-
 
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
@@ -228,10 +227,34 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+class ViewAdView(ListCreateAPIView):
+    serializer_class = ViewAdSerializer
+    queryset = AdView.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=['Advertisements'],
+        summary="List all ad views",
+        description="Retrieves a list of all recorded ad views. Requires authentication.",
+        responses={200: ViewAdSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=['Advertisements'],
+        summary="Create a new ad view",
+        description="Logs a new ad view when a user views an advertisement.",
+        request=ViewAdSerializer,
+        responses={201: ViewAdSerializer}
+    )
+    def post(self, request, *args, **kwargs):
+        return self.create(self, *args, **kwargs)
+
 class LikeAdView(ListCreateAPIView):
     """Allow users to like an ad and retrieve all liked ads"""
     serializer_class = LikeAdSerializer
-    queryset = AdEngagement.objects.all()
+    queryset = AdLike.objects.all()
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -273,10 +296,42 @@ class LikeAdView(ListCreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ClickAdView(ListCreateAPIView):
+    serializer_class = ClickAdSerializer
+    queryset = AdClick.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=['Advertisements'],
+        summary="List all ad clicks",
+        description="Retrieves a list of all recorded ad clicks. Requires authentication.",
+        responses={200: ClickAdSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=['Advertisements'],
+        summary="Create a new ad click",
+        description="Logs a new ad click when a user clicks on an advertisement.",
+        request=ClickAdSerializer,
+        responses={201: ClickAdSerializer}
+    )
+    def post(self, request, *args, **kwargs):
+        """Allow users to click an ad"""
+        serializer = self.serializer_class(data=request.data, context=self.get_serializer_context())
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Ad clicked successfully"}, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SaveAdView(ListCreateAPIView):
     """Allow users to save an ad for later"""
     serializer_class = SaveAdSerializer
-    queryset = SavedAd.objects.all()
+    queryset = AdSaved.objects.all()
     permission_classes = [IsAuthenticated]
 
     extend_schema(

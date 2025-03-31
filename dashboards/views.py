@@ -10,7 +10,7 @@ from beacon_messages.models import BeaconMessage
 from beacon_messages.serializers import BeaconMessageCountSerializer
 from logs.models import AdvertisementLog
 from django.utils.timezone import now, timedelta
-from advertisements.models import Advertisement, AdEngagement
+from advertisements.models import Advertisement, AdView
 from advertisements.serializers import AdvertisementSerializer
 
 class BeaconCount(APIView):
@@ -173,7 +173,7 @@ class TrendingAdsView(APIView):
         last_week = now() - timedelta(days=7)
 
         trending_ads = Advertisement.objects.annotate(
-            engagement_score=Count('engagements')
+            engagement_score=Count('views')
         ).filter(engagements__viewed_at__gte=last_week).order_by('-engagement_score')[:10]
 
         return Response({"trending_ads": AdvertisementSerializer(trending_ads, many=True).data})
