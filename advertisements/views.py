@@ -280,6 +280,7 @@ class SaveAdView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     extend_schema(
+        tags=['Advertisements'],
         summary="List saved ads",
         description="Retrieve a list of ads saved by the authenticated user.",
         responses={200: SaveAdSerializer(many=True)}
@@ -288,6 +289,7 @@ class SaveAdView(ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
+        tags=['Advertisements'],
         summary="Save an ad",
         description="Save an ad by providing its ID. Returns a success message if saved successfully.",
         request=SaveAdSerializer,
