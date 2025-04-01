@@ -1,5 +1,6 @@
 from django.db.models import Count
 from django.db.models.functions import TruncDate
+from drf_spectacular.types import OpenApiTypes
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,14 +11,14 @@ from beacon_messages.models import BeaconMessage
 from beacon_messages.serializers import BeaconMessageCountSerializer
 from logs.models import AdvertisementLog
 from django.utils.timezone import now, timedelta
-from advertisements.models import Advertisement, AdView
+from advertisements.models import Advertisement, AdView, AdClick
 from advertisements.serializers import AdvertisementSerializer
 
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
 
     @extend_schema(
-        tags=["Dashboards"],
+        tags=['Analytics'],
         summary="Retrieve Total Beacon Count",
         description="""
         This endpoint allows authenticated users to retrieve the total count of beacons in the system.
@@ -54,7 +55,7 @@ class BeaconLocationCount(APIView):
 
     # permission_classes = [IsAuthenticated]  # Enforce authentication
     @extend_schema(
-        tags=["Dashboards"],
+        tags=['Analytics'],
         summary="Get Total Unique Beacon Locations",
         description="Returns the total number of unique beacon locations in the system.",
         responses={
@@ -100,13 +101,13 @@ class BeaconMessageCountView(generics.ListAPIView):
     serializer_class = BeaconMessageCountSerializer
 
     @extend_schema(
-        tags=['Dashboards'],
+        tags=['Analytics'],
         summary="Retrieve beacon message counts per day",
         description="Returns a list of beacons with the total number of beacon_messages sent each day.",
         parameters=[
             OpenApiParameter(
                 name="date",
-                type=str,
+                type=OpenApiTypes.DATE,
                 description="Filter results by a specific date (YYYY-MM-DD). Example: ?date=2025-03-06",
                 required=False
             ),
@@ -132,7 +133,7 @@ class LogCount(APIView):
     """Count advertisement logs for the past 24 hours. """
 
     @extend_schema(
-        tags=["Dashboards"],
+        tags=['Analytics'],
         summary="Count advertisement logs for the past 24 hours",
         description="This endpoint counts the number of advertisement logs created in the past 24 hours.",
         responses={
@@ -161,7 +162,7 @@ class TrendingAdsView(APIView):
     """Fetch the most popular ads based on user engagement"""
 
     @extend_schema(
-        tags=['Dashboards'],
+        tags=['Analytics'],
         summary="Get Trending Ads",
         description="Fetches the top 10 most popular ads based on user engagement in the last 7 days.",
         responses={
@@ -177,3 +178,76 @@ class TrendingAdsView(APIView):
         ).filter(engagements__viewed_at__gte=last_week).order_by('-engagement_score')[:10]
 
         return Response({"trending_ads": AdvertisementSerializer(trending_ads, many=True).data})
+
+class ClicksPerDayAPIView(APIView):
+    """
+    Retrieve the number of ad clicks per day.
+    """
+    @extend_schema(
+        tags=['Analytics'],
+        summary="Retrieve Clicks Per Day",
+        description="Returns the number of advertisement clicks per day, grouped by date.",
+        responses={200:
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clicked_at": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2025-04-01"
+                        },
+                        "total_clicks": {
+                            "type": "integer",
+                            "example": 25
+                        }
+                    }
+                }
+            }
+        }
+    )
+    def get(self, request):
+        clicks_per_day = AdClick.objects.annotate(date=TruncDate('clicked_at')) \
+                                      .values('clicked_at') \
+                                      .annotate(total_clicks=Count('ad')) \
+                                      .order_by('-clicked_at')
+
+        return Response(clicks_per_day)
+
+class ImpressionsPerDayAPIView(APIView):
+    """
+    Retrieve the number of ad views per day.
+    """
+    @extend_schema(
+        tags=['Analytics'],
+        summary="Retrieve impressions Per Day",
+        description="Returns the number of advertisement views per day, grouped by date.",
+        responses={200:
+            {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "viewed_at": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2025-04-01"
+                        },
+                        "total_views": {
+                            "type": "integer",
+                            "example": 25
+                        }
+                    }
+                }
+            }
+        }
+    )
+    def get(self, request):
+        views_per_day = AdView.objects.annotate(date=TruncDate('viewed_at')) \
+                                      .values('viewed_at') \
+                                      .annotate(total_views=Count('ad')) \
+                                      .order_by('-date')
+
+        return Response(views_per_day)
+
