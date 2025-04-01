@@ -34,7 +34,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%7vimodp6z3r5$e$7+%ab)*c-!xygdgwf3=8md3@a(o&o6e@9b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -101,7 +101,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 
 ROOT_URLCONF = 'project.urls'
 
@@ -180,12 +179,10 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 # customized user
 AUTH_USER_MODEL = 'users.User'
@@ -200,7 +197,7 @@ CORS_ALLOW_ALL_ORIGINS = True  # Allow all domains (for testing only)
 #     "http://localhost:8000",
 # ]
 
-CORS_ALLOW_CREDENTIALS = True  # Allow credentials (if needed)
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials
 
 CSRF_TRUSTED_ORIGINS = [
     "https://proximity-based-marketing.onrender.com",
