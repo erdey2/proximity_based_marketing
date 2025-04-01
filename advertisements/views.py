@@ -237,7 +237,7 @@ class ViewAdView(ListCreateAPIView):
         return AdView.objects.filter(user=self.request.user)
 
     @extend_schema(
-        tags="Advertisements",
+        tags=["Advertisements"],
         summary="Retrieve user's viewed ads",
         description="Returns a list of ads that the authenticated user has viewed.",
         responses={200: ViewAdSerializer(many=True)},

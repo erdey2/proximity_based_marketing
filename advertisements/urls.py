@@ -13,5 +13,4 @@ urlpatterns = [
     path('click-ad/', ClickAdView.as_view(), name='click-ad'),
     path('save-ad/', SaveAdView.as_view(), name='save-ads'),
 
-
 ]
