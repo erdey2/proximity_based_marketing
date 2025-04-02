@@ -100,21 +100,6 @@ class BeaconMessageCountView(generics.ListAPIView):
     """ API endpoint to get the total beacon_messages sent by each beacon per day. """
     serializer_class = BeaconMessageCountSerializer
 
-    @extend_schema(
-        tags=['Analytics'],
-        summary="Retrieve beacon message counts per day",
-        description="Returns a list of beacons with the total number of beacon_messages sent each day.",
-        parameters=[
-            OpenApiParameter(
-                name="date",
-                type=OpenApiTypes.DATE,
-                description="Filter results by a specific date (YYYY-MM-DD). Example: ?date=2025-03-06",
-                required=False
-            ),
-        ],
-        responses={200: BeaconMessageCountSerializer(many=True)},
-    )
-
     def get_queryset(self):
         """Filter beacon_messages based on the optional `date` query parameter."""
         date_filter = self.request.GET.get('date')
@@ -128,6 +113,25 @@ class BeaconMessageCountView(generics.ListAPIView):
             .annotate(total_messages=Count('message_id'))
             .order_by('date')
         )
+
+    @extend_schema(
+        tags=['Analytics'],
+        summary="Retrieve beacon message counts per day",
+        description="Returns a list of beacons with the total number of beacon messages sent each day. "
+                    "Optionally, filter results by a specific date.",
+        parameters=[
+            OpenApiParameter(
+                name="date",
+                type=OpenApiTypes.DATE,
+                description="Filter results by a specific date (YYYY-MM-DD). Example: ?date=2025-03-06",
+                required=False
+            ),
+        ],
+        responses={200: BeaconMessageCountSerializer(many=True)},
+    )
+    def get(self, request, *args, **kwargs):
+        """Retrieve total beacon message counts per beacon per day."""
+        return self.list(request, *args, **kwargs)
 
 class LogCount(APIView):
     """Count advertisement logs for the past 24 hours. """
