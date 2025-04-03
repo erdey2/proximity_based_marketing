@@ -1,5 +1,7 @@
+from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import status
+from rest_framework.exceptions import NotFound
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 
@@ -21,7 +23,29 @@ class AdvertisementPagination(PageNumberPagination):
     page_query_param = 'page'  # Query parameter for specifying page number (e.g., ?page=2)
     page_size_query_param = 'page_size'  # Allows users to specify page size dynamically (e.g., ?page_size=10)
     max_page_size = 100  # Optional: Limit the maximum number of results per page
-    invalid_page_message = '[]'
+
+class CustomPagination(PageNumberPagination):
+    page_size = 3  # Default items per page
+    page_query_param = 'page'  # ?page=2
+    page_size_query_param = 'page_size'  # Allows users to set page size dynamically
+    max_page_size = 100  # Maximum allowed page size
+
+    def paginate_queryset(self, queryset, request, view=None):
+        """Override pagination to handle out-of-range pages gracefully."""
+        try:
+            return super().paginate_queryset(queryset, request, view)
+        except NotFound:
+            self.page = None  # Prevents `get_paginated_response` from crashing
+            return []  # Return empty list when page is out of range
+
+    def get_paginated_response(self, data):
+        """Return custom paginated response."""
+        return Response({
+            "count": self.page.paginator.count if self.page else 0,  # Total items
+            "next": self.get_next_link(),
+            "previous": self.get_previous_link(),
+            "results": data  # Empty list if page is out of range
+        }, status=200)  # Always return HTTP 200
 
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
@@ -30,28 +54,43 @@ class AdvertisementList(ListCreateAPIView):
 
     def get_queryset(self):
         qs = Advertisement.objects.all()
+
+        # Get the search parameters from the request
         title = self.request.GET.get('title')
+        content = self.request.GET.get('content')
+
+        # Create a Q object to build combined queries
+        search_conditions = Q()
 
         if title:
-            qs = qs.filter(title__icontains=title)
+            search_conditions &= Q(title__icontains = title)
+        if content:
+            search_conditions &= Q(content__icontains = content)
+
+        # Apply the conditions to the queryset
+        qs = qs.filter(search_conditions)
         return qs
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="Retrieve a list of advertisements",
-        description="Fetch all advertisements. You can filter by the title by using the `title` query parameter.",
+        summary="List all advertisements",
+        description="Retrieve a list of advertisements. You can filter results by `title` and `content`.",
         parameters=[
-            OpenApiParameter(name='title', type=str, required=False, description="Filter advertisements by title")
+            OpenApiParameter(
+                name="title",
+                type=str,
+                description="Filter advertisements by title (case insensitive). Example: ?title=promo",
+                required=False
+            ),
+            OpenApiParameter(
+                name="content",
+                type=str,
+                description="Filter advertisements by content (case insensitive). Example: ?content=discount",
+                required=False
+            ),
         ],
-        responses={
-            200: AdvertisementSerializer,
-            400: {
-                "type": "object",
-                "properties": {
-                    "error": {"type": "string", "example": "Invalid parameters"}
-                }
-            }
-        }
+        responses={200: AdvertisementSerializer(many=True)}
+
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -59,17 +98,9 @@ class AdvertisementList(ListCreateAPIView):
     @extend_schema(
         tags=["Advertisements"],
         summary="Create a new advertisement",
-        description="Create a new advertisement by providing title, description, type and media_file.",
-        request=AdvertisementSimpleSerializer,
-        responses={
-            201: AdvertisementSerializer,
-            400: {
-                "type": "object",
-                "properties": {
-                    "error": {"type": "string", "example": "Invalid data. Please check the fields."}
-                }
-            }
-        }
+        description="Create a new advertisement with title, content, and optional image upload.",
+        request=AdvertisementSerializer,
+        responses={201: AdvertisementSerializer}
 
     )
     def post(self, request, *args, **kwargs):
@@ -80,37 +111,67 @@ class AdvertisementListWithPagination(ListCreateAPIView):
     serializer_class = AdvertisementSerializer
     queryset = Advertisement.objects.all().order_by('created_at')
     parser_classes = (MultiPartParser, FormParser)
-    pagination_class = AdvertisementPagination
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         qs = Advertisement.objects.all()
+
+        # Get the search parameters from the request
         title = self.request.GET.get('title')
+        content = self.request.GET.get('content')
+
+        # Create a Q object to build combined queries
+        search_conditions = Q()
+
         if title:
-            qs = qs.filter(title__icontains=title)
+            search_conditions &= Q(title__icontains=title)
+        if content:
+            search_conditions &= Q(content__icontains=content)
+
+        # Apply the conditions to the queryset
+        qs = qs.filter(search_conditions)
         return qs
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="List all Advertisements",
-        description="Fetches a paginated list of advertisements. Supports filtering by title.",
+        summary="List all advertisements with pagination",
+        description="Retrieve a paginated list of advertisements. Supports filtering by `title` and `content`.",
         parameters=[
             OpenApiParameter(
                 name="title",
-                description="Filter advertisements by title (case insensitive).",
-                required=False,
                 type=str,
-                location=OpenApiParameter.QUERY
-            )
+                description="Filter advertisements by title (case insensitive). Example: ?title=promo",
+                required=False
+            ),
+            OpenApiParameter(
+                name="content",
+                type=str,
+                description="Filter advertisements by content (case insensitive). Example: ?content=discount",
+                required=False
+            ),
+            OpenApiParameter(
+                name="page",
+                type=int,
+                description="Specify the page number for paginated results. Example: ?page=2",
+                required=False
+            ),
+            OpenApiParameter(
+                name="page_size",
+                type=int,
+                description="Define the number of results per page. Example: ?page_size=10",
+                required=False
+            ),
         ],
         responses={200: AdvertisementSerializer(many=True)}
+
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="Create an Advertisement",
-        description="Creates a new advertisement with title, description, and image uploads.",
+        summary="Create a new advertisement",
+        description="Create a new advertisement with title, content, and optional image upload.",
         request=AdvertisementSerializer,
         responses={201: AdvertisementSerializer}
     )
