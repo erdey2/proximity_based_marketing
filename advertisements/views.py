@@ -25,27 +25,27 @@ class AdvertisementPagination(PageNumberPagination):
     max_page_size = 100  # Optional: Limit the maximum number of results per page
 
 class CustomPagination(PageNumberPagination):
-    page_size = 3  # Default items per page
-    page_query_param = 'page'  # ?page=2
-    page_size_query_param = 'page_size'  # Allows users to set page size dynamically
-    max_page_size = 100  # Maximum allowed page size
+        page_size = 3  # Default items per page
+        page_query_param = 'page'  # ?page=2
+        page_size_query_param = 'page_size'  # Allows users to set page size dynamically
+        max_page_size = 100  # Maximum allowed page size
 
-    def paginate_queryset(self, queryset, request, view=None):
-        """Override pagination to handle out-of-range pages gracefully."""
-        try:
-            return super().paginate_queryset(queryset, request, view)
-        except NotFound:
-            self.page = None  # Prevents `get_paginated_response` from crashing
-            return []  # Return empty list when page is out of range
+        def paginate_queryset(self, queryset, request, view=None):
+            """Override pagination to handle out-of-range pages gracefully."""
+            try:
+                return super().paginate_queryset(queryset, request, view)
+            except NotFound:
+                self.page = None  # Prevents `get_paginated_response` from crashing
+                return []  # Return empty list when page is out of range
 
-    def get_paginated_response(self, data):
-        """Return custom paginated response."""
-        return Response({
-            "count": self.page.paginator.count if self.page else 0,  # Total items
-            "next": self.get_next_link(),
-            "previous": self.get_previous_link(),
-            "results": data  # Empty list if page is out of range
-        }, status=200)  # Always return HTTP 200
+        def get_paginated_response(self, data):
+            """Return custom paginated response."""
+            return Response({
+                "count": getattr(self.page.paginator, "count", 0) if self.page else 0,  # Avoid AttributeError
+                "next": self.get_next_link() if self.page else None,
+                "previous": self.get_previous_link() if self.page else None,
+                "results": data  # Empty list if page is out of range
+            }, status=200)  # Always return HTTP 200
 
 class AdvertisementList(ListCreateAPIView):
     """ List all advertisements or create a new one. """
