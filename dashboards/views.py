@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import status
@@ -162,13 +162,13 @@ class LogCount(APIView):
         return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} logs."}, status=200)
 
 
-class TrendingAdsView(APIView):
-    """Fetch the most popular ads based on user engagement"""
+class PopularAdsView(APIView):
+    """Fetch top 10 most viewed ads in the last 7 days."""
 
     @extend_schema(
         tags=['Analytics'],
-        summary="Get Trending Ads",
-        description="Fetches the top 10 most popular ads based on user engagement in the last 7 days.",
+        summary="Get Most Viewed Ads",
+        description="Returns the top 10 ads with the highest number of views in the past 7 days.",
         responses={
             200: AdvertisementSerializer(many=True),
             400: {"error": "Invalid request"}
@@ -177,11 +177,16 @@ class TrendingAdsView(APIView):
     def get(self, request):
         last_week = now() - timedelta(days=7)
 
-        trending_ads = Advertisement.objects.annotate(
-            engagement_score=Count('views')
-        ).filter(engagements__viewed_at__gte=last_week).order_by('-engagement_score')[:10]
+        popular_ads = Advertisement.objects.annotate(
+            engagement_score=Count(
+                'views',
+                filter=Q(views__viewed=True, views__viewed_at__gte=last_week)
+            )
+        ).order_by('-engagement_score', '-created_at')[:10]
 
-        return Response({"trending_ads": AdvertisementSerializer(trending_ads, many=True).data})
+        return Response({
+            "popular_ads": AdvertisementSerializer(popular_ads, many=True).data
+        })
 
 class ClicksPerDayAPIView(APIView):
     """
