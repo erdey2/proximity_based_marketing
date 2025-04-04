@@ -55,53 +55,53 @@ class AdvertisementList(ListCreateAPIView):
     def get_queryset(self):
         qs = Advertisement.objects.all()
 
-        # Get the search parameters from the request
-        title = self.request.GET.get('title')
-        content = self.request.GET.get('content')
+        # Use a single query parameter 'search' for both title and content
+        query = self.request.GET.get('search')
 
-        # Create a Q object to build combined queries
-        search_conditions = Q()
+        if query:
+            search_conditions = Q(title__icontains=query) | Q(content__icontains=query)
+            qs = qs.filter(search_conditions)
 
-        if title:
-            search_conditions &= Q(title__icontains = title)
-        if content:
-            search_conditions &= Q(content__icontains = content)
-
-        # Apply the conditions to the queryset
-        qs = qs.filter(search_conditions)
         return qs
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="List all advertisements",
-        description="Retrieve a list of advertisements. You can filter results by `title` and `content`.",
+        summary="List Advertisements",
+        description="Retrieve a list of advertisements. You can optionally search by title or content using the `search` query parameter.",
         parameters=[
             OpenApiParameter(
-                name="title",
+                name="search",
                 type=str,
-                description="Filter advertisements by title (case insensitive). Example: ?title=promo",
-                required=False
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Search term to filter advertisements by title or content.",
             ),
             OpenApiParameter(
-                name="content",
-                type=str,
-                description="Filter advertisements by content (case insensitive). Example: ?content=discount",
-                required=False
+                name="page",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Page number for pagination.",
+            ),
+            OpenApiParameter(
+                name="page_size",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Number of items per page.",
             ),
         ],
-        responses={200: AdvertisementSerializer(many=True)}
-
+        responses={200: AdvertisementSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="Create a new advertisement",
-        description="Create a new advertisement with title, content, and optional image upload.",
+        summary="Create Advertisement",
+        description="Create a new advertisement. Supports image uploads via multipart form data.",
         request=AdvertisementSerializer,
-        responses={201: AdvertisementSerializer}
-
+        responses={201: AdvertisementSerializer},
     )
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
@@ -116,64 +116,53 @@ class AdvertisementListWithPagination(ListCreateAPIView):
     def get_queryset(self):
         qs = Advertisement.objects.all()
 
-        # Get the search parameters from the request
-        title = self.request.GET.get('title')
-        content = self.request.GET.get('content')
+        # Use a single query parameter 'search' for both title and content
+        query = self.request.GET.get('search')
 
-        # Create a Q object to build combined queries
-        search_conditions = Q()
+        if query:
+            search_conditions = Q(title__icontains=query) | Q(content__icontains=query)
+            qs = qs.filter(search_conditions)
 
-        if title:
-            search_conditions &= Q(title__icontains=title)
-        if content:
-            search_conditions &= Q(content__icontains=content)
-
-        # Apply the conditions to the queryset
-        qs = qs.filter(search_conditions)
         return qs
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="List all advertisements with pagination",
-        description="Retrieve a paginated list of advertisements. Supports filtering by `title` and `content`.",
+        summary="List Advertisements with Pagination",
+        description="Retrieve a paginated list of advertisements. Supports filtering by title or content using the `search` query parameter.",
         parameters=[
             OpenApiParameter(
-                name="title",
-                type=str,
-                description="Filter advertisements by title (case insensitive). Example: ?title=promo",
-                required=False
-            ),
-            OpenApiParameter(
-                name="content",
-                type=str,
-                description="Filter advertisements by content (case insensitive). Example: ?content=discount",
-                required=False
+                name="search",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Search advertisements by title or content.",
             ),
             OpenApiParameter(
                 name="page",
-                type=int,
-                description="Specify the page number for paginated results. Example: ?page=2",
-                required=False
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Page number for pagination.",
             ),
             OpenApiParameter(
                 name="page_size",
-                type=int,
-                description="Define the number of results per page. Example: ?page_size=10",
-                required=False
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Number of results per page.",
             ),
         ],
-        responses={200: AdvertisementSerializer(many=True)}
-
+        responses={200: AdvertisementSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="Create a new advertisement",
-        description="Create a new advertisement with title, content, and optional image upload.",
+        summary="Create Advertisement",
+        description="Create a new advertisement. You can upload images using multipart form data.",
         request=AdvertisementSerializer,
-        responses={201: AdvertisementSerializer}
+        responses={201: AdvertisementSerializer},
     )
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
