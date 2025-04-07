@@ -67,6 +67,7 @@ class AdSaved(models.Model):
     """Stores ads that users have saved for later"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ad = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name="saves")
+    saved = models.BooleanField(default=False)  # Track if the ad was saved
     saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

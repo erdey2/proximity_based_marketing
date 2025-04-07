@@ -4,13 +4,14 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 from .models import Advertisement
-from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer
+from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer, AdInteractionSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
 from rest_framework.response import Response
 from .models import AdView, AdLike, AdClick, AdSaved
 from .serializers import ViewAdSerializer, LikeAdSerializer, ClickAdSerializer, SaveAdSerializer
@@ -277,7 +278,7 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-class ViewAdView(ListCreateAPIView):
+class ViewAdListView(ListCreateAPIView):
     """Allow users to view an ad and retrieve their viewed ads"""
     serializer_class = ViewAdSerializer
     permission_classes = [IsAuthenticated]
@@ -287,9 +288,9 @@ class ViewAdView(ListCreateAPIView):
         return AdView.objects.filter(user=self.request.user)
 
     @extend_schema(
-        tags=["Advertisements"],
-        summary="Retrieve user's viewed ads",
-        description="Returns a list of ads that the authenticated user has viewed.",
+        tags=['Advertisements'],
+        summary="List ads viewed by authenticated user",
+        description="Returns a list of advertisements viewed by the currently authenticated user.",
         responses={200: ViewAdSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
@@ -297,13 +298,27 @@ class ViewAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=['Advertisements'],
-        summary="View an Advertisement",
-        description="Allows a user to view an advertisement by providing `ad_id` in the request body.",
-        request=ViewAdSerializer,
+        summary="Mark an ad as viewed",
+        description="Allow the authenticated user to mark a specific ad as viewed.",
+        request=OpenApiExample(
+            "Example Request",
+            value={
+                "ad_id": "eee53f55-b06e-490d-ba87-ba8c196c0233",
+                "viewed": True
+            },
+            request_only=True
+        ),
         responses={
-            201: {"description": "Ad viewed successfully"},
-            400: {"description": "Invalid request"},
-            404: {"description": "Advertisement not found"},
+            201: OpenApiExample(
+                "Success",
+                value={"message": "Ad view successfully"},
+                response_only=True
+            ),
+            400: OpenApiExample(
+                "Bad Request",
+                value={"ad_id": ["Advertisement not found"]},
+                response_only=True
+            ),
         },
     )
     def post(self, request, *args, **kwargs):
@@ -327,8 +342,8 @@ class LikeAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=['Advertisements'],
-        summary="Retrieve user's liked ads",
-        description="Returns a list of ads that the authenticated user has liked.",
+        summary="List liked ads",
+        description="Returns a list of ads liked by the currently authenticated user.",
         responses={200: LikeAdSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
@@ -336,14 +351,28 @@ class LikeAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=['Advertisements'],
-        summary="Like an Advertisement",
-        description="Allows a user to like an advertisement by providing `ad_id` in the request body.",
-        request=LikeAdSerializer,
+        summary="Like an ad",
+        description="Allows the authenticated user to like an ad.",
+        request=OpenApiExample(
+            "Like Ad Request",
+            value={
+                "ad_id": "eee53f55-b06e-490d-ba87-ba8c196c0233",
+                "liked": True
+            },
+            request_only=True
+        ),
         responses={
-            201: {"description": "Ad liked successfully"},
-            400: {"description": "Invalid request"},
-            404: {"description": "Advertisement not found"},
-        },
+            201: OpenApiExample(
+                "Success",
+                value={"message": "Ad liked successfully"},
+                response_only=True
+            ),
+            400: OpenApiExample(
+                "Bad Request",
+                value={"ad_id": ["Advertisement not found"]},
+                response_only=True
+            ),
+        }
     )
     def post(self, request, *args, **kwargs):
         """Allow users to like an ad"""
@@ -366,8 +395,8 @@ class ClickAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=['Advertisements'],
-        summary="Retrieve Clicked Ads",
-        description="Returns a list of all ads that the authenticated user has clicked.",
+        summary="List clicked ads",
+        description="Returns a list of ads clicked by the authenticated user.",
         responses={200: ClickAdSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
@@ -375,22 +404,28 @@ class ClickAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=['Advertisements'],
-        summary="Click an Advertisement",
-        description="Allows a user to record a click on an advertisement. The request should include the advertisement ID.",
-        request=ClickAdSerializer,
+        summary="Click an ad",
+        description="Records a click for a specific advertisement by the authenticated user.",
+        request=OpenApiExample(
+            "Click Ad Request",
+            value={
+                "ad_id": "eee53f55-b06e-490d-ba87-ba8c196c0233",
+                "clicked": True
+            },
+            request_only=True
+        ),
         responses={
-            201: {"description": "Ad clicked successfully"},
-            400: {"description": "Invalid request"},
-        },
-        parameters=[
-            OpenApiParameter(
-                name="ad_id",
-                description="UUID of the advertisement being clicked",
-                required=True,
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.QUERY,
+            201: OpenApiExample(
+                "Success",
+                value={"message": "Ad clicked successfully"},
+                response_only=True
             ),
-        ],
+            400: OpenApiExample(
+                "Validation Error",
+                value={"ad_id": ["Advertisement not found"]},
+                response_only=True
+            ),
+        }
     )
     def post(self, request, *args, **kwargs):
         """Allow users to click an ad"""
@@ -413,8 +448,8 @@ class SaveAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=['Advertisements'],
-        summary="Retrieve Saved Ads",
-        description="Returns a list of all ads that the authenticated user has saved.",
+        summary="List saved ads",
+        description="Retrieve a list of ads the authenticated user has saved for later viewing.",
         responses={200: SaveAdSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
@@ -422,22 +457,27 @@ class SaveAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=['Advertisements'],
-        summary="Save an Advertisement",
-        description="Allows a user to record a save on an advertisement. The request should include the advertisement ID.",
-        request=SaveAdSerializer,
+        summary="Save an ad",
+        description="Save a specific advertisement for the authenticated user.",
+        request=OpenApiExample(
+            "Save Ad Request",
+            value={
+                "ad_id": "f42c3ad4-dbf2-4c47-baaa-05b1c759cd6c"
+            },
+            request_only=True
+        ),
         responses={
-            201: {"description": "Ad saved successfully"},
-            400: {"description": "Invalid request"},
-        },
-        parameters=[
-            OpenApiParameter(
-                name="ad_id",
-                description="UUID of the advertisement being saved",
-                required=True,
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.QUERY,
+            201: OpenApiExample(
+                "Success",
+                value={"message": "Ad saved successfully"},
+                response_only=True
             ),
-        ],
+            400: OpenApiExample(
+                "Validation Error",
+                value={"ad_id": ["This field is required."]},
+                response_only=True
+            ),
+        }
     )
     def post(self, request, *args, **kwargs):
         """Allow users to click an ad"""
@@ -449,6 +489,48 @@ class SaveAdView(ListCreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class AdInteractionView(APIView):
+    """Retrieve all ads with user interactions (viewed, liked, clicked, saved). """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=['Advertisements'],
+        summary="Get ads with user interactions",
+        description="Returns a list of ads with interaction statuses and timestamps for the authenticated user.",
+        responses={
+            200: OpenApiResponse(
+                response=AdInteractionSerializer(many=True),
+                description="List of ads with interactions"
+            ),
+            401: OpenApiResponse(description="Authentication credentials were not provided or invalid.")
+        }
+    )
+    def get(self, request):
+        user = request.user
+        ads = Advertisement.objects.all()
+        result = []
+
+        for ad in ads:
+            view = AdView.objects.filter(user=user, ad=ad).first()
+            like = AdLike.objects.filter(user=user, ad=ad).first()
+            click = AdClick.objects.filter(user=user, ad=ad).first()
+            save = AdSaved.objects.filter(user=user, ad=ad).first()
+
+            data = {
+                'ad': AdvertisementSerializer(ad).data,
+                'viewed': view.viewed if view else False,
+                'viewed_at': view.viewed_at if view else None,
+                'liked': like.liked if like else False,
+                'liked_at': like.liked_at if like else None,
+                'clicked': click.clicked if click else False,
+                'clicked_at': click.clicked_at if click else None,
+                'saved': save.saved if save else False,
+                'saved_at': save.saved_at if save else None,
+            }
+
+            result.append(data)
+
+        return Response(result)
 
 
 
