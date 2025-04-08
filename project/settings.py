@@ -16,6 +16,7 @@ from pathlib import Path
 import os
 import environ
 from tutorial.settings import ALLOWED_HOSTS
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Initialize environment variables
@@ -34,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%7vimodp6z3r5$e$7+%ab)*c-!xygdgwf3=8md3@a(o&o6e@9b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -91,6 +92,16 @@ SPECTACULAR_SETTINGS = {
 "SERVE_INCLUDE_SCHEMA": False,
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
