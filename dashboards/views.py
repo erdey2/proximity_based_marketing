@@ -12,7 +12,7 @@ from beacon_messages.serializers import BeaconMessageCountSerializer
 from logs.models import AdvertisementLog
 from django.utils.timezone import now, timedelta
 from advertisements.models import Advertisement, AdView, AdClick
-from advertisements.serializers import AdvertisementSerializer
+from advertisements.serializers import AdvertisementSerializer, AdInteractionSerializer
 
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
@@ -161,7 +161,6 @@ class LogCount(APIView):
 
         return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} logs."}, status=200)
 
-
 class PopularAdsView(APIView):
     """Fetch top 10 most viewed ads in the last 7 days."""
 
@@ -170,7 +169,7 @@ class PopularAdsView(APIView):
         summary="Get Most Viewed Ads",
         description="Returns the top 10 ads with the highest number of views in the past 7 days.",
         responses={
-            200: AdvertisementSerializer(many=True),
+            200: AdInteractionSerializer(many=True),
             400: {"error": "Invalid request"}
         }
     )
