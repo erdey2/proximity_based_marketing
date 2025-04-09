@@ -190,7 +190,7 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
                 - `404 Not Found`: If the advertisement does not exist.
             """,
         responses={
-            200: AdvertisementSerializer,
+            200: AdInteractionSerializer,
             404: OpenApiResponse(description="Advertisement not found"),
         },
     )
