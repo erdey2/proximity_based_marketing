@@ -16,6 +16,7 @@ class AdvertisementAssignmentList(ListCreateAPIView):
 
     def get_queryset(self):
         qs = AdvertisementAssignment.objects.all()
+
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
 

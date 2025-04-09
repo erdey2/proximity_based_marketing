@@ -40,7 +40,7 @@ class ViewAdSerializer(serializers.ModelSerializer):
 
         # Create or update ad click
         view, created = AdView.objects.get_or_create(user=user, ad=ad)
-        view.viewed = validated_data.get('viewed', True)
+        view.viewed = True
         view.save()
         return view
 
@@ -66,7 +66,7 @@ class LikeAdSerializer(serializers.ModelSerializer):
 
         # Create or update ad like
         like, created = AdLike.objects.get_or_create(user=user, ad=ad)
-        like.liked = validated_data.get('liked', True)
+        like.liked = True
         like.save()
         return like
 
@@ -92,7 +92,7 @@ class ClickAdSerializer(serializers.ModelSerializer):
 
         # Create or update ad click
         click, created = AdClick.objects.get_or_create(user=user, ad=ad)
-        click.clicked = validated_data.get('clicked', True)
+        click.clicked = True
         click.save()
         return click
 
@@ -118,7 +118,7 @@ class SaveAdSerializer(serializers.ModelSerializer):
 
         # Create or update ad click
         save, created = AdSaved.objects.get_or_create(user=user, ad=ad)
-        save.saved = validated_data.get('saved', True)
+        save.saved = True
         save.save()
         return save
 

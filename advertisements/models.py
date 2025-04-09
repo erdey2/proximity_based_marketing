@@ -27,19 +27,6 @@ class Advertisement(models.Model):
     def __str__(self):
         return f"{self.title} Advertisement ({self.is_active})"
 
-class AdLike(models.Model):
-    """Tracks ad likes"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    ad = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name="likes")
-    liked = models.BooleanField(default=False)
-    liked_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
-    class Meta:
-        unique_together = ('user', 'ad')  # One record per user per ad
-
-    def __str__(self):
-        return f"{self.user} liked {self.ad} at {self.liked_at}"
-
 class AdView(models.Model):
     """Track ad views"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -52,6 +39,19 @@ class AdView(models.Model):
 
     def __str__(self):
         return f"{self.user} viewed {self.ad} at {self.viewed_at}"
+
+class AdLike(models.Model):
+    """Tracks ad likes"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ad = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name="likes")
+    liked = models.BooleanField(default=False)
+    liked_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'ad')  # One record per user per ad
+
+    def __str__(self):
+        return f"{self.user} liked {self.ad} at {self.liked_at}"
 
 class AdClick(models.Model):
     """Track add clicks"""
