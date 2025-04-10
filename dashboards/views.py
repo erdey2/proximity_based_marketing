@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from beacons.models import Beacon
 from rest_framework import generics
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from beacon_messages.models import BeaconMessage
 from beacon_messages.serializers import BeaconMessageCountSerializer
 from logs.models import AdvertisementLog
@@ -165,13 +165,16 @@ class PopularAdsView(APIView):
     """Fetch top 10 most viewed ads in the last 7 days."""
 
     @extend_schema(
-        tags=['Analytics'],
-        summary="Get Most Viewed Ads",
-        description="Returns the top 10 ads with the highest number of views in the past 7 days.",
+        tags=["Analytics"],
+        summary="Get Top 10 Popular Ads",
+        description="Returns the top 10 most viewed advertisements in the past 7 days, ranked by view count.",
         responses={
-            200: AdInteractionSerializer(many=True),
-            400: {"error": "Invalid request"}
+            200: OpenApiResponse(
+                response=AdInteractionSerializer(many=True), description="List of top 10 most viewed ads"
+            ),
+            400: OpenApiResponse(description="Invalid input data"),
         }
+
     )
     def get(self, request):
         last_week = now() - timedelta(days=7)
@@ -184,7 +187,7 @@ class PopularAdsView(APIView):
         ).order_by('-engagement_score', '-created_at')[:10]
 
         return Response({
-            "popular_ads": AdvertisementSerializer(popular_ads, many=True).data
+            "popular_ads": AdInteractionSerializer(popular_ads, many=True).data
         })
 
 class ClicksPerDayAPIView(APIView):
