@@ -174,12 +174,21 @@ class PopularAdsView(APIView):
             ),
             400: OpenApiResponse(description="Invalid input data"),
         }
-
     )
     def get(self, request):
         last_week = now() - timedelta(days=7)
 
-        popular_ads = Advertisement.objects.annotate(
+        # Start with all advertisements
+        qs = Advertisement.objects.all()
+
+        # Apply search filter if 'search' query param exists
+        query = request.GET.get('search')
+        if query:
+            search_conditions = Q(title__icontains=query) | Q(content__icontains=query)
+            qs = qs.filter(search_conditions)
+
+        # Annotate and order the filtered queryset
+        popular_ads = qs.annotate(
             engagement_score=Count(
                 'views',
                 filter=Q(views__viewed=True, views__viewed_at__gte=last_week)
