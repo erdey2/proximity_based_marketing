@@ -167,12 +167,23 @@ class PopularAdsView(APIView):
     @extend_schema(
         tags=["Analytics"],
         summary="Get Top 10 Popular Ads",
-        description="Returns the top 10 most viewed advertisements in the past 7 days, ranked by view count.",
+        description="Returns the top 10 most viewed advertisements in the past 7 days, "
+                    "ranked by view count. You can optionally filter ads using the `search` query "
+                    "parameter, which matches both title and content.",
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search term to filter ads by title or content",
+                required=False,
+                type=str
+            ),
+        ],
         responses={
             200: OpenApiResponse(
-                response=AdInteractionSerializer(many=True), description="List of top 10 most viewed ads"
+                response=AdInteractionSerializer(many=True),
+                description="List of top 10 most viewed ads"
             ),
-            400: OpenApiResponse(description="Invalid input data"),
+            400: OpenApiResponse(description="Bad Request")
         }
     )
     def get(self, request):
