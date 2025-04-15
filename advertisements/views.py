@@ -7,7 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from .models import Advertisement
-from .serializers import AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer, AdInteractionSerializer
+from .serializers import (AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer,
+                          AdInteractionSerializer, LikedSavedAdSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
@@ -384,7 +385,7 @@ class LikeAdView(ListCreateAPIView):
     def get_queryset(self):
         """Return the liked ads of the authenticated user, optionally filtered by a search query."""
         # Start with the queryset of ads liked by the authenticated user
-        liked_ads = Advertisement.objects.filter(adlike__user=self.request.user)
+        liked_ads = Advertisement.objects.filter(likes__user=self.request.user)
 
         # Retrieve the search query parameter
         search_query = self.request.GET.get('search', '')
@@ -414,7 +415,7 @@ class LikeAdView(ListCreateAPIView):
             ),
         ],
         responses={
-            200: LikeAdSerializer(many=True),
+            200: AdInteractionSerializer(many=True),
             401: {
                 'description': 'Unauthorized - Authentication credentials were not provided or are invalid.',
             },
@@ -483,7 +484,7 @@ class ClickAdView(ListCreateAPIView):
     def get_queryset(self):
         """Return the viewed ads of the authenticated user, optionally filtered by a search query."""
         # Start with the queryset of ads clicked by the authenticated user
-        clicked_ads = Advertisement.objects.filter(adclick__user=self.request.user)
+        clicked_ads = Advertisement.objects.filter(clicks__user=self.request.user)
 
         # Retrieve the search query parameter
         search_query = self.request.GET.get('search', '')
@@ -582,7 +583,7 @@ class SaveAdView(ListCreateAPIView):
     def get_queryset(self):
         """Return the saved ads of the authenticated user, optionally filtered by a search query."""
         # Start with the queryset of ads saved by the authenticated user
-        saved_ads = Advertisement.objects.filter(adsave__user=self.request.user)
+        saved_ads = Advertisement.objects.filter(saves__user=self.request.user)
 
         # Retrieve the search query parameter
         search_query = self.request.GET.get('search', '')
@@ -671,6 +672,66 @@ class SaveAdView(ListCreateAPIView):
             return Response({"message": "Ad saved successfully"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LikedSavedAdsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["Advertisements"],
+        summary="Get liked and saved ads",
+        description="Returns a list of ads liked or saved by the authenticated user, with optional search.",
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Search ads by title or content.'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(response=LikedSavedAdSerializer(many=True)),
+            401: OpenApiResponse(description="Authentication required.")
+        }
+    )
+    def get(self, request):
+        user = request.user
+        search_query = request.GET.get('search', '')
+
+        liked_ads = AdLike.objects.select_related('ad').filter(user=user, liked=True)
+        saved_ads = AdSaved.objects.select_related('ad').filter(user=user, saved=True)
+
+        ad_map = {}
+
+        # Collect liked ads
+        for like in liked_ads:
+            if search_query and search_query.lower() not in (like.ad.title.lower() + like.ad.content.lower()):
+                continue
+            ad_map[like.ad.advertisement_id] = {
+                'ad': AdvertisementSerializer(like.ad).data,
+                'liked': like.liked,
+                'liked_at': like.liked_at,
+                'saved': False,
+                'saved_at': None,
+            }
+
+        # Merge with saved ads
+        for save in saved_ads:
+            if search_query and search_query.lower() not in (save.ad.title.lower() + save.ad.content.lower()):
+                continue
+            if save.ad.id in ad_map:
+                ad_map[save.ad.id]['saved'] = save.saved
+                ad_map[save.ad.id]['saved_at'] = save.saved_at
+            else:
+                ad_map[save.ad.id] = {
+                    'ad': AdvertisementSerializer(save.ad).data,
+                    'liked': False,
+                    'liked_at': None,
+                    'saved': save.saved,
+                    'saved_at': save.saved_at,
+                }
+
+        return Response(list(ad_map.values()))
 
 class AdInteractionView(APIView):
     """Retrieve all ads with user interactions (viewed, liked, clicked, saved). """

@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (AdvertisementList, AdvertisementDetail, ViewAdListView, LikeAdView, ClickAdView,
-                    SaveAdView, AdvertisementListWithPagination, AdInteractionView)
+                    SaveAdView, AdvertisementListWithPagination, AdInteractionView, LikedSavedAdsView)
 from assignments.views import AdvertisementBeaconsView
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     path('like-ad/', LikeAdView.as_view(), name='like-ad'),
     path('click-ad/', ClickAdView.as_view(), name='click-ad'),
     path('save-ad/', SaveAdView.as_view(), name='save-ads'),
-    path('interactions/', AdInteractionView.as_view(), name='ad-interactions')
+    path('interactions/', AdInteractionView.as_view(), name='ad-interactions'),
+    path('like-save/', LikedSavedAdsView.as_view(), name='ad-like-save')
 
 ]

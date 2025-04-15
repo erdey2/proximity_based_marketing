@@ -122,6 +122,13 @@ class SaveAdSerializer(serializers.ModelSerializer):
         save.save()
         return save
 
+class LikedSavedAdSerializer(serializers.Serializer):
+    ad = AdvertisementSerializer()
+    liked = serializers.BooleanField()
+    liked_at = serializers.DateTimeField(allow_null=True)
+    saved = serializers.BooleanField()
+    saved_at = serializers.DateTimeField(allow_null=True)
+
 class AdInteractionSerializer(serializers.Serializer):
     ad = AdvertisementSerializer()  # Nested ad details
     viewed = serializers.BooleanField()
