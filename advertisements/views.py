@@ -599,7 +599,7 @@ class SaveAdView(ListCreateAPIView):
         tags=["Advertisements"],
         summary="List saved ads",
         description=(
-                "Retrieves a list of advertisements that the authenticated user has saved. "
+                "Retrieves a list of advertisements that the authenticated user has saved."
                 "Supports optional filtering by a search query parameter to match advertisement titles or content."
         ),
         parameters=[
@@ -677,17 +677,47 @@ class AdInteractionView(APIView):
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
 
+    def get_queryset(self):
+        """Return the saved ads of the authenticated user, optionally filtered by a search query."""
+        # Start with the queryset of ads saved by the authenticated user
+        interaction_ads = Advertisement.objects.filter(adinteraction__user=self.request.user)
+
+        # Retrieve the search query parameter
+        search_query = self.request.GET.get('search', '')
+
+        if search_query:
+            # Filter advertisements by title or content containing the search term
+            interaction_ads = interaction_ads.filter(
+                Q(title__icontains=search_query) | Q(content__icontains=search_query)
+            )
+
+        return interaction_ads
+
     @extend_schema(
-        tags=['Advertisements'],
+        tags=["Advertisements"],
         summary="Get ads with user interactions",
-        description="Returns a list of ads with interaction statuses and timestamps for the authenticated user.",
+        description=(
+                "Returns a list of ads that the authenticated user has interacted with, "
+                "including viewed, liked, clicked, and saved statuses and timestamps.\n\n"
+                "Supports optional search by ad title or content."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filter ads by title or content.'
+            )
+        ],
         responses={
             200: OpenApiResponse(
-                response=AdInteractionSerializer(many=True),
-                description="List of ads with interactions"
+                description="List of ads with user interaction data.",
+                response=AdInteractionSerializer(many=True)
             ),
-            401: OpenApiResponse(description="Authentication credentials were not provided or invalid.")
+            401: OpenApiResponse(description="Unauthorized. User must be authenticated.")
         }
+
     )
     def get(self, request):
         user = request.user
