@@ -675,22 +675,27 @@ class SaveAdView(ListCreateAPIView):
 
 class LikedSavedAdsView(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     @extend_schema(
         tags=["Advertisements"],
         summary="Get liked and saved ads",
-        description="Returns a list of ads liked or saved by the authenticated user, with optional search.",
+        description=(
+                "Returns a list of advertisements that have been liked and/or saved "
+                "by the authenticated user. You can optionally filter the results by a search query."
+        ),
         parameters=[
             OpenApiParameter(
                 name='search',
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description='Search ads by title or content.'
+                description="Search ads by title or content."
             )
         ],
         responses={
-            200: OpenApiResponse(response=LikedSavedAdSerializer(many=True)),
+            200: OpenApiResponse(response=LikedSavedAdSerializer(many=True),
+                                 description="List of liked and/or saved ads."),
             401: OpenApiResponse(description="Authentication required.")
         }
     )
