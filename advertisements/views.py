@@ -5,10 +5,12 @@ from rest_framework.exceptions import NotFound
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework import generics
 
 from .models import Advertisement
 from .serializers import (AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer,
-                          AdInteractionSerializer, LikedSavedAdSerializer)
+                          AdInteractionSerializer, LikedSavedAdSerializer, LikedAdDetailSerializer,
+                          SavedAdDetailSerializer, AdvertisementDetailSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
@@ -279,6 +281,65 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+class AdvertisementDetailInteraction(generics.RetrieveAPIView):
+    queryset = Advertisement.objects.all()
+    serializer_class = AdvertisementDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    tags = ["Advertisements"],
+    summary = "Get Advertisement Details with User Interaction",
+    description = (
+        "Retrieves full advertisement details along with interaction information for the authenticated user. "
+        "This includes whether the user has liked or saved the ad, and the timestamps for those actions."
+    ),
+    responses = {
+        200: OpenApiResponse(
+            description="Advertisement detail with interaction info",
+            response=AdvertisementDetailSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Success Example",
+                    value={
+                        "advertisement_id": "2a6f188b-1234-4abc-a456-7f2f42c31e89",
+                        "title": "New Sneakers Drop!",
+                        "content": "Get the latest sneakers before they sell out.",
+                        "media_file": "https://cdn.example.com/ad1.jpg",
+                        "url": "https://shop.example.com/sneakers",
+                        "type": "image",
+                        "created_at": "2025-04-14T10:00:00Z",
+                        "liked": True,
+                        "liked_at": "2025-04-14T12:00:00Z",
+                        "saved": True,
+                        "saved_at": "2025-04-14T12:30:00Z"
+                    },
+                    response_only=True
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized - User not authenticated",
+            examples=[
+                OpenApiExample(
+                    name="Unauthorized",
+                    value={"detail": "Authentication credentials were not provided."},
+                    response_only=True,
+                    status_codes=["401"]
+                )
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Ad not found",
+            examples=[
+                OpenApiExample(
+                    name="Not Found",
+                    value={"detail": "Not found."},
+                    response_only=True,
+                    status_codes=["404"]
+                )
+            ]
+        )
+    }
+
 class ViewAdListView(ListCreateAPIView):
     """Allow users to view an ad and retrieve their viewed ads, with optional search functionality."""
     serializer_class = ViewAdSerializer
@@ -378,57 +439,51 @@ class ViewAdListView(ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LikeAdView(ListCreateAPIView):
-    """Allow users to like an ad and retrieve their liked ads, with optional search functionality."""
-    serializer_class = LikeAdSerializer
+    """ """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Return the liked ads of the authenticated user, optionally filtered by a search query."""
-        # Start with the queryset of ads liked by the authenticated user
-        liked_ads = Advertisement.objects.filter(likes__user=self.request.user)
+        return Advertisement.objects.filter(
+            likes__user=self.request.user,
+            likes__liked=True
+        ).distinct()
 
-        # Retrieve the search query parameter
-        search_query = self.request.GET.get('search', '')
-
-        if search_query:
-            # Filter advertisements by title or content containing the search term
-            liked_ads = liked_ads.filter(
-                Q(title__icontains=search_query) | Q(content__icontains=search_query)
-            )
-
-        return liked_ads
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return LikeAdSerializer
+        return LikedAdDetailSerializer
 
     @extend_schema(
         tags=["Advertisements"],
         summary="List liked ads",
-        description=(
-                "Retrieves a list of advertisements that the authenticated user has liked. "
-                "Supports optional filtering by a search query parameter to match advertisement titles or content."
-        ),
+        description="Retrieves a list of advertisements the authenticated user has liked.",
         parameters=[
             OpenApiParameter(
                 name='search',
-                description='A search term to filter advertisements by title or content.',
+                description='Optional search query for filtering ads by title or content.',
                 required=False,
                 type=str,
                 location=OpenApiParameter.QUERY
-            ),
+            )
         ],
         responses={
-            200: AdInteractionSerializer(many=True),
-            401: {
-                'description': 'Unauthorized - Authentication credentials were not provided or are invalid.',
-            },
-        },
-
+            200: LikedAdDetailSerializer(many=True),
+            401: {"description": "Unauthorized"},
+        }
     )
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+        queryset = self.get_queryset()
+        search_query = request.GET.get('search', '')
+        if search_query:
+            queryset = queryset.filter(Q(title__icontains=search_query) | Q(content__icontains=search_query))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @extend_schema(
-        tags=['Advertisements'],
+        tags=["Advertisements"],
         summary="Like an advertisement",
-        description="Allows an authenticated user to like a specific advertisement by submitting its `ad_id`.",
+        description="Like an ad by submitting its `ad_id`.",
         request=LikeAdSerializer,
         responses={
             201: OpenApiResponse(
@@ -455,25 +510,13 @@ class LikeAdView(ListCreateAPIView):
                     )
                 ]
             )
-        },
-        examples=[
-            OpenApiExample(
-                name="Like Request Example",
-                value={
-                    "ad_id": "2a6f188b-1234-4abc-a456-7f2f42c31e89",
-                },
-                request_only=True
-            )
-        ]
+        }
     )
     def post(self, request, *args, **kwargs):
-        """Allow users to like an ad"""
         serializer = self.get_serializer(data=request.data)
-
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Ad liked successfully"}, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ClickAdView(ListCreateAPIView):
@@ -577,55 +620,50 @@ class ClickAdView(ListCreateAPIView):
 
 class SaveAdView(ListCreateAPIView):
     """Allow users to save an ad and retrieve their saved ads, with optional search functionality."""
-    serializer_class = SaveAdSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Return the saved ads of the authenticated user, optionally filtered by a search query."""
-        # Start with the queryset of ads saved by the authenticated user
-        saved_ads = Advertisement.objects.filter(saves__user=self.request.user)
+        return Advertisement.objects.filter(
+            saves__user=self.request.user,
+            saves__saved=True
+        ).distinct()
 
-        # Retrieve the search query parameter
-        search_query = self.request.GET.get('search', '')
-
-        if search_query:
-            # Filter advertisements by title or content containing the search term
-            saved_ads = saved_ads.filter(
-                Q(title__icontains=search_query) | Q(content__icontains=search_query)
-            )
-
-        return saved_ads
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return SaveAdSerializer
+        return SavedAdDetailSerializer
 
     @extend_schema(
         tags=["Advertisements"],
         summary="List saved ads",
-        description=(
-                "Retrieves a list of advertisements that the authenticated user has saved."
-                "Supports optional filtering by a search query parameter to match advertisement titles or content."
-        ),
+        description="Retrieves a list of advertisements the authenticated user has saved.",
         parameters=[
             OpenApiParameter(
                 name='search',
-                description='A search term to filter advertisements by title or content.',
+                description='Optional search query for filtering ads by title or content.',
                 required=False,
                 type=str,
                 location=OpenApiParameter.QUERY
-            ),
+            )
         ],
         responses={
-            200: ViewAdSerializer(many=True),
-            401: {
-                'description': 'Unauthorized - Authentication credentials were not provided or are invalid.',
-            },
-        },
+            200: SavedAdDetailSerializer(many=True),
+            401: {"description": "Unauthorized"},
+        }
     )
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+        queryset = self.get_queryset()
+        search_query = request.GET.get('search', '')
+        if search_query:
+            queryset = queryset.filter(Q(title__icontains=search_query) | Q(content__icontains=search_query))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @extend_schema(
-        tags=['Advertisements'],
+        tags=["Advertisements"],
         summary="Save an advertisement",
-        description="Allows an authenticated user to save a specific advertisement by providing its `ad_id`. This helps users bookmark ads for later viewing.",
+        description="Save an ad by submitting its `ad_id`.",
         request=SaveAdSerializer,
         responses={
             201: OpenApiResponse(
@@ -652,25 +690,13 @@ class SaveAdView(ListCreateAPIView):
                     )
                 ]
             )
-        },
-        examples=[
-            OpenApiExample(
-                name="Save Request Example",
-                value={
-                    "ad_id": "f51acb8b-56f3-4c20-bf99-73f74805be23",
-                },
-                request_only=True
-            )
-        ]
+        }
     )
     def post(self, request, *args, **kwargs):
-        """Allow users to click an ad"""
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Ad saved successfully"}, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LikedSavedAdsView(APIView):
@@ -738,26 +764,10 @@ class LikedSavedAdsView(APIView):
 
         return Response(list(ad_map.values()))
 
-class AdInteractionView(APIView):
-    """Retrieve all ads with user interactions (viewed, liked, clicked, saved). """
+class AdInteractionView(generics.ListAPIView):
+    """Retrieve all ads with user interactions (viewed, liked, clicked, saved)."""
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
-
-    def get_queryset(self):
-        """Return the saved ads of the authenticated user, optionally filtered by a search query."""
-        # Start with the queryset of ads saved by the authenticated user
-        interaction_ads = Advertisement.objects.filter(adinteraction__user=self.request.user)
-
-        # Retrieve the search query parameter
-        search_query = self.request.GET.get('search', '')
-
-        if search_query:
-            # Filter advertisements by title or content containing the search term
-            interaction_ads = interaction_ads.filter(
-                Q(title__icontains=search_query) | Q(content__icontains=search_query)
-            )
-
-        return interaction_ads
 
     @extend_schema(
         tags=["Advertisements"],
@@ -783,14 +793,25 @@ class AdInteractionView(APIView):
             ),
             401: OpenApiResponse(description="Unauthorized. User must be authenticated.")
         }
-
     )
-    def get(self, request):
-        user = request.user
+    def get_queryset(self):
+        user = self.request.user
+        search_query = self.request.GET.get('search', '')
         ads = Advertisement.objects.all()
+
+        if search_query:
+            ads = ads.filter(
+                Q(title__icontains=search_query) | Q(content__icontains=search_query)
+            )
+
+        return ads
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        user = request.user
         result = []
 
-        for ad in ads:
+        for ad in queryset:
             view = AdView.objects.filter(user=user, ad=ad).first()
             like = AdLike.objects.filter(user=user, ad=ad).first()
             click = AdClick.objects.filter(user=user, ad=ad).first()
@@ -810,7 +831,8 @@ class AdInteractionView(APIView):
 
             result.append(data)
 
-        return Response(result)
+        page = self.paginate_queryset(result)
+        return self.get_paginated_response(page)
 
 
 

@@ -1,11 +1,13 @@
 from django.urls import path
 from .views import (AdvertisementList, AdvertisementDetail, ViewAdListView, LikeAdView, ClickAdView,
-                    SaveAdView, AdvertisementListWithPagination, AdInteractionView, LikedSavedAdsView)
+                    SaveAdView, AdvertisementListWithPagination, AdInteractionView, LikedSavedAdsView,
+                    AdvertisementDetailInteraction)
 from assignments.views import AdvertisementBeaconsView
 
 urlpatterns = [
     path('', AdvertisementList.as_view(), name='advertisement_list'),
     path('<uuid:pk>/', AdvertisementDetail.as_view(), name='advertisement_details'),
+    path('<uuid:pk>/interactions/', AdvertisementDetailInteraction.as_view(), name='advertisement-detail-interactions'),
     path('beacons/', AdvertisementBeaconsView.as_view(), name='advertisement-beacons'),
     path('pagination/', AdvertisementListWithPagination.as_view(), name='ads_paginated'),
 

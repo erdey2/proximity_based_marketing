@@ -6,13 +6,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from beacons.models import Beacon
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from beacon_messages.models import BeaconMessage
 from beacon_messages.serializers import BeaconMessageCountSerializer
 from logs.models import AdvertisementLog
 from django.utils.timezone import now, timedelta
-from advertisements.models import Advertisement, AdView, AdClick
+from advertisements.models import Advertisement, AdView, AdClick, AdSaved, AdLike
 from advertisements.serializers import AdvertisementSerializer, AdInteractionSerializer
+from advertisements.views import CustomPagination
+
 
 class BeaconCount(APIView):
     """Retrieve the total count of beacons."""
@@ -161,8 +164,10 @@ class LogCount(APIView):
 
         return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} logs."}, status=200)
 
-class PopularAdsView(APIView):
+class PopularAdsView(generics.ListAPIView):
     """Fetch top 10 most viewed ads in the last 7 days."""
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     @extend_schema(
         tags=["Analytics"],
@@ -180,25 +185,24 @@ class PopularAdsView(APIView):
         ],
         responses={
             200: OpenApiResponse(
-                response=AdInteractionSerializer(many=True),
-                description="List of top 10 most viewed ads"
+                description="List of top 10 most viewed ads with interaction data."
             ),
             400: OpenApiResponse(description="Bad Request")
         }
     )
-    def get(self, request):
+    def get_queryset(self):
         last_week = now() - timedelta(days=7)
-
-        # Start with all advertisements
         qs = Advertisement.objects.all()
 
-        # Apply search filter if 'search' query param exists
-        query = request.GET.get('search')
+        # Optional search filtering
+        query = self.request.GET.get('search')
         if query:
-            search_conditions = Q(title__icontains=query) | Q(content__icontains=query)
-            qs = qs.filter(search_conditions)
+            qs = qs.filter(
+                Q(title__icontains=query) |
+                Q(content__icontains=query)
+            )
 
-        # Annotate and order the filtered queryset
+        # Annotate with view count and order
         popular_ads = qs.annotate(
             engagement_score=Count(
                 'views',
@@ -206,9 +210,35 @@ class PopularAdsView(APIView):
             )
         ).order_by('-engagement_score', '-created_at')[:10]
 
-        return Response({
-            "popular_ads": AdInteractionSerializer(popular_ads, many=True).data
-        })
+        return popular_ads
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        user = request.user
+        result = []
+
+        for ad in queryset:
+            view = AdView.objects.filter(user=user, ad=ad).first()
+            like = AdLike.objects.filter(user=user, ad=ad).first()
+            click = AdClick.objects.filter(user=user, ad=ad).first()
+            save = AdSaved.objects.filter(user=user, ad=ad).first()
+
+            data = {
+                'ad': AdvertisementSerializer(ad, context={'request': request}).data,
+                'viewed': view.viewed if view else False,
+                'viewed_at': view.viewed_at if view else None,
+                'liked': like.liked if like else False,
+                'liked_at': like.liked_at if like else None,
+                'clicked': click.clicked if click else False,
+                'clicked_at': click.clicked_at if click else None,
+                'saved': save.saved if save else False,
+                'saved_at': save.saved_at if save else None,
+            }
+
+            result.append(data)
+
+        page = self.paginate_queryset(result)
+        return self.get_paginated_response(page)
 
 class ClicksPerDayAPIView(APIView):
     """
