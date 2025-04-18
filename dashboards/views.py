@@ -164,12 +164,7 @@ class LogCount(APIView):
 
         return Response({"count": recent_advertisements, "message": f"Found {recent_advertisements} logs."}, status=200)
 
-class PopularAdsView(generics.ListAPIView):
-    """Fetch top 10 most viewed ads in the last 7 days."""
-    permission_classes = [IsAuthenticated]
-    pagination_class = CustomPagination
-
-    @extend_schema(
+@extend_schema(
         tags=["Analytics"],
         summary="Get Top 10 Popular Ads",
         description="Returns the top 10 most viewed advertisements in the past 7 days, "
@@ -190,6 +185,11 @@ class PopularAdsView(generics.ListAPIView):
             400: OpenApiResponse(description="Bad Request")
         }
     )
+class PopularAdsView(generics.ListAPIView):
+    """Fetch top 10 most viewed ads in the last 7 days."""
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
     def get_queryset(self):
         last_week = now() - timedelta(days=7)
         qs = Advertisement.objects.all()

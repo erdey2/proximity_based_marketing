@@ -286,59 +286,64 @@ class AdvertisementDetailInteraction(generics.RetrieveAPIView):
     serializer_class = AdvertisementDetailSerializer
     permission_classes = [IsAuthenticated]
 
-    tags = ["Advertisements"],
-    summary = "Get Advertisement Details with User Interaction",
-    description = (
-        "Retrieves full advertisement details along with interaction information for the authenticated user. "
-        "This includes whether the user has liked or saved the ad, and the timestamps for those actions."
-    ),
-    responses = {
-        200: OpenApiResponse(
-            description="Advertisement detail with interaction info",
-            response=AdvertisementDetailSerializer,
-            examples=[
-                OpenApiExample(
-                    name="Success Example",
-                    value={
-                        "advertisement_id": "2a6f188b-1234-4abc-a456-7f2f42c31e89",
-                        "title": "New Sneakers Drop!",
-                        "content": "Get the latest sneakers before they sell out.",
-                        "media_file": "https://cdn.example.com/ad1.jpg",
-                        "url": "https://shop.example.com/sneakers",
-                        "type": "image",
-                        "created_at": "2025-04-14T10:00:00Z",
-                        "liked": True,
-                        "liked_at": "2025-04-14T12:00:00Z",
-                        "saved": True,
-                        "saved_at": "2025-04-14T12:30:00Z"
-                    },
-                    response_only=True
-                )
-            ]
+    @extend_schema(
+        tags=["Advertisements"],
+        summary="Get Advertisement Details with User Interaction",
+        description=(
+                "Retrieves full advertisement details along with interaction information for the authenticated user. "
+                "This includes whether the user has liked or saved the ad, and the timestamps for those actions."
         ),
-        401: OpenApiResponse(
-            description="Unauthorized - User not authenticated",
-            examples=[
-                OpenApiExample(
-                    name="Unauthorized",
-                    value={"detail": "Authentication credentials were not provided."},
-                    response_only=True,
-                    status_codes=["401"]
-                )
-            ]
-        ),
-        404: OpenApiResponse(
-            description="Ad not found",
-            examples=[
-                OpenApiExample(
-                    name="Not Found",
-                    value={"detail": "Not found."},
-                    response_only=True,
-                    status_codes=["404"]
-                )
-            ]
-        )
-    }
+        responses={
+            200: OpenApiResponse(
+                description="Advertisement detail with interaction info",
+                response=AdvertisementDetailSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="Success Example",
+                        value={
+                            "advertisement_id": "2a6f188b-1234-4abc-a456-7f2f42c31e89",
+                            "title": "New Sneakers Drop!",
+                            "content": "Get the latest sneakers before they sell out.",
+                            "media_file": "https://cdn.example.com/ad1.jpg",
+                            "url": "https://shop.example.com/sneakers",
+                            "type": "image",
+                            "created_at": "2025-04-14T10:00:00Z",
+                            "liked": True,
+                            "liked_at": "2025-04-14T12:00:00Z",
+                            "saved": True,
+                            "saved_at": "2025-04-14T12:30:00Z"
+                        },
+                        response_only=True
+                    )
+                ]
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized - User not authenticated",
+                examples=[
+                    OpenApiExample(
+                        name="Unauthorized",
+                        value={"detail": "Authentication credentials were not provided."},
+                        response_only=True,
+                        status_codes=["401"]
+                    )
+                ]
+            ),
+            404: OpenApiResponse(
+                description="Ad not found",
+                examples=[
+                    OpenApiExample(
+                        name="Not Found",
+                        value={"detail": "Not found."},
+                        response_only=True,
+                        status_codes=["404"]
+                    )
+                ]
+            )
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
 
 class ViewAdListView(ListCreateAPIView):
     """Allow users to view an ad and retrieve their viewed ads, with optional search functionality."""
@@ -764,12 +769,7 @@ class LikedSavedAdsView(APIView):
 
         return Response(list(ad_map.values()))
 
-class AdInteractionView(generics.ListAPIView):
-    """Retrieve all ads with user interactions (viewed, liked, clicked, saved)."""
-    permission_classes = [IsAuthenticated]
-    pagination_class = CustomPagination
-
-    @extend_schema(
+@extend_schema(
         tags=["Advertisements"],
         summary="Get ads with user interactions",
         description=(
@@ -794,6 +794,11 @@ class AdInteractionView(generics.ListAPIView):
             401: OpenApiResponse(description="Unauthorized. User must be authenticated.")
         }
     )
+class AdInteractionView(generics.ListAPIView):
+    """Retrieve all ads with user interactions (viewed, liked, clicked, saved)."""
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
     def get_queryset(self):
         user = self.request.user
         search_query = self.request.GET.get('search', '')
