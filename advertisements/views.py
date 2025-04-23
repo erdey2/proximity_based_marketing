@@ -344,7 +344,6 @@ class AdvertisementDetailInteraction(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
-
 class ViewAdListView(ListCreateAPIView):
     """Allow users to view an ad and retrieve their viewed ads, with optional search functionality."""
     serializer_class = ViewAdSerializer
@@ -444,8 +443,8 @@ class ViewAdListView(ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LikeAdView(ListCreateAPIView):
-    """Allow users to like an ad and retrieve their liked ads, with optional search functionality. """
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Advertisement.objects.filter(likes__user=self.request.user, likes__liked=True ).distinct()
@@ -458,11 +457,11 @@ class LikeAdView(ListCreateAPIView):
     @extend_schema(
         tags=["Advertisements"],
         summary="List liked ads",
-        description="Retrieves a list of advertisements the authenticated user has liked.",
+        description="Retrieves a list of advertisements that the authenticated user has liked.",
         parameters=[
             OpenApiParameter(
                 name='search',
-                description='Optional search query for filtering ads by title or content.',
+                description='Optional search query to filter liked ads by title or content.',
                 required=False,
                 type=str,
                 location=OpenApiParameter.QUERY
@@ -470,7 +469,7 @@ class LikeAdView(ListCreateAPIView):
         ],
         responses={
             200: LikedAdDetailSerializer(many=True),
-            401: {"description": "Unauthorized"},
+            401: {"description": "Unauthorized - user not authenticated"},
         }
     )
     def get(self, request, *args, **kwargs):
@@ -484,17 +483,23 @@ class LikeAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="Like an advertisement",
-        description="Like an ad by submitting its `ad_id`.",
+        summary="Like or unlike an advertisement",
+        description="Like an advertisement by submitting its `ad_id`. To unlike, send `liked=false`.",
         request=LikeAdSerializer,
         responses={
             201: OpenApiResponse(
-                description="Ad liked successfully",
+                description="Ad like/unlike operation successful",
                 response=OpenApiTypes.OBJECT,
                 examples=[
                     OpenApiExample(
-                        name="Success",
+                        name="Ad Liked",
                         value={"message": "Ad liked successfully"},
+                        response_only=True,
+                        status_codes=["201"]
+                    ),
+                    OpenApiExample(
+                        name="Ad Unliked",
+                        value={"message": "Ad unliked successfully"},
                         response_only=True,
                         status_codes=["201"]
                     )
@@ -636,8 +641,9 @@ class ClickAdView(ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SaveAdView(ListCreateAPIView):
-    """Allow users to save an ad and retrieve their saved ads, with optional search functionality."""
+    """"""
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Advertisement.objects.filter(saves__user=self.request.user, saves__saved=True ).distinct()
@@ -664,6 +670,7 @@ class SaveAdView(ListCreateAPIView):
             200: SavedAdDetailSerializer(many=True),
             401: {"description": "Unauthorized"},
         }
+
     )
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -676,17 +683,23 @@ class SaveAdView(ListCreateAPIView):
 
     @extend_schema(
         tags=["Advertisements"],
-        summary="Save an advertisement",
-        description="Save an ad by submitting its `ad_id`.",
+        summary="Save or unsave an advertisement",
+        description="Save an advertisement by submitting its `ad_id`. Use `saved=false` to unsave.",
         request=SaveAdSerializer,
         responses={
             201: OpenApiResponse(
-                description="Ad saved successfully",
+                description="Save/unsave operation successful",
                 response=OpenApiTypes.OBJECT,
                 examples=[
                     OpenApiExample(
-                        name="Success",
+                        name="Ad Saved",
                         value={"message": "Ad saved successfully"},
+                        response_only=True,
+                        status_codes=["201"]
+                    ),
+                    OpenApiExample(
+                        name="Ad Unsaved",
+                        value={"message": "Ad unsaved successfully"},
                         response_only=True,
                         status_codes=["201"]
                     )
