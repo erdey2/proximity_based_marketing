@@ -457,19 +457,33 @@ class LikeAdView(ListCreateAPIView):
     @extend_schema(
         tags=["Advertisements"],
         summary="List liked ads",
-        description="Retrieves a list of advertisements that the authenticated user has liked.",
+        description="Retrieve a paginated list of advertisements that the authenticated user has liked.",
         parameters=[
             OpenApiParameter(
                 name='search',
-                description='Optional search query to filter liked ads by title or content.',
+                description='Optional search keyword to filter ads by title or content.',
                 required=False,
-                type=str,
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY
-            )
+            ),
+            OpenApiParameter(
+                name='page',
+                description='Page number for pagination.',
+                required=False,
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY
+            ),
+            OpenApiParameter(
+                name='page_size',
+                description='Number of items per page.',
+                required=False,
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY
+            ),
         ],
         responses={
             200: LikedAdDetailSerializer(many=True),
-            401: {"description": "Unauthorized - user not authenticated"},
+            401: {"description": "Unauthorized"},
         }
     )
     def get(self, request, *args, **kwargs):
@@ -647,7 +661,6 @@ class ClickAdView(ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SaveAdView(ListCreateAPIView):
-    """"""
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
 
@@ -662,21 +675,34 @@ class SaveAdView(ListCreateAPIView):
     @extend_schema(
         tags=["Advertisements"],
         summary="List saved ads",
-        description="Retrieves a list of advertisements the authenticated user has saved.",
+        description="Retrieve a paginated list of advertisements that the authenticated user has saved.",
         parameters=[
             OpenApiParameter(
                 name='search',
-                description='Optional search query for filtering ads by title or content.',
+                description='Optional search keyword to filter ads by title or content.',
                 required=False,
-                type=str,
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY
-            )
+            ),
+            OpenApiParameter(
+                name='page',
+                description='Page number for pagination.',
+                required=False,
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY
+            ),
+            OpenApiParameter(
+                name='page_size',
+                description='Number of ads per page.',
+                required=False,
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY
+            ),
         ],
         responses={
             200: SavedAdDetailSerializer(many=True),
             401: {"description": "Unauthorized"},
         }
-
     )
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
