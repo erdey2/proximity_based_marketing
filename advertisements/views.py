@@ -448,10 +448,7 @@ class LikeAdView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Advertisement.objects.filter(
-            likes__user=self.request.user,
-            likes__liked=True
-        ).distinct()
+        return Advertisement.objects.filter(likes__user=self.request.user, likes__liked=True ).distinct()
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -520,9 +517,24 @@ class LikeAdView(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Ad liked successfully"}, status=status.HTTP_201_CREATED)
+            user = request.user
+            ad = serializer.validated_data.get('ad_id')
+            liked = serializer.validated_data.get('liked', True)
+
+            if not ad:
+                return Response({"error": "ad field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            ad_like, created = AdLike.objects.update_or_create(
+                user=user,
+                ad=ad,
+                defaults={'liked': liked}
+            )
+
+            message = "Ad liked successfully" if liked else "Ad unliked successfully"
+            return Response({"message": message}, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ClickAdView(ListCreateAPIView):
     """Allow users to click an ad and retrieve their clicked ads, with optional search functionality."""
@@ -700,8 +712,22 @@ class SaveAdView(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Ad saved successfully"}, status=status.HTTP_201_CREATED)
+            user = request.user
+            ad = serializer.validated_data.get('ad_id')
+            saved = serializer.validated_data.get('saved', True)
+
+            if not ad:
+                return Response({"error": "ad field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            ad_save, created = AdSaved.objects.update_or_create(
+                user=user,
+                ad=ad,
+                defaults={'saved': saved}
+            )
+
+            message = "Ad saved successfully" if saved else "Ad unsaved successfully"
+            return Response({"message": message}, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LikedSavedAdsView(APIView):
