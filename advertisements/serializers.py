@@ -106,11 +106,13 @@ class LikeAdSerializer(serializers.ModelSerializer):
 class LikedAdDetailSerializer(serializers.ModelSerializer):
     liked = serializers.SerializerMethodField()
     liked_at = serializers.SerializerMethodField()
+    saved = serializers.SerializerMethodField()
+    saved_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Advertisement
         fields = ['advertisement_id', 'title', 'content', 'type', 'url', 'media_file',
-                  'created_at', 'is_active', 'liked', 'liked_at']
+                  'created_at', 'is_active', 'liked', 'liked_at', 'saved', 'saved_at']
 
     def get_liked(self, ad):
         user = self.context['request'].user
@@ -120,6 +122,15 @@ class LikedAdDetailSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         like = AdLike.objects.filter(user=user, ad=ad, liked=True).first()
         return like.liked_at if like else None
+
+    def get_saved(self, ad):
+        user = self.context['request'].user
+        return AdSaved.objects.filter(user=user, ad=ad, saved=True).exists()
+
+    def get_saved_at(self, ad):
+        user = self.context['request'].user
+        save = AdSaved.objects.filter(user=user, ad=ad, saved=True).first()
+        return save.saved_at if save else None
 
 class ClickAdSerializer(serializers.ModelSerializer):
     ad_id = serializers.UUIDField(write_only=True)  # Input only
@@ -175,11 +186,13 @@ class SaveAdSerializer(serializers.ModelSerializer):
 class SavedAdDetailSerializer(serializers.ModelSerializer):
     saved = serializers.SerializerMethodField()
     saved_at = serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
+    liked_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Advertisement
         fields = ['advertisement_id', 'title', 'content', 'type', 'url', 'media_file',
-                  'created_at', 'is_active', 'saved', 'saved_at']
+                  'created_at', 'is_active', 'saved', 'saved_at', 'liked', 'liked_at']
 
     def get_saved(self, ad):
         user = self.context['request'].user
@@ -189,6 +202,15 @@ class SavedAdDetailSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         save = AdSaved.objects.filter(user=user, ad=ad, saved=True).first()
         return save.saved_at if save else None
+
+    def get_liked(self, ad):
+        user = self.context['request'].user
+        return AdLike.objects.filter(user=user, ad=ad, liked=True).exists()
+
+    def get_liked_at(self, ad):
+        user = self.context['request'].user
+        like = AdLike.objects.filter(user=user, ad=ad, liked=True).first()
+        return like.liked_at if like else None
 
 class LikedSavedAdSerializer(serializers.Serializer):
     ad = AdvertisementSerializer()

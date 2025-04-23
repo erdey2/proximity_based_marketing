@@ -444,7 +444,7 @@ class ViewAdListView(ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LikeAdView(ListCreateAPIView):
-    """ """
+    """Allow users to like an ad and retrieve their liked ads, with optional search functionality. """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -479,7 +479,7 @@ class LikeAdView(ListCreateAPIView):
         if search_query:
             queryset = queryset.filter(Q(title__icontains=search_query) | Q(content__icontains=search_query))
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     @extend_schema(
@@ -640,10 +640,7 @@ class SaveAdView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Advertisement.objects.filter(
-            saves__user=self.request.user,
-            saves__saved=True
-        ).distinct()
+        return Advertisement.objects.filter(saves__user=self.request.user, saves__saved=True ).distinct()
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -674,7 +671,7 @@ class SaveAdView(ListCreateAPIView):
         if search_query:
             queryset = queryset.filter(Q(title__icontains=search_query) | Q(content__icontains=search_query))
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     @extend_schema(

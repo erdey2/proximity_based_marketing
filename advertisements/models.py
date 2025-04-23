@@ -44,7 +44,7 @@ class AdLike(models.Model):
     """Tracks ad likes"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ad = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name="likes")
-    liked = models.BooleanField(default=False)
+    liked = models.BooleanField(default=True)
     liked_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
@@ -67,7 +67,7 @@ class AdSaved(models.Model):
     """Stores ads that users have saved for later"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ad = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name="saves")
-    saved = models.BooleanField(default=False)  # Track if the ad was saved
+    saved = models.BooleanField(default=True)  # Track if the ad was saved
     saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
