@@ -1,4 +1,4 @@
-#!/home/tigist/Desktop/proximity_based_marketing/myenv/bin/python3
+#!/home/tigist/Desktop/proximity_based_marketing/myenv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

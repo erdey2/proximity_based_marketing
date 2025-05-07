@@ -11,13 +11,14 @@ class User(AbstractUser):
     ]
 
     username = models.CharField(max_length=25, unique=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ADMIN)
+    email = models.EmailField(max_length=200, unique=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=MARKETER)
     phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
 
     def __str__(self):
-        return self.username
+        return f'user {self.username} - {self.email}'
 
 class UserPreferences(models.Model):
     """Stores user ad preferences"""

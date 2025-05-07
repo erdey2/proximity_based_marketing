@@ -136,11 +136,11 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": env.db(),
-}
-
 """ DATABASES = {
+    "default": env.db(),
+} """
+
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'beacon_market_db',
@@ -149,7 +149,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     }
-} """
+}
 
 
 # Password validation
