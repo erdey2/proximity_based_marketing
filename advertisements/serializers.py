@@ -2,6 +2,8 @@ from rest_framework import serializers
 from advertisements.models import Advertisement
 from .models import AdView, AdLike, AdClick, AdSaved
 from django.utils.timezone import now
+from datetime import datetime
+from typing import Optional
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,22 +34,22 @@ class AdvertisementDetailSerializer(serializers.ModelSerializer):
             'liked', 'liked_at', 'saved', 'saved_at'
         ]
 
-    def get_liked(self, ad):
+    def get_liked(self, ad) -> bool:
         user = self.context['request'].user
         like = AdLike.objects.filter(ad=ad, user=user).first()
         return like.liked if like else False
 
-    def get_liked_at(self, ad):
+    def get_liked_at(self, ad) -> Optional[datetime]:
         user = self.context['request'].user
         like = AdLike.objects.filter(ad=ad, user=user).first()
         return like.liked_at if like else None
 
-    def get_saved(self, ad):
+    def get_saved(self, ad) -> bool:
         user = self.context['request'].user
         save = AdSaved.objects.filter(ad=ad, user=user).first()
         return save.saved if save else False
 
-    def get_saved_at(self, ad):
+    def get_saved_at(self, ad) -> Optional[datetime]:
         user = self.context['request'].user
         save = AdSaved.objects.filter(ad=ad, user=user).first()
         return save.saved_at if save else None
