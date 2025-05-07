@@ -6,13 +6,13 @@ from django.utils.timezone import now
 class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
-        # fields = ['advertisement_id', 'title', 'content', 'is_active', 'created_at', 'media_file']
+        # fields = ['advertisement_id', 'title', 'content', 'is_active', 'created_at', 'image']
         fields = '__all__'
 
 class AdvertisementSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
-        fields = ['title', 'content', 'type', 'media_file']
+        fields = ['title', 'content', 'image']
 
 class AdvertisementTitleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,7 +28,7 @@ class AdvertisementDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         fields = [
-            'advertisement_id', 'title', 'content', 'media_file', 'url', 'type', 'created_at',
+            'advertisement_id', 'title', 'content', 'image', 'created_at',
             'liked', 'liked_at', 'saved', 'saved_at'
         ]
 
@@ -111,7 +111,7 @@ class LikedAdDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Advertisement
-        fields = ['advertisement_id', 'title', 'content', 'type', 'url', 'media_file',
+        fields = ['advertisement_id', 'title', 'content', 'image',
                   'created_at', 'is_active', 'liked', 'liked_at', 'saved', 'saved_at']
 
     def get_liked(self, ad):
@@ -191,7 +191,7 @@ class SavedAdDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Advertisement
-        fields = ['advertisement_id', 'title', 'content', 'type', 'url', 'media_file',
+        fields = ['advertisement_id', 'title', 'content', 'image',
                   'created_at', 'is_active', 'saved', 'saved_at', 'liked', 'liked_at']
 
     def get_saved(self, ad):

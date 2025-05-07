@@ -8,8 +8,8 @@ class Advertisement(models.Model):
     advertisement_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=200, db_index=True)
     content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
     image = models.FileField(upload_to='advertisements/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
