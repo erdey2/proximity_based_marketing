@@ -1,0 +1,3141 @@
+openapi: 3.0.3
+info:
+  title: Beacon based Marketing API
+  version: 1.0.0
+  description: An API for managing beacons, advertisements, and advertisement logs.
+paths:
+  /api/v1/advertisements/:
+    get:
+      operationId: advertisements_list
+      description: Retrieve a list of advertisements. You can optionally search by
+        title or content using the `search` query parameter.
+      summary: List Advertisements
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number for pagination.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Number of items per page.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search term to filter advertisements by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Advertisement'
+          description: ''
+    post:
+      operationId: advertisements_create
+      description: Create a new advertisement. Supports image uploads via multipart
+        form data.
+      summary: Create Advertisement
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Advertisement'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Advertisement'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advertisement'
+          description: ''
+  /api/v1/advertisements/{advertisement_id}/:
+    get:
+      operationId: advertisements_retrieve
+      description: "\n                Fetches a **single advertisement** by its ID.\n\
+        \n                **Example Request:**\n                ```\n            \
+        \    GET /api/advertisements/1/\n                ```\n\n                **Responses:**\n\
+        \                - `200 OK`: Returns the advertisement details.\n        \
+        \        - `404 Not Found`: If the advertisement does not exist.\n       \
+        \     "
+      summary: Retrieve an Advertisement
+      parameters:
+      - in: path
+        name: advertisement_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement.
+        required: true
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdInteraction'
+          description: ''
+        '404':
+          description: Advertisement not found
+    put:
+      operationId: advertisements_update
+      description: "\n                Updates an **existing advertisement**.\n\n \
+        \               **Example Request Body:**\n                ```json\n     \
+        \           {\n                    \"title\": \"New Title\",\n           \
+        \         \"content\": \"Updated content.\"\n                }\n         \
+        \       ```\n\n                **Responses:**\n                - `200 OK`:\
+        \ Successfully updated the advertisement.\n                - `400 Bad Request`:\
+        \ If validation fails.\n                - `404 Not Found`: If the advertisement\
+        \ does not exist.\n            "
+      summary: Update an Advertisement
+      parameters:
+      - in: path
+        name: advertisement_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement.
+        required: true
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdvertisementSimple'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdvertisementSimple'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advertisement'
+          description: ''
+        '400':
+          description: Invalid input data
+        '404':
+          description: Advertisement not found
+    patch:
+      operationId: advertisements_partial_update
+      description: "\n                Partially updates specific fields of an **existing\
+        \ advertisement**.\n\n                **Example Request Body:**\n        \
+        \        ```json\n                {\n                    \"title\": \"Updated\
+        \ Title\"\n                }\n                ```\n\n                **Responses:**\n\
+        \                - `200 OK`: Successfully updated the advertisement.\n   \
+        \             - `400 Bad Request`: If validation fails.\n                -\
+        \ `404 Not Found`: If the advertisement does not exist.\n            "
+      summary: Partially Update an Advertisement
+      parameters:
+      - in: path
+        name: advertisement_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement.
+        required: true
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementTitle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementTitle'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advertisement'
+          description: ''
+        '400':
+          description: Invalid input data
+        '404':
+          description: Advertisement not found
+    delete:
+      operationId: advertisements_destroy
+      description: "\n                Deletes an advertisement by its ID.\n\n    \
+        \            **Example Request:**\n                ```\n                DELETE\
+        \ /api/advertisements/1/\n                ```\n\n                **Responses:**\n\
+        \                - `204 No Content`: Successfully deleted the advertisement.\n\
+        \                - `404 Not Found`: If the advertisement does not exist.\n\
+        \            "
+      summary: Delete an Advertisement
+      parameters:
+      - in: path
+        name: advertisement_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement.
+        required: true
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: Successfully deleted
+        '404':
+          description: Advertisement not found
+  /api/v1/advertisements/{advertisement_id}/interactions/:
+    get:
+      operationId: advertisements_interactions_retrieve
+      description: Retrieves full advertisement details along with interaction information
+        for the authenticated user. This includes whether the user has liked or saved
+        the ad, and the timestamps for those actions.
+      summary: Get Advertisement Details with User Interaction
+      parameters:
+      - in: path
+        name: advertisement_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement.
+        required: true
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementDetail'
+              examples:
+                SuccessExample:
+                  value:
+                    advertisement_id: 2a6f188b-1234-4abc-a456-7f2f42c31e89
+                    title: Advertisement Title
+                    content: Advertisement Content
+                    image: advertisement.jpg
+                    created_at: '2025-04-14T10:00:00Z'
+                    liked: true
+                    liked_at: '2025-04-14T12:00:00Z'
+                    saved: true
+                    saved_at: '2025-04-14T12:30:00Z'
+                  summary: Success Example
+          description: Advertisement detail with interaction info
+        '401':
+          description: Unauthorized - User not authenticated
+        '404':
+          description: Ad not found
+  /api/v1/advertisements/beacons/:
+    get:
+      operationId: advertisements_beacons_list
+      description: "\n            Retrieves a **list** of advertisement along with\
+        \ their assigned beacons.\n\n            Each advertisement will include a\
+        \ list of associated beacons (including their locations).\n\n            **Example\
+        \ Request:**\n            ```\n            GET /api/advertisement-beacons/\n\
+        \            ```\n\n            **Responses:**\n            - `200 OK`: Returns\
+        \ a paginated list of advertisements with assigned beacons.\n        "
+      summary: List Advertisement with Assigned Beacons
+      tags:
+      - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdvertisementBeacons'
+          description: ''
+        '400':
+          description: Invalid request
+  /api/v1/advertisements/click-ad/:
+    get:
+      operationId: advertisements_click_ad_list
+      description: Retrieves a list of advertisements that the authenticated user
+        has clicked. Supports optional filtering by a search query parameter to match
+        advertisement titles or content.
+      summary: List clicked ads
+      parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: A search term to filter advertisements by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ViewAd'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Unauthorized - Authentication credentials were not provided
+                  or are invalid.
+          description: ''
+    post:
+      operationId: advertisements_click_ad_create
+      description: Allows an authenticated user to register a click on a specific
+        advertisement by providing its `ad_id`.
+      summary: Click an advertisement
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClickAd'
+            examples:
+              ClickRequestExample:
+                value:
+                  ad_id: 3c9ef5e0-2d1b-47c2-9d60-2b76d6e3f404
+                summary: Click Request Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClickAd'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClickAd'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                Success:
+                  value:
+                    message: Ad clicked successfully
+          description: Ad clicked successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                InvalidData:
+                  value:
+                    ad_id:
+                    - This field is required.
+                  summary: Invalid Data
+          description: Validation error
+  /api/v1/advertisements/interactions/:
+    get:
+      operationId: advertisements_interactions_list
+      description: |-
+        Returns a list of ads that the authenticated user has interacted with, including viewed, liked, clicked, and saved statuses and timestamps.
+
+        Supports optional search by ad title or content.
+      summary: Get ads with user interactions
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Filter ads by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdInteractionList'
+          description: List of ads with user interaction data.
+        '401':
+          description: Unauthorized. User must be authenticated.
+  /api/v1/advertisements/like-ad/:
+    get:
+      operationId: advertisements_like_ad_list
+      description: Retrieve a paginated list of advertisements that the authenticated
+        user has liked.
+      summary: List liked ads
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number for pagination.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Number of items per page.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Optional search keyword to filter ads by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLikedAdDetailList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Unauthorized
+          description: ''
+    post:
+      operationId: advertisements_like_ad_create
+      description: Like an advertisement by submitting its `ad_id`. To unlike, send
+        `liked=false`.
+      summary: Like or unlike an advertisement
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LikeAd'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LikeAd'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LikeAd'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                AdLiked:
+                  value:
+                    message: Ad liked successfully
+                  summary: Ad Liked
+                AdUnliked:
+                  value:
+                    message: Ad unliked successfully
+                  summary: Ad Unliked
+          description: Ad like/unlike operation successful
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                MissingAdId:
+                  value:
+                    ad_id:
+                    - This field is required.
+                  summary: Missing ad_id
+          description: Validation error
+  /api/v1/advertisements/like-save/:
+    get:
+      operationId: advertisements_like_save_retrieve
+      description: Returns a list of advertisements that have been liked and/or saved
+        by the authenticated user. You can optionally filter the results by a search
+        query.
+      summary: Get liked and saved ads
+      parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search ads by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLikedSavedAdList'
+          description: List of liked and/or saved ads.
+        '401':
+          description: Authentication required.
+  /api/v1/advertisements/pagination/:
+    get:
+      operationId: advertisements_pagination_list
+      description: Retrieve a paginated list of advertisements. Supports filtering
+        by title or content using the `search` query parameter.
+      summary: List Advertisements with Pagination
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number for pagination.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Number of results per page.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search advertisements by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdvertisementList'
+          description: ''
+    post:
+      operationId: advertisements_pagination_create
+      description: Create a new advertisement. You can upload images using multipart
+        form data.
+      summary: Create Advertisement
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Advertisement'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Advertisement'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advertisement'
+          description: ''
+  /api/v1/advertisements/save-ad/:
+    get:
+      operationId: advertisements_save_ad_list
+      description: Retrieve a paginated list of advertisements that the authenticated
+        user has saved.
+      summary: List saved ads
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number for pagination.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Number of ads per page.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Optional search keyword to filter ads by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSavedAdDetailList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Unauthorized
+          description: ''
+    post:
+      operationId: advertisements_save_ad_create
+      description: Save an advertisement by submitting its `ad_id`. Use `saved=false`
+        to unsave.
+      summary: Save or unsave an advertisement
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveAd'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SaveAd'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaveAd'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                AdSaved:
+                  value:
+                    message: Ad saved successfully
+                  summary: Ad Saved
+                AdUnsaved:
+                  value:
+                    message: Ad unsaved successfully
+                  summary: Ad Unsaved
+          description: Save/unsave operation successful
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                MissingAdId:
+                  value:
+                    ad_id:
+                    - This field is required.
+                  summary: Missing ad_id
+          description: Validation error
+  /api/v1/advertisements/view-ad/:
+    get:
+      operationId: advertisements_view_ad_list
+      description: Retrieves a list of advertisements that the authenticated user
+        has viewed. Supports optional filtering by a search query parameter to match
+        advertisement titles or content.
+      summary: List viewed ads
+      parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: A search term to filter advertisements by title or content.
+      tags:
+      - Advertisements
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ViewAd'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Unauthorized - Authentication credentials were not provided
+                  or are invalid.
+          description: ''
+    post:
+      operationId: advertisements_view_ad_create
+      description: Allows an authenticated user to mark a specific ad as viewed.
+      summary: Mark an ad as viewed
+      tags:
+      - Advertisements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewAd'
+            examples:
+              RequestExample:
+                value:
+                  ad_id: e97d5b0e-1d7a-4a87-9a68-54876b6e9e23
+                summary: Request Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ViewAd'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ViewAd'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                Success:
+                  value:
+                    message: Ad viewed successfully
+          description: Ad viewed successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                BadRequest:
+                  value:
+                    ad_id:
+                    - This field is required.
+                  summary: Bad Request
+          description: Validation Error
+  /api/v1/assignments/:
+    get:
+      operationId: assignments_list
+      description: "\n                Retrieves a **list of advertisement assignments**\
+        \ with optional date filters.\n\n                **Filter Parameters:**\n\
+        \                - `start_date` (YYYY-MM-DD, optional): Filters assignments\
+        \ starting from this date.\n                - `end_date` (YYYY-MM-DD, optional):\
+        \ Filters assignments ending before or on this date.\n\n                **Example\
+        \ Requests:**\n                ```\n                GET /api/advertisement-assignments/?start_date=2024-03-01&end_date=2024-03-15\n\
+        \                ```\n\n                **Responses:**\n                -\
+        \ `200 OK`: Returns a paginated list of advertisement assignments.\n     \
+        \           - `400 Bad Request`: If an invalid date format is provided.\n\
+        \            "
+      summary: Retrieve Advertisement Assignments
+      parameters:
+      - in: query
+        name: end_date
+        schema:
+          type: string
+        description: Filter by end date (YYYY-MM-DD)
+      - in: query
+        name: start_date
+        schema:
+          type: string
+        description: Filter by start date (YYYY-MM-DD)
+      tags:
+      - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdvertisementAssignment'
+          description: ''
+        '400':
+          description: Invalid date format
+    post:
+      operationId: assignments_create
+      description: "\n                Assign list of advertisements to a specific\
+        \ beacon or list of beacons to specific advertisement.\n\n               \
+        \ **Required Fields:**\n                - `advertisement` (integer): The advertisement\
+        \ being assigned.\n                - `start_date` (YYYY-MM-DD): Start date\
+        \ of the assignment.\n                - `end_date` (YYYY-MM-DD): End date\
+        \ of the assignment.\n                - `assigned_to` (integer): The entity(beacon)\
+        \ assigned to the advertisement.\n\n                **Example Request Body:**\n\
+        \                ```json\n                {\n                    \"advertisement\"\
+        : 1,\n                    \"start_date\": \"2024-03-01\",\n              \
+        \      \"end_date\": \"2024-03-10\",\n                    \"assigned_to\"\
+        : 5\n                }\n                ```\n\n                **Responses:**\n\
+        \                - `201 Created`: Successfully created a new advertisement\
+        \ assignment.\n                - `400 Bad Request`: If validation fails.\n\
+        \            "
+      summary: Create a New Advertisement Assignment
+      tags:
+      - Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvertisementAssignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdvertisementAssignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdvertisementAssignment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementAssignment'
+          description: ''
+        '400':
+          description: Invalid input data
+  /api/v1/assignments/{assignment_id}/:
+    get:
+      operationId: assignments_retrieve
+      description: "\n                Fetches a **single advertisement assignment**\
+        \ by its ID.\n\n                **Example Request:**\n                ```\n\
+        \                GET /api/advertisement-assignments/1/\n                ```\n\
+        \n                **Responses:**\n                - `200 OK`: Returns the\
+        \ advertisement assignment details.\n                - `404 Not Found`: If\
+        \ the assignment does not exist.\n            "
+      summary: Retrieve an Advertisement Assignment
+      parameters:
+      - in: path
+        name: assignment_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement assignment.
+        required: true
+      tags:
+      - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementAssignment'
+          description: ''
+        '404':
+          description: Advertisement assignment not found
+    put:
+      operationId: assignments_update
+      description: "\n                Fully updates an **existing advertisement assignment**.\n\
+        \n                **Example Request Body:**\n                ```json\n   \
+        \             {\n                    \"advertisement\": 2,\n             \
+        \       \"start_date\": \"2024-03-05\",\n                    \"end_date\"\
+        : \"2024-03-20\",\n                    \"assigned_to\": 7\n              \
+        \  }\n                ```\n\n                **Responses:**\n            \
+        \    - `200 OK`: Successfully updated the advertisement assignment.\n    \
+        \            - `400 Bad Request`: If validation fails.\n                -\
+        \ `404 Not Found`: If the assignment does not exist.\n            "
+      summary: Update an Advertisement Assignment
+      parameters:
+      - in: path
+        name: assignment_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement assignment.
+        required: true
+      tags:
+      - Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvertisementAssignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdvertisementAssignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdvertisementAssignment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementAssignment'
+          description: ''
+        '400':
+          description: Invalid input data
+        '404':
+          description: Advertisement assignment not found
+    patch:
+      operationId: assignments_partial_update
+      description: "\n                Partially updates specific fields of an **existing\
+        \ advertisement assignment**.\n\n                **Example Request Body:**\n\
+        \                ```json\n                {\n                    \"end_date\"\
+        : \"2024-03-25\"\n                }\n                ```\n\n             \
+        \   **Responses:**\n                - `200 OK`: Successfully updated the advertisement\
+        \ assignment.\n                - `400 Bad Request`: If validation fails.\n\
+        \                - `404 Not Found`: If the assignment does not exist.\n  \
+        \          "
+      summary: Partially Update an Advertisement Assignment
+      parameters:
+      - in: path
+        name: assignment_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement assignment.
+        required: true
+      tags:
+      - Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementDate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementDate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementDate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementAssignment'
+          description: ''
+        '400':
+          description: Invalid input data
+        '404':
+          description: Advertisement assignment not found
+    delete:
+      operationId: assignments_destroy
+      description: "\n                Deletes an advertisement assignment by its ID.\n\
+        \n                **Example Request:**\n                ```\n            \
+        \    DELETE /api/advertisement-assignments/1/\n                ```\n\n   \
+        \             **Responses:**\n                - `204 No Content`: Successfully\
+        \ deleted the advertisement assignment.\n                - `404 Not Found`:\
+        \ If the assignment does not exist.\n            "
+      summary: Delete an Advertisement Assignment
+      parameters:
+      - in: path
+        name: assignment_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advertisement assignment.
+        required: true
+      tags:
+      - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: Successfully deleted
+        '404':
+          description: Advertisement assignment not found
+  /api/v1/assignments/active/:
+    get:
+      operationId: assignments_active_list
+      description: "\n            Fetch all advertisements that are currently active\
+        \ based on their start and end dates.\n\n            **Example Request:**\n\
+        \            ```\n            GET /api/advertisements/active/\n          \
+        \  ```\n\n            **Responses:**\n            - `200 OK`: Returns a list\
+        \ of active advertisements.\n            - `404 Not Found`: If no active advertisements\
+        \ are available.\n        "
+      summary: Get active advertisements
+      tags:
+      - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdvertisementAssignment'
+          description: ''
+        '404':
+          description: No active advertisements found
+  /api/v1/beacon-messages/:
+    get:
+      operationId: beacon_messages_list
+      description: Retrieve a list of all existing beacon_messages. Optionally, filter
+        by 'sent_at' date parameter.
+      summary: List all beacon_messages sent by beacons
+      parameters:
+      - in: query
+        name: sent_at
+        schema:
+          type: string
+        description: Filter by sent date (YYYY-MM-DD)
+      tags:
+      - Messages
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BeaconMessage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad request. Invalid date format provided for 'sent_at'.
+                content:
+                  application/json:
+                    example:
+                      detail: Invalid date format. Use YYYY-MM-DD.
+          description: ''
+    post:
+      operationId: beacon_messages_create
+      description: "\n            This endpoint allows creating a new message sent\
+        \ by a beacon. \n            The request should include details such as the\
+        \ beacon ID, message content, \n            and timestamp when the message\
+        \ was sent.\n\n            **Example Request:**\n            ```json\n   \
+        \         {\n                \"beacon\": \"123e4567-e89b-12d3-a456-426614174000\"\
+        ,\n                \"message\": \"Special discount available!\",\n       \
+        \         \"sent_at\": \"2025-03-08T12:30:00Z\"\n            }\n         \
+        \   ```\n        "
+      summary: Create a new beacon message
+      tags:
+      - Messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaconMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaconMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaconMessage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                description: Message successfully created.
+                content:
+                  application/json:
+                    example:
+                      id: 1
+                      beacon: 123e4567-e89b-12d3-a456-426614174000
+                      message: Special discount available!
+                      sent_at: '2025-03-08T12:30:00Z'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad request. Invalid or missing data.
+                content:
+                  application/json:
+                    example:
+                      detail: Invalid beacon ID or missing required fields.
+          description: ''
+  /api/v1/beacon-messages/{message_id}/:
+    get:
+      operationId: beacon_messages_retrieve
+      description: Fetch the details of a single beacon message by its ID.
+      summary: Retrieve a specific beacon message
+      parameters:
+      - in: path
+        name: message_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon message.
+        required: true
+      tags:
+      - Messages
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaconMessage'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Message not found.
+                content:
+                  application/json:
+                    example:
+                      detail: Not found.
+          description: ''
+    put:
+      operationId: beacon_messages_update
+      description: "\n            Replace the entire message object with a new one.\n\
+        \n            **Example Request:**\n            ```json\n            {\n \
+        \               \"beacon\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \
+        \              \"message\": \"Updated advertisement message!\",\n        \
+        \        \"sent_at\": \"2025-03-08T15:45:00Z\"\n            }\n          \
+        \  ```\n        "
+      summary: Update a beacon message
+      parameters:
+      - in: path
+        name: message_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon message.
+        required: true
+      tags:
+      - Messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaconMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaconMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaconMessage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaconMessage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad request. Invalid or missing data.
+                content:
+                  application/json:
+                    example:
+                      detail: Invalid beacon ID or missing required fields.
+          description: ''
+    patch:
+      operationId: beacon_messages_partial_update
+      description: "\n            Update specific fields of a beacon message without\
+        \ replacing the whole object.\n\n            **Example Request:**\n      \
+        \      ```json\n            {\n                \"message\": \"Limited-time\
+        \ offer!\"\n            }\n            ```\n        "
+      summary: Partially update a beacon message
+      parameters:
+      - in: path
+        name: message_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon message.
+        required: true
+      tags:
+      - Messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconMessage'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaconMessage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad request. Invalid or missing data.
+                content:
+                  application/json:
+                    example:
+                      detail: Invalid data provided.
+          description: ''
+    delete:
+      operationId: beacon_messages_destroy
+      description: Remove a beacon message from the system permanently.
+      summary: Delete a beacon message
+      parameters:
+      - in: path
+        name: message_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon message.
+        required: true
+      tags:
+      - Messages
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                description: Message successfully deleted.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Message not found.
+                content:
+                  application/json:
+                    example:
+                      detail: Not found.
+          description: ''
+  /api/v1/beacons/:
+    get:
+      operationId: beacons_list
+      description: Fetch all beacons with optional filtering by name and location
+        name.
+      summary: Retrieve a list of beacons
+      parameters:
+      - in: query
+        name: location_name
+        schema:
+          type: string
+        description: Filter by location name (case-insensitive).
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: Filter by beacon name (case-insensitive).
+      tags:
+      - Beacons
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Beacon'
+          description: ''
+    post:
+      operationId: beacons_create
+      description: "\n                Creates a **new beacon** with the required data.\n\
+        \n                **Required Fields:**\n                - `name` (string):\
+        \ The beacon's name.\n                - `location_name` (string): The location\
+        \ where the beacon is located.\n\n                **Example Request Body:**\n\
+        \                ```json\n                {\n                    \"name\"\
+        : \"Beacon 1\",\n                    \"location_name\": \"Jemo\"\n       \
+        \         }\n                ```\n\n                **Responses:**\n     \
+        \           - `201 Created`: Successfully created a new beacon.\n        \
+        \        - `400 Bad Request`: If validation fails.\n                "
+      summary: Create a New Beacon
+      tags:
+      - Beacons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaconSimple'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaconSimple'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaconSimple'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+          description: ''
+        '400':
+          description: Invalid input data
+  /api/v1/beacons/{beacon_id}/:
+    get:
+      operationId: beacons_retrieve
+      description: Fetches the details of a specific beacon using its ID.
+      summary: Retrieve a Beacon
+      parameters:
+      - in: path
+        name: beacon_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon.
+        required: true
+      tags:
+      - Beacons
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Beacon not found.
+          description: ''
+    put:
+      operationId: beacons_update
+      description: Updates an existing beacon name and/or location name.
+      summary: Update a Beacon
+      parameters:
+      - in: path
+        name: beacon_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon.
+        required: true
+      tags:
+      - Beacons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaconSimple'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaconSimple'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaconSimple'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Invalid data provided.
+          description: ''
+    patch:
+      operationId: beacons_partial_update
+      description: Updates an existing beacon (only the provided fields).
+      summary: Update a Beacon status from data received from mobile app
+      parameters:
+      - in: path
+        name: beacon_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon.
+        required: true
+      tags:
+      - Beacons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconDataUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconDataUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconDataUpdate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beacon'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Invalid data provided.
+          description: ''
+    delete:
+      operationId: beacons_destroy
+      description: Deletes a beacon permanently from the system.
+      summary: Delete a Beacon
+      parameters:
+      - in: path
+        name: beacon_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this beacon.
+        required: true
+      tags:
+      - Beacons
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/beacons/active/:
+    get:
+      operationId: beacons_active_list
+      description: Fetch a list of all beacons that are currently active. This endpoint
+        returns only beacons with a status of 'Active'.
+      summary: Retrieve Active Beacons
+      tags:
+      - Beacons
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Beacon'
+          description: ''
+  /api/v1/beacons/advertisements/:
+    get:
+      operationId: beacons_advertisements_list
+      description: "\n            Retrieves a **paginated list** of beacons along\
+        \ with their assigned advertisements.\n\n            Each beacon will include\
+        \ a list of advertisements it is linked to.\n\n            **Example Request:**\n\
+        \            ```\n            GET /api/beacons-with-ads/\n            ```\n\
+        \n            **Responses:**\n            - `200 OK`: Returns a paginated\
+        \ list of beacons with assigned advertisements.\n            - `400 Bad Request`:\
+        \ If the request is invalid.\n        "
+      summary: List Beacon with Assigned Advertisements
+      tags:
+      - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BeaconAdvertisements'
+          description: ''
+        '400':
+          description: Invalid request
+  /api/v1/beacons/data/{id}/:
+    get:
+      operationId: beacons_data_list
+      description: Receives a beacon ID and returns all active advertisements linked
+        to it.
+      summary: Get Active Ads for a Beacon
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Beacons
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Advertisement'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                error: Invalid beacon ID
+          description: ''
+  /api/v1/beacons/location/:
+    get:
+      operationId: beacons_location_list
+      description: "\n            Fetch a list of all beacons with their respective\
+        \ locations (latitude & longitude).\n\n            **Example Response:**\n\
+        \            ```json\n            [\n                {\n                 \
+        \   \"beacon_id\": 1,\n                    \"name\": \"Beacon 1\",\n     \
+        \               \"latitude\": 9.031,\n                    \"longitude\": 38.746\n\
+        \                },\n                {\n                    \"beacon_id\"\
+        : 2,\n                    \"name\": \"Beacon 2\",\n                    \"\
+        latitude\": 9.035,\n                    \"longitude\": 38.750\n          \
+        \      }\n            ]\n            ```\n        "
+      summary: Retrieve All Beacons' Locations
+      tags:
+      - Beacons
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BeaconLocation'
+          description: ''
+  /api/v1/beacons/status/:
+    get:
+      operationId: beacons_status_retrieve
+      description: Fetch the current active/inactive status of a beacon.
+      summary: Retrieve Beacon Status
+      tags:
+      - Beacons
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  beacon_id:
+                    type: string
+                    example: 123ABC
+                  is_active:
+                    type: boolean
+                    example: true
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Beacon not found
+          description: ''
+    patch:
+      operationId: beacons_status_partial_update
+      description: Change the beacon status (Active/Inactive).
+      summary: Update Beacon Status
+      tags:
+      - Beacons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaconStatus'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Beacon status updated to Active
+                  beacon_id:
+                    type: string
+                    example: 123ABC
+                  is_active:
+                    type: boolean
+                    example: true
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid status. Use 'Active' or 'Inactive'.
+          description: ''
+  /api/v1/dashboards/clicks-per-day/:
+    get:
+      operationId: dashboards_clicks_per_day_retrieve
+      description: Returns the number of advertisement clicks per day, grouped by
+        date.
+      summary: Retrieve Clicks Per Day
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    clicked_at:
+                      type: string
+                      format: date
+                      example: '2025-04-01'
+                    total_clicks:
+                      type: integer
+                      example: 25
+          description: ''
+  /api/v1/dashboards/count/:
+    get:
+      operationId: dashboards_count_retrieve
+      description: "\n        This endpoint allows authenticated users to retrieve\
+        \ the total count of beacons in the system.\n\n        **Methods:**\n    \
+        \    - `GET`: Returns the total number of beacons.\n\n        **Example Use\
+        \ Case:**\n        - A system admin wants to monitor the number of beacons.\n\
+        \n        **Validation:**\n        - Authentication is required (`IsAuthenticated`).\n\
+        \        - If no beacons are found, an appropriate response is returned.\n\
+        \        "
+      summary: Retrieve Total Beacon Count
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                count: integer (total number of beacons)
+                message: string (description of beacon count)
+          description: ''
+        '204':
+          content:
+            application/json:
+              schema:
+                message: No beacons available.
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                detail: Authentication credentials were not provided.
+          description: ''
+  /api/v1/dashboards/hot-ads/:
+    get:
+      operationId: dashboards_hot_ads_list
+      description: Returns the top 10 most viewed advertisements in the past 7 days,
+        ranked by view count. You can optionally filter ads using the `search` query
+        parameter, which matches both title and content.
+      summary: Get Top 10 Popular Ads
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search term to filter ads by title or content
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: List of top 10 most viewed ads with interaction data.
+        '400':
+          description: Bad Request
+  /api/v1/dashboards/impressions-per-day/:
+    get:
+      operationId: dashboards_impressions_per_day_retrieve
+      description: Returns the number of advertisement views per day, grouped by date.
+      summary: Retrieve impressions Per Day
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    viewed_at:
+                      type: string
+                      format: date
+                      example: '2025-04-01'
+                    total_views:
+                      type: integer
+                      example: 25
+          description: ''
+  /api/v1/dashboards/location-count/:
+    get:
+      operationId: dashboards_location_count_retrieve
+      description: Returns the total number of unique beacon locations in the system.
+      summary: Get Total Unique Beacon Locations
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_locations:
+                    type: integer
+                    example: 8
+          description: ''
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No beacon locations found
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Authentication credentials were not provided.
+          description: ''
+  /api/v1/dashboards/log-count/:
+    get:
+      operationId: dashboards_log_count_retrieve
+      description: This endpoint counts the number of advertisement logs created in
+        the past 24 hours.
+      summary: Count advertisement logs for the past 24 hours
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                message: Advertisement log count for the past 24 hours
+                count: integer
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                message: No advertisement logs found for the past 24 hours
+          description: ''
+  /api/v1/dashboards/message-count/:
+    get:
+      operationId: dashboards_message_count_list
+      description: Returns a list of beacons with the total number of beacon messages
+        sent each day. Optionally, filter results by a specific date.
+      summary: Retrieve beacon message counts per day
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+        description: 'Filter results by a specific date (YYYY-MM-DD). Example: ?date=2025-03-06'
+      tags:
+      - Analytics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BeaconMessageCount'
+          description: ''
+  /api/v1/logs/:
+    get:
+      operationId: logs_list
+      description: "\n            Retrieve a paginated list of all advertisement logs,\
+        \ with optional filtering by `log_id` and `created_at`.\n            **Example\
+        \ Response:**\n            ```json\n            {\n                \"log_id\"\
+        : \"LOG123\",\n                \"created_at\": \"2024-02-23\",\n         \
+        \       \"advertisement_title\": \"New Year Sale\",\n                \"beacon_name\"\
+        : \"Beacon A\"\n            }\n            ```\n        "
+      summary: Retrieve Advertisement Logs
+      parameters:
+      - in: query
+        name: created_at
+        schema:
+          type: string
+        description: Filter by created date (YYYY-MM-DD)
+      - in: query
+        name: log_id
+        schema:
+          type: string
+        description: Filter by log ID
+      tags:
+      - Logs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdvertisementLog'
+          description: ''
+    post:
+      operationId: logs_create
+      description: "\n            Create a new advertisement log entry when a beacon\
+        \ sends an advertisement.  \n            The log records details such as which\
+        \ advertisement was sent, the beacon that sent it, \n            and the timestamp\
+        \ of the event.\n\n            **Example Request:**\n            ```json\n\
+        \            {\n                \"log_id\": \"LOG123\",\n                \"\
+        advertisement\": 1,\n                \"beacon\": 2,\n                \"created_at\"\
+        : \"2024-03-08T12:30:00Z\"\n            }\n            ```\n\n           \
+        \ **Example Response (201 Created):**\n            ```json\n            {\n\
+        \                \"log_id\": \"LOG123\",\n                \"advertisement\"\
+        : 1,\n                \"beacon\": 2,\n                \"created_at\": \"2024-03-08T12:30:00Z\"\
+        \n            }\n            ```\n        "
+      summary: Create a new Advertisement Log
+      tags:
+      - Logs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvertisementLog'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdvertisementLog'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdvertisementLog'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementLog'
+          description: ''
+        '400':
+          description: Bad Request - Invalid data format
+  /api/v1/logs/{log_id}/:
+    get:
+      operationId: logs_retrieve
+      description: "\n                Get details of a specific advertisement log\
+        \ by its ID.\n\n                **Example Response (200 OK):**\n         \
+        \       ```json\n                {\n                    \"log_id\": \"LOG123\"\
+        ,\n                    \"advertisement\": 1,\n                    \"beacon\"\
+        : 2,\n                    \"created_at\": \"2024-03-08T12:30:00Z\"\n     \
+        \           }\n                ```\n            "
+      summary: Retrieve an Advertisement Log
+      parameters:
+      - in: path
+        name: log_id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advertisement log.
+        required: true
+      tags:
+      - Logs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementLog'
+          description: ''
+        '404':
+          description: Not Found
+    put:
+      operationId: logs_update
+      description: "\n                Replace an existing advertisement log entry\
+        \ with new data.\n\n                **Example Request:**\n               \
+        \ ```json\n                {\n                    \"log_id\": \"LOG123\",\n\
+        \                    \"advertisement\": 2,\n                    \"beacon\"\
+        : 3,\n                    \"created_at\": \"2024-03-09T10:00:00Z\"\n     \
+        \           }\n                ```\n\n                **Example Response (200\
+        \ OK):**\n                ```json\n                {\n                   \
+        \ \"log_id\": \"LOG123\",\n                    \"advertisement\": 2,\n   \
+        \                 \"beacon\": 3,\n                    \"created_at\": \"2024-03-09T10:00:00Z\"\
+        \n                }\n                ```\n            "
+      summary: Update an Advertisement Log
+      parameters:
+      - in: path
+        name: log_id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advertisement log.
+        required: true
+      tags:
+      - Logs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvertisementLog'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdvertisementLog'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdvertisementLog'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementLog'
+          description: ''
+        '400':
+          description: Bad Request
+    patch:
+      operationId: logs_partial_update
+      description: "\n                Update specific fields of an advertisement log\
+        \ without replacing the entire entry.\n\n                **Example Request:**\n\
+        \                ```json\n                {\n                    \"advertisement\"\
+        : 3\n                }\n                ```\n\n                **Example Response\
+        \ (200 OK):**\n                ```json\n                {\n              \
+        \      \"log_id\": \"LOG123\",\n                    \"advertisement\": 3,\n\
+        \                    \"beacon\": 2,\n                    \"created_at\": \"\
+        2024-03-08T12:30:00Z\"\n                }\n                ```\n         \
+        \   "
+      summary: Partially Update an Advertisement Log
+      parameters:
+      - in: path
+        name: log_id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advertisement log.
+        required: true
+      tags:
+      - Logs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementLog'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementLog'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdvertisementLog'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvertisementLogPartial'
+          description: ''
+        '400':
+          description: Bad Request
+    delete:
+      operationId: logs_destroy
+      description: Delete a specific advertisement log by ID.
+      summary: Delete an Advertisement Log
+      parameters:
+      - in: path
+        name: log_id
+        schema:
+          type: integer
+        description: A unique integer value identifying this advertisement log.
+        required: true
+      tags:
+      - Logs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+  /api/v1/token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/users/:
+    get:
+      operationId: users_list
+      description: Returns a paginated list of all users in the system.
+      summary: Retrieve a list of users
+      tags:
+      - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+          description: ''
+    post:
+      operationId: users_create
+      description: Creates a new user and returns access and refresh tokens.
+      summary: Create a New User
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad Request
+          description: ''
+  /api/v1/users/login/:
+    post:
+      operationId: users_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/users/refresh/:
+    post:
+      operationId: users_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/users/register/:
+    get:
+      operationId: users_register_list
+      description: Returns a paginated list of all users in the system.
+      summary: Retrieve a list of users
+      tags:
+      - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+          description: ''
+    post:
+      operationId: users_register_create
+      description: Creates a new user and returns access and refresh tokens.
+      summary: Create a New User
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad Request
+          description: ''
+components:
+  schemas:
+    AdInteraction:
+      type: object
+      properties:
+        ad:
+          $ref: '#/components/schemas/Advertisement'
+        viewed:
+          type: boolean
+        viewed_at:
+          type: string
+          format: date-time
+          nullable: true
+        liked:
+          type: boolean
+        liked_at:
+          type: string
+          format: date-time
+          nullable: true
+        clicked:
+          type: boolean
+        clicked_at:
+          type: string
+          format: date-time
+          nullable: true
+        saved:
+          type: boolean
+        saved_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - ad
+      - clicked
+      - clicked_at
+      - liked
+      - liked_at
+      - saved
+      - saved_at
+      - viewed
+      - viewed_at
+    Advertisement:
+      type: object
+      properties:
+        advertisement_id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+      required:
+      - advertisement_id
+      - content
+      - created_at
+      - title
+    AdvertisementAssignment:
+      type: object
+      properties:
+        assignment_id:
+          type: string
+          format: uuid
+          readOnly: true
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        assigned_at:
+          type: string
+          format: date-time
+          readOnly: true
+        beacon:
+          type: string
+          format: uuid
+        advertisement:
+          type: string
+          format: uuid
+      required:
+      - advertisement
+      - assigned_at
+      - assignment_id
+      - beacon
+      - end_date
+    AdvertisementBeaconAssignment:
+      type: object
+      properties:
+        beacon:
+          $ref: '#/components/schemas/BeaconSimple'
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+      required:
+      - beacon
+    AdvertisementBeacons:
+      type: object
+      properties:
+        advertisement_id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        beacons:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdvertisementBeaconAssignment'
+          readOnly: true
+      required:
+      - advertisement_id
+      - beacons
+      - title
+    AdvertisementDetail:
+      type: object
+      properties:
+        advertisement_id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        liked:
+          type: boolean
+          readOnly: true
+        liked_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        saved:
+          type: boolean
+          readOnly: true
+        saved_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      required:
+      - advertisement_id
+      - content
+      - created_at
+      - liked
+      - liked_at
+      - saved
+      - saved_at
+      - title
+    AdvertisementLog:
+      type: object
+      properties:
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        beacon_name:
+          type: string
+          readOnly: true
+        log_id:
+          type: integer
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        advertisement_title:
+          type: string
+          readOnly: true
+        advertisement_content:
+          type: string
+          readOnly: true
+      required:
+      - advertisement_content
+      - advertisement_title
+      - beacon_id
+      - beacon_name
+      - log_id
+      - timestamp
+    AdvertisementLogPartial:
+      type: object
+      properties:
+        advertisement:
+          type: string
+          format: uuid
+      required:
+      - advertisement
+    AdvertisementSimple:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - content
+      - title
+    Beacon:
+      type: object
+      properties:
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        minor:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        major:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        location_name:
+          type: string
+          maxLength: 100
+        signal_strength:
+          type: number
+          format: double
+          nullable: true
+        battery_status:
+          type: number
+          format: double
+          nullable: true
+        start_date:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - beacon_id
+      - location_name
+      - name
+      - start_date
+    BeaconAdvertisements:
+      type: object
+      properties:
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        location_name:
+          type: string
+          maxLength: 100
+        advertisements:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+      required:
+      - advertisements
+      - beacon_id
+      - location_name
+      - name
+    BeaconLocation:
+      type: object
+      properties:
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - beacon_id
+      - name
+    BeaconMessage:
+      type: object
+      properties:
+        message_id:
+          type: string
+          format: uuid
+          readOnly: true
+        content:
+          type: string
+          maxLength: 255
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        beacon_name:
+          type: string
+          readOnly: true
+      required:
+      - beacon_id
+      - beacon_name
+      - content
+      - message_id
+      - sent_at
+    BeaconMessageCount:
+      type: object
+      properties:
+        beacon_id:
+          type: string
+          format: uuid
+        beacon_name:
+          type: string
+        date:
+          type: string
+          format: date
+        total_messages:
+          type: integer
+      required:
+      - beacon_id
+      - beacon_name
+      - date
+      - total_messages
+    BeaconSimple:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        location_name:
+          type: string
+          maxLength: 100
+      required:
+      - location_name
+      - name
+    ClickAd:
+      type: object
+      properties:
+        ad_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        ad:
+          allOf:
+          - $ref: '#/components/schemas/Advertisement'
+          readOnly: true
+        clicked:
+          type: boolean
+          default: true
+        clicked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - ad
+      - ad_id
+      - clicked_at
+    LikeAd:
+      type: object
+      properties:
+        ad_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        ad:
+          allOf:
+          - $ref: '#/components/schemas/Advertisement'
+          readOnly: true
+        liked:
+          type: boolean
+          default: true
+        liked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - ad
+      - ad_id
+      - liked_at
+    LikedAdDetail:
+      type: object
+      properties:
+        advertisement_id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        liked:
+          type: string
+          readOnly: true
+        liked_at:
+          type: string
+          readOnly: true
+        saved:
+          type: string
+          readOnly: true
+        saved_at:
+          type: string
+          readOnly: true
+      required:
+      - advertisement_id
+      - content
+      - created_at
+      - liked
+      - liked_at
+      - saved
+      - saved_at
+      - title
+    LikedSavedAd:
+      type: object
+      properties:
+        ad:
+          $ref: '#/components/schemas/Advertisement'
+        liked:
+          type: boolean
+        liked_at:
+          type: string
+          format: date-time
+          nullable: true
+        saved:
+          type: boolean
+        saved_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - ad
+      - liked
+      - liked_at
+      - saved
+      - saved_at
+    PaginatedAdInteractionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdInteraction'
+    PaginatedAdvertisementList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Advertisement'
+    PaginatedLikedAdDetailList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LikedAdDetail'
+    PaginatedLikedSavedAdList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LikedSavedAd'
+    PaginatedSavedAdDetailList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SavedAdDetail'
+    PatchedAdvertisementDate:
+      type: object
+      properties:
+        end_date:
+          type: string
+          format: date-time
+    PatchedAdvertisementLog:
+      type: object
+      properties:
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        beacon_name:
+          type: string
+          readOnly: true
+        log_id:
+          type: integer
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        advertisement_title:
+          type: string
+          readOnly: true
+        advertisement_content:
+          type: string
+          readOnly: true
+    PatchedAdvertisementTitle:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+    PatchedBeaconDataUpdate:
+      type: object
+      properties:
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        minor:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        major:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        signal_strength:
+          type: number
+          format: double
+          nullable: true
+        battery_status:
+          type: number
+          format: double
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+    PatchedBeaconMessage:
+      type: object
+      properties:
+        message_id:
+          type: string
+          format: uuid
+          readOnly: true
+        content:
+          type: string
+          maxLength: 255
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        beacon_id:
+          type: string
+          format: uuid
+          readOnly: true
+        beacon_name:
+          type: string
+          readOnly: true
+    PatchedBeaconStatus:
+      type: object
+      description: Serializer for updating beacon status
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+    SaveAd:
+      type: object
+      properties:
+        ad_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        ad:
+          allOf:
+          - $ref: '#/components/schemas/Advertisement'
+          readOnly: true
+        saved:
+          type: boolean
+          default: true
+        saved_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - ad
+      - ad_id
+      - saved_at
+    SavedAdDetail:
+      type: object
+      properties:
+        advertisement_id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        saved:
+          type: string
+          readOnly: true
+        saved_at:
+          type: string
+          readOnly: true
+        liked:
+          type: string
+          readOnly: true
+        liked_at:
+          type: string
+          readOnly: true
+      required:
+      - advertisement_id
+      - content
+      - created_at
+      - liked
+      - liked_at
+      - saved
+      - saved_at
+      - title
+    StatusEnum:
+      enum:
+      - Active
+      - Inactive
+      type: string
+      description: |-
+        * `Active` - Active
+        * `Inactive` - Inactive
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 25
+        email:
+          type: string
+          format: email
+          maxLength: 200
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - email
+      - id
+      - password
+      - username
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 25
+        email:
+          type: string
+          format: email
+          maxLength: 200
+      required:
+      - email
+      - id
+      - username
+    ViewAd:
+      type: object
+      properties:
+        ad_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        ad:
+          allOf:
+          - $ref: '#/components/schemas/Advertisement'
+          readOnly: true
+        viewed:
+          type: boolean
+          default: true
+        viewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - ad
+      - ad_id
+      - viewed_at
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
