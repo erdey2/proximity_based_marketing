@@ -52,6 +52,7 @@ class CustomLoginView(APIView):
     """Session-based login view. Accepts username and password,
     authenticates the user, and starts a session. """
     @extend_schema(
+        tags=['Users'],
         request=LoginSerializer,
         responses={
             200: OpenApiTypes.OBJECT,
