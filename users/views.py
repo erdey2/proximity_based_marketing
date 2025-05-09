@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model, login
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserSerializer, UserResponseSerializer, LoginSerializer
+from .serializers import UserSerializer, UserResponseSerializer, LoginSerializer, LoginSuccessResponseSerializer
 from drf_spectacular.utils import extend_schema, OpenApiTypes
 from rest_framework.views import APIView
 
@@ -55,8 +55,8 @@ class CustomLoginView(APIView):
         tags=['Users'],
         request=LoginSerializer,
         responses={
-            200: OpenApiTypes.OBJECT,
-            400: OpenApiTypes.OBJECT
+            200: LoginSuccessResponseSerializer,
+            400: LoginSerializer
         },
         summary="Session-based login",
         description="Authenticates user using username and password and starts a session."

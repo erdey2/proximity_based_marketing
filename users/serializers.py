@@ -31,3 +31,6 @@ class LoginSerializer(serializers.Serializer):
             data['user'] = user
             return data
         raise serializers.ValidationError("Invalid credentials")
+
+class LoginSuccessResponseSerializer(serializers.Serializer):
+    message = serializers.CharField(example="Login successful")
