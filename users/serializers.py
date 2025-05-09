@@ -33,4 +33,4 @@ class LoginSerializer(serializers.Serializer):
         raise serializers.ValidationError("Invalid credentials")
 
 class LoginSuccessResponseSerializer(serializers.Serializer):
-    message = serializers.CharField(example="Login successful")
+    message = serializers.CharField()
