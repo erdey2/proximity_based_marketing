@@ -3,7 +3,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer, UserResponseSerializer, LoginSerializer, LoginSuccessResponseSerializer
-from drf_spectacular.utils import extend_schema, OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from rest_framework.views import APIView
 
 User = get_user_model()
@@ -55,9 +55,20 @@ class CustomLoginView(APIView):
         tags=['Users'],
         request=LoginSerializer,
         responses={
-            200: LoginSuccessResponseSerializer,
+            200: OpenApiResponse(
+                response=LoginSuccessResponseSerializer,
+                description="Login successful",
+                examples=[
+                    OpenApiExample(
+                        'Success Example',
+                        value={"message": "Login successful"},
+                        status_codes=["200"]
+                    )
+                ]
+            ),
             400: LoginSerializer
         },
+
         summary="Session-based login",
         description="Authenticates user using username and password and starts a session."
     )
