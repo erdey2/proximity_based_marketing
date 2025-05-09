@@ -1,9 +1,10 @@
-from django.contrib.auth import get_user_model
-from rest_framework import generics, permissions
+from django.contrib.auth import get_user_model, login
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserSerializer, UserResponseSerializer  # Import the custom response serializer
-from drf_spectacular.utils import extend_schema
+from .serializers import UserSerializer, UserResponseSerializer, LoginSerializer
+from drf_spectacular.utils import extend_schema, OpenApiTypes
+from rest_framework.views import APIView
 
 User = get_user_model()
 
@@ -46,4 +47,24 @@ class UserListView(generics.ListCreateAPIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         })
+
+class CustomLoginView(APIView):
+    """Session-based login view. Accepts username and password,
+    authenticates the user, and starts a session. """
+    @extend_schema(
+        request=LoginSerializer,
+        responses={
+            200: OpenApiTypes.OBJECT,
+            400: OpenApiTypes.OBJECT
+        },
+        summary="Session-based login",
+        description="Authenticates user using username and password and starts a session."
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            login(request, user)  # Create a session
+            return Response({'message': 'Login successful'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
