@@ -24,6 +24,7 @@ from campaign.views import api_root
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
+
     path('', api_root, name='root_view'),
     path('api/v1/beacons/', include('beacons.urls')),  # Includes all beacon-related URLs
     path('api/v1/advertisements/', include('advertisements.urls')),
@@ -43,6 +44,9 @@ urlpatterns = [
     # authentication
     path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('api/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 ]
 
 # Serve media files in development
