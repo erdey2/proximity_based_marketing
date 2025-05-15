@@ -28,20 +28,41 @@ DEBUG = env.bool("DJANGO_DEBUG", default=False)
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
 
+# Use JWTs instead of default token auth
+REST_USE_JWT = True
+DJ_REST_AUTH = {
+    'USE_JWT': True,
+    'TOKEN_MODEL': None,
+}
+
 INSTALLED_APPS = [
     'corsheaders',
+    # defaults
     # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # 3rd party
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'dj_rest_auth',
+
+    # for registration & auth using social media
+    'dj_rest_auth.registration',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
     'drf_spectacular',
     'celery',
     'django_celery_beat',
+    
+    # my apps
     'campaign',
     'beacons',
     'advertisements',
@@ -51,6 +72,8 @@ INSTALLED_APPS = [
     'users',
 ]
 
+SITE_ID = 1
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -58,17 +81,19 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ),
+    ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',  # Throttle per user
         'rest_framework.throttling.AnonRateThrottle',  # Throttle for anonymous users

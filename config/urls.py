@@ -42,11 +42,11 @@ urlpatterns = [
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 
     # authentication & registration
-    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('api/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
-    # path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')), # for social media login, registration
 ]
 
 # Serve media files in development
