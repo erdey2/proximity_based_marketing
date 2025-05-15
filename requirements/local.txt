@@ -1,0 +1,5 @@
+-r base.txt
+
+dj-config-url==0.1.1
+django-debug-toolbar==4.3.0
+python-crontab==3.2.0
