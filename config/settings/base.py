@@ -18,7 +18,7 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-print("ENV FILE PATH:", os.path.join(BASE_DIR, ".env"))
+# print("ENV FILE PATH:", os.path.join(BASE_DIR, ".env"))
 
 # Initialize environment variables
 env = environ.Env()

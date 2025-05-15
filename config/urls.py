@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from campaign.views import api_root
@@ -41,11 +42,13 @@ urlpatterns = [
     path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 
-    # authentication & registration
+
     # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
+    # authentication & registration
     path('api/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
+    path('api/auth/password/reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')), # for social media login, registration
 ]
 
