@@ -17,6 +17,10 @@ DATABASES = {
         },
     }
 }
+print("DB ENGINE:", os.getenv("DB_ENGINE"))
+print("DB NAME:", os.getenv("DB_NAME"))
+print("DB USER:", os.getenv("DB_USER"))
+print("DB HOST:", os.getenv("DB_HOST"))
 
 # Secure settings
 SECURE_SSL_REDIRECT = True
