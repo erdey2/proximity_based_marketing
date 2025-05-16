@@ -17,12 +17,14 @@ import environ
 from datetime import timedelta
 import dj_database_url
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialize environment variables
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+environ.Env.read_env(os.path.join(BASE_DIR.parent, ".env"))
 
+print("Loading .env from:", os.path.join(BASE_DIR, ".env"))
+print("DATABASE_URL =", env.str("DATABASE_URL", default="NOT SET"))
 
 DATABASES = {
     "default": dj_database_url.config(
