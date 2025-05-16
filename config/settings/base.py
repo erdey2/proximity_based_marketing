@@ -22,12 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-# DATABASE_URL = env("DATABASE_URL", default="")
-
-
 # print("DATABASE_URL from env:", DATABASE_URL)
 # print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL))
-
 
 """ DATABASES = {
     "default": dj_database_url.config(
