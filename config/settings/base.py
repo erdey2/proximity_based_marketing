@@ -17,7 +17,7 @@ import environ
 from datetime import timedelta
 import dj_database_url
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Initialize environment variables
 env = environ.Env()
