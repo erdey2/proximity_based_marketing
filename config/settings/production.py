@@ -4,14 +4,6 @@ DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default=env.str("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
-
 # Secure settings
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
