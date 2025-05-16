@@ -25,6 +25,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR.parent, ".env"))
 
+print("DATABASE_URL:", env.str("DATABASE_URL", default="NOT SET"))
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=env.str("DATABASE_URL", default=""),
+        conn_max_age=600,
+        ssl_require=True,
+    )
+}
+
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
@@ -142,15 +152,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
-# Database
-DATABASES = {
-    "default": dj_database_url.config(
-        default=env("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
