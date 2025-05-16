@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from dj_rest_auth.app_settings import api_settings
 from urllib.parse import urlparse
 from pathlib import Path
 import os
@@ -28,13 +28,6 @@ DEBUG = env.bool("DJANGO_DEBUG", default=False)
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
 
-# Use JWTs instead of default token auth
-REST_USE_JWT = True
-DJ_REST_AUTH = {
-    'USE_JWT': True,
-    'TOKEN_MODEL': None,
-}
-
 INSTALLED_APPS = [
     'corsheaders',
     # defaults
@@ -47,8 +40,8 @@ INSTALLED_APPS = [
 
     # 3rd party
     'rest_framework',
-    'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'dj_rest_auth',
 
     # for registration & auth using social media
@@ -63,14 +56,21 @@ INSTALLED_APPS = [
     'django_celery_beat',
     
     # my apps
-    'campaign',
-    'beacons',
-    'advertisements',
-    'assignments',
-    'beacon_messages',
-    'logs',
-    'users',
+    'core.campaign',
+    'core.beacons',
+    'core.advertisements',
+    'core.assignments',
+    'core.beacon_messages',
+    'core.logs',
+    'core.users',
 ]
+# dj-rest-auth
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_COOKIE": "_auth",  # Name of access token cookie
+    "JWT_AUTH_REFRESH_COOKIE": "_refresh", # Name of refresh token cookie
+    "JWT_AUTH_HTTPONLY": False,  # Makes sure refresh token is sent
+}
 
 SITE_ID = 1
 
@@ -88,8 +88,7 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.TokenAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -182,7 +181,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
@@ -197,4 +196,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 CORS_ALLOW_CREDENTIALS = True  # Allow credentials
+
 

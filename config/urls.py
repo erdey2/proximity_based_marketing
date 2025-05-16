@@ -16,26 +16,24 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from campaign.views import api_root
+from core.campaign.views import api_root
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
 
     path('', api_root, name='root_view'),
-    path('api/v1/beacons/', include('beacons.urls')),  # Includes all beacon-related URLs
-    path('api/v1/advertisements/', include('advertisements.urls')),
-    path('api/v1/assignments/', include('assignments.urls')),
-    path('api/v1/beacon-messages/', include('beacon_messages.urls')),
-    path('api/v1/logs/', include('logs.urls')),
-    path('api/v1/dashboards/', include('dashboards.urls')),
+    path('api/v1/beacons/', include('core.beacons.urls')),  # Includes all beacon-related URLs
+    path('api/v1/advertisements/', include('core.advertisements.urls')),
+    path('api/v1/assignments/', include('core.assignments.urls')),
+    path('api/v1/beacon-messages/', include('core.beacon_messages.urls')),
+    path('api/v1/logs/', include('core.logs.urls')),
+    path('api/v1/dashboards/', include('core.dashboards.urls')),
 
     # user
-    path('api/v1/users/', include('users.urls')),
+    path('api/v1/users/', include('core.users.urls')),
 
     # documentation
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
