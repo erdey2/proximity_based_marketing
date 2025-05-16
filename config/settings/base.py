@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+""" DATABASE_URL = os.getenv("DATABASE_URL")
 print("DATABASE_URL from env:", DATABASE_URL)
-print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL))
+print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL)) """
 
 
 
@@ -33,8 +33,18 @@ print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL))
     'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
 } """
 
-DATABASES = {
+""" DATABASES = {
     'default': dj_database_url.config(default=env('DATABASE_URL'))
+} """
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'proximity_market',
+        'USER': 'proximity_market_owner',
+        'PASSWORD': 'npg_V3ByzE9vpkZm',
+        'HOST': 'ep-aged-resonance-a5yura0n-pooler.us-east-2.aws.neon.tech',
+        'PORT': '5432',
+    }
 }
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
