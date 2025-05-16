@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from dj_rest_auth.app_settings import api_settings
+
 from urllib.parse import urlparse
 from pathlib import Path
 import os
@@ -22,20 +23,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-# print("DATABASE_URL from env:", DATABASE_URL)
-# print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL))
+DATABASE_URL = os.getenv("DATABASE_URL")
+print("DATABASE_URL from env:", DATABASE_URL)
+print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL))
+
+
 
 """ DATABASES = {
-    "default": dj_database_url.config(
-        default=env.str("DATABASE_URL", default=""),
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
 } """
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    'default': dj_database_url.config(default=env('DATABASE_URL'))
 }
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
