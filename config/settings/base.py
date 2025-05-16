@@ -22,21 +22,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-DATABASE_URL = env("DATABASE_URL", default="")
-
-# print("Loading .env from:", os.path.join(BASE_DIR, ".env"))
-# print("DATABASE_URL =", env.str("DATABASE_URL", default="NOT SET"))
-
-print("DATABASE_URL from env:", DATABASE_URL)
-print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL))
+# DATABASE_URL = env("DATABASE_URL", default="")
 
 
-DATABASES = {
+# print("DATABASE_URL from env:", DATABASE_URL)
+# print("Parsed DB settings:", dj_database_url.parse(DATABASE_URL))
+
+
+""" DATABASES = {
     "default": dj_database_url.config(
         default=env.str("DATABASE_URL", default=""),
         conn_max_age=600,
         ssl_require=True,
     )
+} """
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
 }
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
