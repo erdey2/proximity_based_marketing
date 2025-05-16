@@ -19,9 +19,17 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Initialize environment variables
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR.parent, ".env"))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+DATABASE_URL = env("DATABASE_URL", default="")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    }
+else:
+    raise Exception("DATABASE_URL is not set in the environment.")
 
 print("Loading .env from:", os.path.join(BASE_DIR, ".env"))
 print("DATABASE_URL =", env.str("DATABASE_URL", default="NOT SET"))
