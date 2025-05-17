@@ -30,6 +30,7 @@ DATABASES = {
         engine='django.db.backends.postgresql'
     )
 }
+print(DATABASES)
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 SECRET_KEY = env("DJANGO_SECRET_KEY")
