@@ -17,9 +17,9 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
         "PORT": 5432, # default postgres port
          }
 } """
-DATABASES = {
+""" DATABASES = {
     "default": env.dj_db_url("DATABASE_URL", default="postgres://postgres@db/postgres")
-}
+} """
 
 # Secure settings
 SECURE_SSL_REDIRECT = True
