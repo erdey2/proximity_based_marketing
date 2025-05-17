@@ -6,19 +6,8 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "proximity_market",
-        "USER": "proximity_market_owner",
-        "PASSWORD": "npg_V3ByzE9vpkZm",
-        "HOST": "ep-aged-resonance-a5yura0n-pooler.us-east-2.aws.neon.tech",
-        "PORT": 5432,
-        "OPTIONS": {
-            "sslmode": "require"
-        }
-    }
+    'default': env.db('DATABASE_URL'),
 }
-
 
 # Secure settings
 SECURE_SSL_REDIRECT = True
