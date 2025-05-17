@@ -10,21 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from dj_rest_auth.app_settings import api_settings
-
 from urllib.parse import urlparse
 from pathlib import Path
 import os
 import environ
 from datetime import timedelta
-import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
-
-print("DATABASE_URL from env:", env("DATABASE_URL"))
-
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 SECRET_KEY = env("DJANGO_SECRET_KEY")
@@ -42,9 +37,9 @@ INSTALLED_APPS = [
 
     # 3rd party
     'rest_framework',
-    'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'dj_rest_auth',
+    'rest_framework_simplejwt.token_blacklist',
 
     # for registration & auth using social media
     'dj_rest_auth.registration',
@@ -66,14 +61,6 @@ INSTALLED_APPS = [
     'core.logs',
     'core.users',
 ]
-# dj-rest-auth
-REST_AUTH = {
-    "USE_JWT": True,
-    "JWT_AUTH_COOKIE": "_auth",  # Name of access token cookie
-    "JWT_AUTH_REFRESH_COOKIE": "_refresh", # Name of refresh token cookie
-    "JWT_AUTH_HTTPONLY": False,  # Makes sure refresh token is sent
-}
-
 SITE_ID = 1
 
 MIDDLEWARE = [
@@ -106,6 +93,8 @@ REST_FRAMEWORK = {
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Beacon based Marketing API",
     "DESCRIPTION": "An API for managing beacons, advertisements, and advertisement logs.",
@@ -122,6 +111,17 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}
+
+REST_USE_JWT = True
+
+# dj-rest-auth
+REST_AUTH = {
+    "USE_JWT": True,
+    'JWT_AUTH_COOKIE': 'access',
+    'JWT_AUTH_REFRESH_COOKIE': 'refresh',
+    "JWT_AUTH_HTTPONLY": True,
+    'LOGIN_SERIALIZER': 'core.users.serializers.CustomLoginSerializer',
 }
 
 ROOT_URLCONF = 'config.urls'

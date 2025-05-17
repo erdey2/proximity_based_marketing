@@ -32,22 +32,18 @@ urlpatterns = [
     path('api/v1/logs/', include('core.logs.urls')),
     path('api/v1/dashboards/', include('core.dashboards.urls')),
 
-    # user
-    path('api/v1/users/', include('core.users.urls')),
+    # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # authentication & registration
+    path('api/v1/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
+    path('api/v1/auth/password/reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')), # for social media login, registration
 
     # documentation
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-
-
-    # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
-    # authentication & registration
-    path('api/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
-    path('api/auth/password/reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('api/auth/registration/', include('dj_rest_auth.registration.urls')), # for social media login, registration
 ]
 
 # Serve media files in development
