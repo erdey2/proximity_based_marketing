@@ -23,13 +23,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-DATABASES = {
+""" DATABASES = {
     'default': dj_database_url.config(
         default='postgres://postgres:postgres@localhost:5432/postgres',
         conn_max_age=600,
         engine='django.db.backends.postgresql'
     )
+} """
+DATABASES = {
+    'default': dj_database_url.parse(
+        'postgres://proximity_market_owner:npg_V3ByzE9vpkZm@ep-aged-resonance-a5yura0n-pooler.us-east-2.aws.neon.tech:5432/proximity_market?sslmode=require',
+        conn_max_age=600,
+        ssl_require=True,
+    )
 }
+
 print(DATABASES)
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
