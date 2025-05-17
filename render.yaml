@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: proximity-market
+    env: python
+    buildCommand: |
+      pip install -r requirements/production.txt
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://proximity_market_owner:npg_V3ByzE9vpkZm@ep-aged-resonance-a5yura0n-pooler.us-east-2.aws.neon.tech/proximity_market?sslmode=require
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: proximity_based_marketing.onrender.com
+
