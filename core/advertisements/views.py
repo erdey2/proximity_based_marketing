@@ -1,23 +1,20 @@
+from .models import Advertisement, AdView, AdLike, AdClick, AdSaved
+from .serializers import (AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer,
+                          AdInteractionSerializer, LikedSavedAdSerializer, LikedAdDetailSerializer,
+                          SavedAdDetailSerializer, AdvertisementDetailSerializer,
+                          ViewAdSerializer, LikeAdSerializer, ClickAdSerializer, SaveAdSerializer)
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.exceptions import NotFound
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework import generics
-
-from .models import Advertisement
-from .serializers import (AdvertisementSerializer, AdvertisementSimpleSerializer, AdvertisementTitleSerializer,
-                          AdInteractionSerializer, LikedSavedAdSerializer, LikedAdDetailSerializer,
-                          SavedAdDetailSerializer, AdvertisementDetailSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
 from rest_framework.response import Response
-from .models import AdView, AdLike, AdClick, AdSaved
-from .serializers import ViewAdSerializer, LikeAdSerializer, ClickAdSerializer, SaveAdSerializer
 
 class AdvertisementRateLimit(UserRateThrottle):
     rate = '100/minute'  # Custom throttle rate for this view
