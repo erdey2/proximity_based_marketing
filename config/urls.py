@@ -18,7 +18,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from dj_rest_auth.jwt_auth import get_refresh_view
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
 from core.campaign.views import api_root
 from core.users.serializers import CustomLoginSerializer
 from core.users.views import CustomLoginView
@@ -34,14 +36,12 @@ urlpatterns = [
     path('api/v1/logs/', include('core.logs.urls')),
     path('api/v1/dashboards/', include('core.dashboards.urls')),
 
-    # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
     # authentication & registration
     path('api/v1/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
     path("api/v1/auth/custom-login/", CustomLoginView.as_view(), name="custom-login"),
     path('api/v1/auth/password/reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')), # for social media login, registration
+    path('api/v1/auth/token/refresh/', get_refresh_view().as_view(), name='token_refresh'),
 
     # documentation
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),

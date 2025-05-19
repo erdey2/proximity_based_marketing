@@ -9,8 +9,6 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-from dj_rest_auth.app_settings import api_settings
-from urllib.parse import urlparse
 from pathlib import Path
 import os
 import environ
@@ -39,7 +37,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
-    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_simplejwt',
 
     # for registration & auth using social media
     'dj_rest_auth.registration',
@@ -51,7 +49,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'celery',
     'django_celery_beat',
-    
+
     # my apps
     'core.campaign',
     'core.beacons',
@@ -77,7 +75,7 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -93,18 +91,11 @@ REST_FRAMEWORK = {
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
-
-
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Beacon based Marketing API",
-    "DESCRIPTION": "An API for managing beacons, advertisements, and advertisement logs.",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
-}
+REST_USE_JWT = True
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
@@ -113,15 +104,21 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
-REST_USE_JWT = True
-
 # dj-rest-auth
 REST_AUTH = {
     "USE_JWT": True,
+    "TOKEN_MODEL": None,
     'JWT_AUTH_COOKIE': 'access',
     'JWT_AUTH_REFRESH_COOKIE': 'refresh',
-    "JWT_AUTH_HTTPONLY": True,
+    "JWT_AUTH_HTTPONLY": False,
     'LOGIN_SERIALIZER': 'core.users.serializers.CustomLoginSerializer',
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Beacon based Marketing API",
+    "DESCRIPTION": "An API for managing beacons, advertisements, and advertisement logs.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 ROOT_URLCONF = 'config.urls'

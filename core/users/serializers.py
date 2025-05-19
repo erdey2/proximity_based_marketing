@@ -1,17 +1,14 @@
 from dj_rest_auth.serializers import LoginSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import ValidationError
 
-User = get_user_model()
-
 class CustomLoginSerializer(LoginSerializer):
     def validate(self, attrs):
+        # 1) Authenticate with username/password
         user = authenticate(
             request=self.context.get("request"),
             username=attrs.get("username"),
-            password=attrs.get("password")
+            password=attrs.get("password"),
         )
 
         if not user:
@@ -20,26 +17,30 @@ class CustomLoginSerializer(LoginSerializer):
         if not user.is_active:
             raise ValidationError("User is inactive.")
 
-        # Set user on serializer
+        # 2) Assign the real User instance
         self.user = user
 
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
+        # 3) Return a dict containing "user": user
+        #    → This is exactly what the LoginView will look for.
+        return {"user": user}
 
-        # Return tokens and user info
-        return {
-            "refresh": str(refresh),
-            "access": str(access),
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                # Add more fields if needed
-            }
+    def get_response_data(self, user):
+        """
+        After LoginView does jwt_encode(user), it will pass `user` here.
+        super().get_response_data(user) already returns {"access": "...", "refresh": "..."}.
+        We just append "user": { … } to that.
+        """
+        data = super().get_response_data(user)
+        data["user"] = {
+            "id":         user.id,
+            "username":   user.username,
+            "email":      user.email,
+            "first_name": user.first_name,
+            "last_name":  user.last_name,
         }
+        return data
+
+
 
 
 
