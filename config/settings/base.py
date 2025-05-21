@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'core.beacon_messages',
     'core.logs',
     'core.users',
+    'core.otp_reset',
 ]
 SITE_ID = 1
 

@@ -27,7 +27,6 @@ from core.users.views import CustomLoginView
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-
     path('', api_root, name='root_view'),
     path('api/v1/beacons/', include('core.beacons.urls')),  # Includes all beacon-related URLs
     path('api/v1/advertisements/', include('core.advertisements.urls')),
@@ -35,6 +34,7 @@ urlpatterns = [
     path('api/v1/beacon-messages/', include('core.beacon_messages.urls')),
     path('api/v1/logs/', include('core.logs.urls')),
     path('api/v1/dashboards/', include('core.dashboards.urls')),
+    path('api/v1/otp-reset/', include('core.otp_reset.urls')),
 
     # authentication & registration
     path('api/v1/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
