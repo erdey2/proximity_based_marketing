@@ -189,6 +189,9 @@ CLOUDINARY_STORAGE = {
         'allowed_formats': ['jpg', 'png']
     }
 }
+print("Cloudinary Cloud Name:", env("CLOUDINARY_CLOUD_NAME", default="MISSING"))
+print("Cloudinary API Key:", env("CLOUDINARY_API_KEY", default="MISSING"))
+print("Cloudinary API Secret:", env("CLOUDINARY_API_SECRET", default="MISSING"))
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
