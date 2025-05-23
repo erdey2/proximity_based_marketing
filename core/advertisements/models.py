@@ -10,6 +10,7 @@ class Advertisement(models.Model):
     content = models.TextField()
     image = models.FileField(upload_to='advertisements/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='advertisements', null=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
