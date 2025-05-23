@@ -6,7 +6,7 @@ from core.notifications.models import Notification
 
 User = get_user_model()
 
-@receiver(post_save, sender=Advertisement)
+"""@receiver(post_save, sender=Advertisement)
 def create_ad_notification(sender, instance, created, **kwargs):
     if created:
         # Notify all users except the creator
@@ -15,4 +15,4 @@ def create_ad_notification(sender, instance, created, **kwargs):
             Notification.objects.create(
                 user=user,
                 message=f"New advertisement posted: {instance.title}"
-            )
+            ) """
