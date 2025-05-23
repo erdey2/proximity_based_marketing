@@ -897,7 +897,7 @@ class AdInteractionView(generics.ListAPIView):
             save = AdSaved.objects.filter(user=user, ad=ad).first()
 
             data = {
-                'ad': AdvertisementSerializer(ad).data,
+                'ad': AdvertisementSerializer(ad, context={'request': request}).data,
                 'viewed': view.viewed if view else False,
                 'viewed_at': view.viewed_at if view else None,
                 'liked': like.liked if like else False,
