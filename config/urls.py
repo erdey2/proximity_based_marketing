@@ -20,10 +20,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from dj_rest_auth.jwt_auth import get_refresh_view
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-
 from core.campaign.views import api_root
-from core.users.serializers import CustomLoginSerializer
-from core.users.views import CustomLoginView
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -35,10 +32,10 @@ urlpatterns = [
     path('api/v1/logs/', include('core.logs.urls')),
     path('api/v1/dashboards/', include('core.dashboards.urls')),
     path('api/v1/otp-reset/', include('core.otp_reset.urls')),
+    path('api/v1/notifications/', include('core.notifications.urls')),
 
     # authentication & registration
     path('api/v1/auth/', include('dj_rest_auth.urls')),  # login, logout, password reset, etc.
-    path("api/v1/auth/custom-login/", CustomLoginView.as_view(), name="custom-login"),
     path('api/v1/auth/password/reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')), # for social media login, registration
     path('api/v1/auth/token/refresh/', get_refresh_view().as_view(), name='token_refresh'),
