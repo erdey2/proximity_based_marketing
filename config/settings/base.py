@@ -180,9 +180,9 @@ USE_TZ = True
 
 # Cloudinary Config
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'Root',
-    'API_KEY': '325627148858812',
-    'API_SECRET': 'Pear7ocgLKo1MGg2mVtqgeCgem8',
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET'),
     'UPLOAD_OPTIONS': {
         'folder': 'proximity_based_market/ads/',
         'resource_type': 'image',
