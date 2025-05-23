@@ -538,11 +538,16 @@ class LikeAdView(ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = request.user
-            ad = serializer.validated_data.get('ad_id')
+            ad_id = serializer.validated_data.get('ad_id')
             liked = serializer.validated_data.get('liked', True)
 
-            if not ad:
-                return Response({"error": "ad field is required."}, status=status.HTTP_400_BAD_REQUEST)
+            if not ad_id:
+                return Response({"error": "ad_id field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                ad = Advertisement.objects.get(id=ad_id)
+            except Advertisement.DoesNotExist:
+                return Response({"error": "Advertisement not found."}, status=status.HTTP_404_NOT_FOUND)
 
             ad_like, created = AdLike.objects.update_or_create(
                 user=user,
