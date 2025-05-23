@@ -14,9 +14,8 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         fields = ['advertisement_id', 'title', 'content', 'image_url']
 
     def get_image_url(self, obj):
-        request = self.context.get('request')
         if obj.image:
-            return cloudinary.CloudinaryImage(obj.image).build_url()
+            return cloudinary.CloudinaryImage(str(obj.image)).build_url()
         return None
 
     def create(self, validated_data):
