@@ -545,7 +545,7 @@ class LikeAdView(ListCreateAPIView):
                 return Response({"error": "ad_id field is required."}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                ad = Advertisement.objects.get(id=ad_id)
+                ad = Advertisement.objects.get(advertisement_id=ad_id)
             except Advertisement.DoesNotExist:
                 return Response({"error": "Advertisement not found."}, status=status.HTTP_404_NOT_FOUND)
 
