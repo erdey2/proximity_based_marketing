@@ -6,10 +6,14 @@ from datetime import datetime
 from typing import Optional
 
 class AdvertisementSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Advertisement
-        # fields = ['advertisement_id', 'title', 'content', 'is_active', 'created_at', 'image']
-        fields = '__all__'
+        fields = ['advertisement_id', 'title', 'content', 'image_url']
+
+    def get_image_url(self, obj):
+        return obj.image.url if obj.image else None
 
 class AdvertisementSimpleSerializer(serializers.ModelSerializer):
     class Meta:

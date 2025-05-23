@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from cloudinary.models import CloudinaryField
 from uuid import uuid4
 
 User = get_user_model()
@@ -8,7 +9,7 @@ class Advertisement(models.Model):
     advertisement_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=200, db_index=True)
     content = models.TextField()
-    image = models.FileField(upload_to='ads/', null=True, blank=True)
+    image = CloudinaryField('image', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('users.User', on_delete=models.CASCADE, default=1)
     is_active = models.BooleanField(default=True)
