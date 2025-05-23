@@ -4,6 +4,7 @@ from .models import AdView, AdLike, AdClick, AdSaved
 from django.utils.timezone import now
 from datetime import datetime
 from typing import Optional
+import cloudinary
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -13,7 +14,21 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         fields = ['advertisement_id', 'title', 'content', 'image_url']
 
     def get_image_url(self, obj):
-        return obj.image.url if obj.image else None
+        request = self.context.get('request')
+        if obj.image:
+            return cloudinary.CloudinaryImage(obj.image).build_url()
+        return None
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        image_file = request.FILES.get('image')
+
+        if image_file:
+            upload_result = cloudinary.uploader.upload(image_file, folder='ads/')
+            validated_data['image'] = upload_result['public_id']
+
+        return Advertisement.objects.create(**validated_data)
+
 
 class AdvertisementSimpleSerializer(serializers.ModelSerializer):
     class Meta:
