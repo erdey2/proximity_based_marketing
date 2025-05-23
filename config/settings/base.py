@@ -40,6 +40,10 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'rest_framework_simplejwt',
 
+    # for images
+    'cloudinary',
+    'cloudinary_storage',
+
     # for registration & auth using social media
     'dj_rest_auth.registration',
     'django.contrib.sites',
@@ -174,11 +178,24 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# Cloudinary Config
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'Root',
+    'API_KEY': '325627148858812',
+    'API_SECRET': 'Pear7ocgLKo1MGg2mVtqgeCgem8',
+    'UPLOAD_OPTIONS': {
+        'folder': 'proximity_based_market/ads/',
+        'resource_type': 'image',
+        'allowed_formats': ['jpg', 'png']
+    }
+}
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# STATIC_URL = '/static/'
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGGING = {
     'version': 1,
