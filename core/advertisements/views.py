@@ -107,67 +107,6 @@ class AdvertisementList(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
-class AdvertisementListWithPagination(ListCreateAPIView):
-    """List all advertisements or create a new one."""
-    serializer_class = AdvertisementSerializer
-    queryset = Advertisement.objects.all().order_by('created_at')
-    parser_classes = (MultiPartParser, FormParser)
-    pagination_class = CustomPagination
-
-    def get_queryset(self):
-        qs = Advertisement.objects.all()
-
-        # Use a single query parameter 'search' for both title and content
-        query = self.request.GET.get('search')
-
-        if query:
-            search_conditions = Q(title__icontains=query) | Q(content__icontains=query)
-            qs = qs.filter(search_conditions)
-
-        return qs
-
-    @extend_schema(
-        tags=["Advertisements"],
-        summary="List Advertisements with Pagination",
-        description="Retrieve a paginated list of advertisements. Supports filtering by title or content using the `search` query parameter.",
-        parameters=[
-            OpenApiParameter(
-                name="search",
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.QUERY,
-                required=False,
-                description="Search advertisements by title or content.",
-            ),
-            OpenApiParameter(
-                name="page",
-                type=OpenApiTypes.INT,
-                location=OpenApiParameter.QUERY,
-                required=False,
-                description="Page number for pagination.",
-            ),
-            OpenApiParameter(
-                name="page_size",
-                type=OpenApiTypes.INT,
-                location=OpenApiParameter.QUERY,
-                required=False,
-                description="Number of results per page.",
-            ),
-        ],
-        responses={200: AdvertisementSerializer(many=True)},
-    )
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    @extend_schema(
-        tags=["Advertisements"],
-        summary="Create Advertisement",
-        description="Create a new advertisement. You can upload images using multipart form data.",
-        request=AdvertisementSerializer,
-        responses={201: AdvertisementSerializer},
-    )
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-
 class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete an advertisement item."""
     serializer_class = AdvertisementSerializer
@@ -277,6 +216,67 @@ class AdvertisementDetail(RetrieveUpdateDestroyAPIView):
     )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+class AdvertisementListWithPagination(ListCreateAPIView):
+    """List all advertisements or create a new one."""
+    serializer_class = AdvertisementSerializer
+    queryset = Advertisement.objects.all().order_by('created_at')
+    parser_classes = (MultiPartParser, FormParser)
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        qs = Advertisement.objects.all()
+
+        # Use a single query parameter 'search' for both title and content
+        query = self.request.GET.get('search')
+
+        if query:
+            search_conditions = Q(title__icontains=query) | Q(content__icontains=query)
+            qs = qs.filter(search_conditions)
+
+        return qs
+
+    @extend_schema(
+        tags=["Advertisements"],
+        summary="List Advertisements with Pagination",
+        description="Retrieve a paginated list of advertisements. Supports filtering by title or content using the `search` query parameter.",
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Search advertisements by title or content.",
+            ),
+            OpenApiParameter(
+                name="page",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Page number for pagination.",
+            ),
+            OpenApiParameter(
+                name="page_size",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Number of results per page.",
+            ),
+        ],
+        responses={200: AdvertisementSerializer(many=True)},
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=["Advertisements"],
+        summary="Create Advertisement",
+        description="Create a new advertisement. You can upload images using multipart form data.",
+        request=AdvertisementSerializer,
+        responses={201: AdvertisementSerializer},
+    )
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
 class AdvertisementDetailInteraction(generics.RetrieveAPIView):
     queryset = Advertisement.objects.all()
@@ -757,15 +757,21 @@ class SaveAdView(ListCreateAPIView):
             )
         }
     )
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = request.user
-            ad = serializer.validated_data.get('ad_id')
+            ad_id = serializer.validated_data.get('ad_id')
             saved = serializer.validated_data.get('saved', True)
 
-            if not ad:
-                return Response({"error": "ad field is required."}, status=status.HTTP_400_BAD_REQUEST)
+            if not ad_id:
+                return Response({"error": "ad_id field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                ad = Advertisement.objects.get(advertisement_id=ad_id)
+            except Advertisement.DoesNotExist:
+                return Response({"error": "Advertisement not found."}, status=status.HTTP_404_NOT_FOUND)
 
             ad_save, created = AdSaved.objects.update_or_create(
                 user=user,
