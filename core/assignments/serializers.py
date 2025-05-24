@@ -12,27 +12,24 @@ class AdvertisementAssignmentSerializer(serializers.ModelSerializer):
         model = AdvertisementAssignment
         fields = '__all__'
 
-    def validate_start_date(self, value):
-        """ Validate that start_date is not in the past. """
+    """ def validate_start_date(self, value):
         current_date = now()
         if value < current_date:
             raise serializers.ValidationError("The start date cannot be in the past.")
         return value
 
     def validate_end_date(self, value):
-        """ Validate that end_date is provided. """
         if not value:
             raise serializers.ValidationError("The end date must be provided.")
         return value
 
     def validate(self, data):
-        """ Ensure that end_date is greater than start_date. """
         start_date = data.get('start_date')
         end_date = data.get('end_date')
 
         if start_date and end_date and start_date >= end_date:
             raise serializers.ValidationError("The end date must be after the start date.")
-        return data
+        return data """
 
 class AdvertisementDateSerializer(serializers.ModelSerializer):
     class Meta:
