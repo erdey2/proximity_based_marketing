@@ -11,7 +11,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Advertisement
-        fields = ['advertisement_id', 'title', 'content', 'image_url']
+        fields = ['advertisement_id', 'title', 'content', 'image_url', 'created_at', 'is_active', 'created_by']
 
     def get_image_url(self, obj):
         if obj.image:
